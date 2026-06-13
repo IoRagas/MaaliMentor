@@ -27,6 +27,9 @@ interface SimState {
   history: { label: string; nominal: number; real: number }[];
   gameOver: boolean;
   events: string[];
+  cumulativeInflation?: number;
+  cashValue?: number;
+  investedValue?: number;
 }
 
 interface ToastItem {
@@ -115,6 +118,120 @@ export default function SimulatorPage() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const advanceTurnLocal = (currentState: SimState) => {
+    // 1. Dynamic inflation (10-25%)
+    const inflationRate = parseFloat((Math.random() * 0.15 + 0.10).toFixed(4));
+    const oldCumulative = currentState.cumulativeInflation || 1.0;
+    const newCumulative = oldCumulative * (1 + inflationRate);
+
+    // 2. Income & saving
+    const monthlyIncome = currentState.monthlyIncome;
+    const annualIncome = monthlyIncome * 12;
+    const livingExpenses = currentState.spending;
+    const annualSaving = Math.max(annualIncome - livingExpenses, 0);
+
+    // 3. Investment returns
+    const returnsMap: Record<string, number> = {
+      cash: 0.00,
+      bank: 0.08,
+      mutual: 0.16,
+      islamic: 0.14,
+    };
+    const returnRate = returnsMap[currentState.savingMethod] || 0.0;
+
+    let oldCash = currentState.cashValue !== undefined ? currentState.cashValue : currentState.nominalWealth;
+    let oldInvested = currentState.investedValue || 0;
+    let newCash = oldCash;
+    let newInvested = oldInvested;
+
+    if (currentState.savingMethod === "cash") {
+      newCash = oldCash + annualSaving;
+      newInvested = oldInvested * (1 + 0.14); // existing grows
+    } else {
+      newCash = oldCash;
+      newInvested = (oldInvested + annualSaving) * (1 + returnRate);
+    }
+
+    // 4. Random life events
+    const lifeEvents = [
+      { name: "Medical Emergency — Beemar ho gaye! (PKR -50,000)", wealthImpact: -50000, prob: 0.15 },
+      { name: "Shaadi ka kharcha — Wedding expense! (PKR -150,000)", wealthImpact: -150000, prob: 0.08 },
+      { name: "Salary Raise — Talab mein izafa! (+15% Salary)", incomeImpactPct: 0.15, prob: 0.20 },
+      { name: "Annual Bonus — Bohni mil gayi! (PKR +30,000)", wealthImpact: 30000, prob: 0.18 },
+      { name: "Ghar ki repair — House maintenance! (PKR -25,000)", wealthImpact: -25000, prob: 0.12 },
+      { name: "Prize Bond laga! — Small prize won! (PKR +15,000)", wealthImpact: 15000, prob: 0.05 },
+    ];
+
+    let eventTriggered: string | null = null;
+    let updatedAnnualIncome = annualIncome;
+
+    for (const event of lifeEvents) {
+      if (Math.random() < event.prob) {
+        eventTriggered = event.name;
+
+        if (event.wealthImpact) {
+          const impact = event.wealthImpact;
+          if (impact < 0) {
+            if (newCash >= Math.abs(impact)) {
+              newCash += impact;
+            } else {
+              const shortfall = Math.abs(impact) - newCash;
+              newCash = 0;
+              newInvested = Math.max(newInvested - shortfall, 0);
+            }
+          } else {
+            newCash += impact;
+          }
+        }
+
+        if (event.incomeImpactPct) {
+          updatedAnnualIncome *= (1 + event.incomeImpactPct);
+        }
+
+        break; // Max one event
+      }
+    }
+
+    const nominalWealth = Math.round(newCash + newInvested);
+    const realWealth = Math.round(nominalWealth / newCumulative);
+    const nextTurn = currentState.turn + 1;
+    const nextAge = currentState.age + 1;
+    const isGameOver = nextTurn >= 10;
+
+    const newHistory = [
+      ...currentState.history,
+      { label: `Y${nextTurn}`, nominal: nominalWealth, real: realWealth }
+    ];
+
+    if (eventTriggered) {
+      const isGoodEvent = eventTriggered.includes("laga") || eventTriggered.includes("Raise") || eventTriggered.includes("Bonus");
+      addToast(eventTriggered, isGoodEvent ? "success" : "warning");
+    }
+
+    setState({
+      age: nextAge,
+      turn: nextTurn,
+      nominalWealth: nominalWealth,
+      realWealth: realWealth,
+      inflationRate: inflationRate,
+      monthlyIncome: Math.round(updatedAnnualIncome / 12),
+      savingMethod: currentState.savingMethod,
+      spending: Math.round(currentState.spending * (1 + inflationRate)),
+      history: newHistory,
+      gameOver: isGameOver,
+      events: eventTriggered ? [...currentState.events, eventTriggered] : currentState.events,
+      cumulativeInflation: newCumulative,
+      cashValue: newCash,
+      investedValue: newInvested,
+    });
+
+    if (isGameOver) {
+      addToast("🏆 Congratulations! 10 saal ka safar mukammal hua.", "success");
+    } else {
+      addToast(`Saal ${nextTurn} mukammal hua!`, "info");
+    }
+  };
+
   const startGame = async () => {
     setLoading(true);
     try {
@@ -144,15 +261,39 @@ export default function SimulatorPage() {
           history: [{ label: "Start", nominal: data.nominal_wealth, real: data.real_purchasing_power }],
           gameOver: false,
           events: [],
+          cumulativeInflation: 1.0,
+          cashValue: data.nominal_wealth,
+          investedValue: 0.0,
         });
         setToasts([]);
         addToast("🎮 Naya saal shuru hua! Apna saving plan muntakhib karein.", "success");
+        setLoading(false);
+        return;
       }
     } catch (err) {
-      console.error("Failed to start simulator:", err);
-    } finally {
-      setLoading(false);
+      console.error("Failed to start simulator, launching offline mode:", err);
     }
+
+    // Offline mode setup
+    setState({
+      age: 25,
+      turn: 0,
+      nominalWealth: 50000,
+      realWealth: 50000,
+      inflationRate: 0.15,
+      monthlyIncome: 80000,
+      savingMethod: "bank",
+      spending: 40000,
+      history: [{ label: "Start", nominal: 50000, real: 50000 }],
+      gameOver: false,
+      events: [],
+      cumulativeInflation: 1.0,
+      cashValue: 50000,
+      investedValue: 0.0,
+    });
+    setToasts([]);
+    addToast("🎮 Offline Mode: Simulator locally run ho raha hai.", "info");
+    setLoading(false);
   };
 
   const advanceTurn = async () => {
@@ -160,8 +301,6 @@ export default function SimulatorPage() {
 
     setLoading(true);
     const selectedMethod = savingMethods.find((m) => m.id === state.savingMethod)!;
-    
-    // Calculate fractional lifestyle spend (0 to 1)
     const lifestyleFraction = state.spending / state.monthlyIncome;
 
     try {
@@ -182,12 +321,10 @@ export default function SimulatorPage() {
         const nextTurn = data.new_turn;
         const nextAge = state.age + 1;
         const isGameOver = nextTurn >= 10;
-
-        // Use backend's updated monthly income
         const nextIncome = data.monthly_income || (state.monthlyIncome * 1.07);
 
         if (data.event_triggered) {
-          const isGoodEvent = data.event_triggered.includes("mila") || data.event_triggered.includes("raise");
+          const isGoodEvent = data.event_triggered.includes("laga") || data.event_triggered.includes("Raise") || data.event_triggered.includes("Bonus") || data.event_triggered.includes("mila") || data.event_triggered.includes("raise");
           addToast(data.event_triggered, isGoodEvent ? "success" : "warning");
         }
 
@@ -211,6 +348,9 @@ export default function SimulatorPage() {
             monthlyIncome: Math.round(nextIncome),
             history: newHistory,
             gameOver: isGameOver,
+            cumulativeInflation: data.real_purchasing_power > 0 ? (data.nominal_wealth / data.real_purchasing_power) : (prev.cumulativeInflation || 1.0),
+            cashValue: data.cash_value,
+            investedValue: data.invested_value,
           };
         });
 
@@ -219,12 +359,16 @@ export default function SimulatorPage() {
         } else {
           addToast(`Saal ${nextTurn} mukammal hua!`, "info");
         }
+        setLoading(false);
+        return;
       }
     } catch (err) {
-      console.error("Failed to advance simulator turn:", err);
-    } finally {
-      setLoading(false);
+      console.error("Failed to advance simulator turn, running locally:", err);
     }
+
+    // Local fallback turn calculations
+    advanceTurnLocal(state);
+    setLoading(false);
   };
 
   const spendingPercentage = Math.round((state.spending / state.monthlyIncome) * 100);
