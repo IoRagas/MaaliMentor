@@ -18,7 +18,7 @@ from app.schemas import (
     TutorVoiceResponse,
 )
 from app.services.graph_rag import generate_tutor_response
-from app.services.speech import synthesize_speech, transcribe_audio
+from app.services.speech import synthesize_speech, transcribe_audio, translate_roman_to_urdu_script
 
 router = APIRouter(prefix="/api/tutor", tags=["Tutor"])
 
@@ -128,8 +128,9 @@ async def voice_tutor(
     # 2 — Generate response
     result = await generate_tutor_response(transcript, user_id, session)
 
-    # 3 — Synthesise speech
-    audio_url = await synthesize_speech(result["response"])
+    # 3 — Translate Roman Urdu to Urdu script and synthesise speech
+    urdu_script_text = await translate_roman_to_urdu_script(result["response"])
+    audio_url = await synthesize_speech(urdu_script_text)
 
     return TutorVoiceResponse(
         user_transcript=transcript,

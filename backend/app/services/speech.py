@@ -106,3 +106,35 @@ async def synthesize_speech(text: str) -> str:
     except Exception as exc:
         print(f"[speech] gTTS Speech synthesis error: {exc}")
         return "/static/audio/mock_response.mp3"
+
+
+async def translate_roman_to_urdu_script(roman_urdu_text: str) -> str:
+    """
+    Translate Roman Urdu text to native Urdu script using Gemini for native voice synthesis.
+    """
+    if settings.USE_MOCK_SPEECH:
+        return "بچت اور سرمایہ کاری میں بہت فرق ہے۔"
+
+    try:
+        import google.generativeai as genai
+
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        
+        prompt = (
+            "Aap ek assistant hain. Is Roman Urdu text ko saaf aur sahi Urdu script (Urdu characters/Nastaliq) mein convert/translate karein. "
+            "Respond with ONLY the exact translated Urdu script text. Do not add any greeting, explanation, notes, or english letters.\n\n"
+            f"Text: {roman_urdu_text}"
+        )
+        
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                max_output_tokens=600,
+                temperature=0.0
+            )
+        )
+        return response.text.strip() if response.text else roman_urdu_text
+    except Exception as e:
+        print(f"[speech] Error translating Roman Urdu to Urdu script: {e}")
+        return roman_urdu_text
