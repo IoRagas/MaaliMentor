@@ -18,9 +18,23 @@ engine = create_engine(
 )
 
 
+from sqlalchemy import text
+
 def create_db_and_tables() -> None:
     """Create all SQLModel tables if they don't already exist."""
     SQLModel.metadata.create_all(engine)
+    
+    # Auto-migration: check if users table is missing current_level column
+    with engine.begin() as connection:
+        try:
+            # Check users table info
+            result = connection.execute(text("PRAGMA table_info(users)")).fetchall()
+            columns = [row[1] for row in result]
+            if "current_level" not in columns:
+                connection.execute(text("ALTER TABLE users ADD COLUMN current_level INTEGER DEFAULT 1"))
+                print("[database] Migrated users table: added current_level column.")
+        except Exception as e:
+            print(f"[database] Migration warning: {e}")
 
 
 def get_session():
