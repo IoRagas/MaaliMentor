@@ -189,7 +189,7 @@ export default function LandingPage() {
               مالی طور پر خود مختار بنیں۔
             </p>
 
-            <p className="text-sm sm:text-base md:text-lg text-slate-400 leading-relaxed max-w-xl">
+            <p className="text-sm sm:text-base md:text-lg text-slate-200 leading-relaxed max-w-xl">
               Maali Mentor aap ka apna AI advisor hai jo Urdu aur Roman Urdu mein aap ki zarooriyat samajhta hai. 
               Menehgai (inflation) se larna, budget banana aur shares mein invest karna seekhein, asaan bol kar.
             </p>
@@ -220,7 +220,7 @@ export default function LandingPage() {
                     <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 animate-pulse" />
                     <span className="text-xs font-bold text-slate-300">Maali Mentor Live Voice</span>
                   </div>
-                  <span className="text-[10px] text-slate-500 px-2 py-0.5 rounded bg-slate-900 border border-white/5">Roman Urdu</span>
+                  <span className="text-[10px] text-slate-300 px-2 py-0.5 rounded bg-slate-900 border border-white/5">Roman Urdu</span>
                 </div>
 
                 {/* Mock Conversation Space */}
@@ -260,7 +260,7 @@ export default function LandingPage() {
 
                 {/* Footer Assistant Orb */}
                 <div className="px-5 py-4 border-t border-white/5 bg-slate-900/30 flex items-center justify-between">
-                  <span className="text-[10px] text-slate-500">Audio playback active</span>
+                  <span className="text-[10px] text-slate-400">Audio playback active</span>
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shadow-md shadow-emerald-500/5 cursor-pointer hover:bg-emerald-500/20 transition-all">
                     <Mic size={16} className="text-emerald-400" />
                   </div>
@@ -333,7 +333,7 @@ export default function LandingPage() {
 
             <div className="md:col-span-6">
               <div className="p-5 rounded-xl bg-slate-950/70 border border-white/5 space-y-4 text-xs sm:text-sm">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">PAKISTAN TRIVIA</span>
+                <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">PAKISTAN TRIVIA</span>
                 <p className="font-bold text-slate-200">
                   Q: Agar mulk mein inflation (mehengai) 20% saalana ho, to paise ki value barhane ka sahi tareeqa kya hai?
                 </p>
@@ -459,10 +459,10 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="relative z-10 text-center py-12 border-t border-white/5 max-w-6xl mx-auto px-6 space-y-2">
-        <p className="text-xs sm:text-sm text-slate-500">
+        <p className="text-xs sm:text-sm text-slate-400">
           © 2026 Maali Mentor — مالی مینٹر. Built for Pakistan 🇵🇰
         </p>
-        <p className="text-[10px] text-slate-600">
+        <p className="text-[10px] text-slate-400">
           Empowering financial literacy through customized Roman Urdu learning modules.
         </p>
       </footer>
