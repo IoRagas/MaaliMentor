@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+pydantic-settings
+networkx
+chromadb
+python-multipart
+aiofiles
+python-dotenv
+google-generativeai
+gTTS
+
