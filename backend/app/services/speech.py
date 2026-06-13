@@ -42,16 +42,22 @@ async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> 
         # Normalise mime_type (sometimes browsers send 'audio/webm;codecs=opus')
         clean_mime_type = mime_type.split(";")[0] if mime_type else "audio/wav"
 
-        # Call Gemini passing the raw audio data directly
-        response = model.generate_content([
-            "Aap ek financial assistant hain. Transcribe this Urdu speech audio file to text. "
-            "Respond with ONLY the exact transcription in Urdu script or Roman Urdu depending on how it was spoken. "
-            "Do not add any additional explanation, greeting, or translation.",
-            {
-                "mime_type": clean_mime_type,
-                "data": audio_bytes
-            }
-        ])
+        # Call Gemini passing the raw audio data directly with speed optimizations
+        response = model.generate_content(
+            [
+                "Aap ek financial assistant hain. Transcribe this Urdu speech audio file to text. "
+                "Respond with ONLY the exact transcription in Urdu script or Roman Urdu depending on how it was spoken. "
+                "Do not add any additional explanation, greeting, or translation.",
+                {
+                    "mime_type": clean_mime_type,
+                    "data": audio_bytes
+                }
+            ],
+            generation_config=genai.types.GenerationConfig(
+                max_output_tokens=150,
+                temperature=0.0  # 0.0 temperature makes transcription faster and deterministic
+            )
+        )
 
         transcription = response.text.strip() if response.text else ""
         if not transcription:

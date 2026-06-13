@@ -180,7 +180,10 @@ export default function TutorPage() {
           }
         }
 
-        const mediaRecorder = new MediaRecorder(stream, { mimeType });
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType,
+          audioBitsPerSecond: 32000 // Compress audio to 32kbps to reduce upload latency and network transit time
+        });
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
 
