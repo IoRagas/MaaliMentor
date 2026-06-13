@@ -202,7 +202,7 @@ export default function OnboardingPage() {
                   if (e.key === "Enter" && username.trim()) next();
                 }}
                 placeholder="Apna naam likhein (e.g. Ahmed)"
-                className="w-full pl-14 pr-6 py-4.5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg md:text-xl focus:outline-none focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/5 transition-all duration-250"
+                className="w-full pl-14 pr-6 py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg md:text-xl focus:outline-none focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/5 transition-all duration-250"
                 autoFocus
               />
             </div>

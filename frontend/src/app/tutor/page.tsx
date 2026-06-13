@@ -196,7 +196,7 @@ export default function TutorPage() {
           
           try {
             const formData = new FormData();
-            formData.append("file", audioBlob, `recording.${extension}`);
+            formData.append("audio", audioBlob, `recording.${extension}`);
             formData.append("user_id", userId.toString());
 
             const res = await fetch("http://localhost:8000/api/tutor/voice", {
@@ -230,6 +230,7 @@ export default function TutorPage() {
 
                 if (data.audio_response_url) {
                   const audio = new Audio(`http://localhost:8000${data.audio_response_url}`);
+                  audio.playbackRate = 1.2; // Set playback rate to 1.2x for faster, more natural Urdu speaking speed
                   audio.play().catch(e => console.error("Audio playback error:", e));
                 }
               }

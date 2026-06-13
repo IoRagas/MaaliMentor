@@ -27,6 +27,15 @@ interface Question {
   options: Record<string, string>;
 }
 
+interface FullOfflineQuestion {
+  id: number;
+  level: number;
+  question: string;
+  options: Record<string, string>;
+  correct_option: string;
+  explanation: string;
+}
+
 interface DetailResult {
   question_id: number;
   correct_option: string;
@@ -54,9 +63,115 @@ const levelTitles: Record<number, string> = {
   10: "Advanced Planning & Filer System (ٹیکس فائلنگ)",
 };
 
+const studyMaterials: Record<number, { title: string; urduTitle: string; content: string[] }> = {
+  1: {
+    title: "Budgeting Basics",
+    urduTitle: "بجٹ بنانے کے بنیادی اصول",
+    content: [
+      "**Budget ka maqsad:** Apni amdani (Income) aur kharchon (Expenses) ka mukammal hissa-kitaab rakhna taake paisa zaya na ho.",
+      "**50-30-20 Rule:** Amdani ko teen hisson mein taqseem karein: 50% bunyadi Zarooriyat (Needs - rent, bill, grocery), 30% Khwahishat (Wants - shopping, hoteling, entertainment), aur 20% Bachat (Savings & Investments).",
+      "**Needs vs Wants:** Needs ke baghair zindagi guzarna mushkil hai (jaise ghar, khana, ilaj). Wants sirf shauq poore karne ke liye hoti hain.",
+      "**Fixed vs Variable Expenses:** Fixed expenses har mahine barabar hote hain (jaise rent, school fee). Variable expenses tabdeel hote rehte hain (jaise utility bills, petrol).",
+      "**Tracking:** Rozana ke kharche note karne ke liye diary ya mobile application sab se moassar tareeqa hai."
+    ]
+  },
+  2: {
+    title: "Saving Habits",
+    urduTitle: "بچت کی عادات اور فائدے",
+    content: [
+      "**Sunoori Usool (Golden Rule):** Amdani aate hi pehle bachat alag karein, phir baqi paise kharach karein (Income - Savings = Spending).",
+      "**Cash vs Bank:** Ghar mein cash rakhne se uski value mehengai (inflation) ki wajah se kaafi kam ho jati hai. Bank mein rakhne se paisa mahfooz rehta hai aur profit milta hai.",
+      "**Compound Interest (Merafeh):** Apne munafa par mazeed munafa kamana. Yeh aap ke paise ko waqt ke sath tezi se barhata hai.",
+      "**Savings Account:** Bank account jo aap ki jama-shuda raqam par profit deta hai. Yeh aam current account se behtar hai bachat ke liye."
+    ]
+  },
+  3: {
+    title: "Emergency Funds",
+    urduTitle: "ایمرجنسی فنڈ کی اہمیت",
+    content: [
+      "**Emergency Fund kya hai:** Ghair-yakeeni halat (medical emergency, job loss, accident) ke liye rakha gaya paisa.",
+      "**Kitna paisa hona chahiye:** Kam az kam 3 se 6 mahine ke gharelu kharchon ke barabar raqam emergency fund mein honi chahiye.",
+      "**Liquidity (Aasani se nikalna):** Emergency fund aisi jagah hona chahiye jahan se furan nikala ja sake (jaise bank account), real estate ya committees mein nahi.",
+      "**Alag Account:** Emergency fund ko apne rozana ke kharchon wale account se alag rakhna chahiye taake yeh ghalti se kharach na ho."
+    ]
+  },
+  4: {
+    title: "Inflation & Purchasing Power",
+    urduTitle: "مہنگائی اور خریدنے کی طاقت",
+    content: [
+      "**Inflation (Mehengai):** Har saal cheezon ki qeemton mein izafa hona aur paise ki qadar (value) ka kam hona.",
+      "**Purchasing Power:** Agar saalana inflation 15% ho, to aaj ka 1,000 rupya agle saal sirf 850 rupay ke barabar cheezein khareed sakega.",
+      "**Wajah (Causes):** Currency ki de-valuation, money printing, aur market mein cheezon ki talab (demand) barhna.",
+      "**Inflation se bachao:** Apne paise ko aisi assets mein invest karna jo inflation rate se zyada return dein (jaise Stocks, Gold, ya Mutual Funds)."
+    ]
+  },
+  5: {
+    title: "Investing Principles",
+    urduTitle: "سرمایہ کاری کے بنیادی اصول",
+    content: [
+      "**Saving vs Investing:** Saving ka matlab paisa bachana hai. Investing ka matlab paise ko kaam par lagana hai taake return mile.",
+      "**Risk vs Return:** Jitna zyada risk (nuqsan ka khatra) hoga, utna hi zyada return (nafa) milne ka imkan hota hai.",
+      "**Liquidity vs Returns:** Jin assets ko bechna asan nahi hota (jaise zameen), un par return aam tor par zyada hota hai lekin zaroorat ke waqt cash nahi milta.",
+      "**Asset Classes:** Sarmayakari ke mukhtalif zariye hain jaise Stocks (shares), Bonds, Gold (sona), aur Real Estate (property)."
+    ]
+  },
+  6: {
+    title: "Mutual Funds",
+    urduTitle: "میوچل فنڈز کی تفصیل",
+    content: [
+      "**Mutual Fund kya hai:** Bohat se investors se paise jama kar ke unhein mukhtalif shares aur bonds mein invest karna.",
+      "**Fund Manager:** Ek professional jo market research ke mutabiq fund ka paisa invest karta hai aur manage karta hai.",
+      "**NAV (Net Asset Value):** Kisi mutual fund ke ek unit ki qeemmat ko NAV kehte hain, jo rozana market ke mutabiq tabdeel hoti hai.",
+      "**Diversification (Tannu):** Choti raqam se bhi sekron companies mein sarmayakari ho jati hai, jis se risk kam ho jata hai."
+    ]
+  },
+  7: {
+    title: "Islamic Banking & Finance",
+    urduTitle: "اسلامی بینکاری کے اصول",
+    content: [
+      "**Riba (Sood):** Har qism ka sood strictly prohibited (Haram) hai. Islami banking sood ke baghair chalti hai.",
+      "**Profit & Loss Sharing (PLS):** Bank aur customer nishist-shuda ratio ke mutabiq nafa share karte hain, aur capital ke mutabiq nuqsan share karte hain.",
+      "**Mudarabah:** Ek sarmayakari ka contract jahan ek partner paisa deta hai (Rab-ul-Maal) aur dusra mehnat aur management karta hai (Mudarib).",
+      "**Murabahah:** Bank koi asset khareedta hai aur customer ko apna profit margin (cost-plus) bata kar udhar par bechta hai."
+    ]
+  },
+  8: {
+    title: "Stock Market & Shares",
+    urduTitle: "اسٹاک مارکیٹ اور حصص",
+    content: [
+      "**Share (Hissa):** Kisi company mein ownership (malkiyat) ka chota sa hissa khareedna.",
+      "**Dividend:** Company apne salana munafa ka jo hissa shareholders mein taqseem karti hai, use dividend kehte hain.",
+      "**Capital Gain:** Sastay daam share khareed kar mehnge daam bechne par jo nafa hota hai, use capital gain kehte hain.",
+      "**PSX (Pakistan Stock Exchange):** Pakistan ka regulated platform jahan companies ke shares ki khareed-o-ferokht hoti hai."
+    ]
+  },
+  9: {
+    title: "Diversification & Risk",
+    urduTitle: "تنوع اور رسک مینجمنٹ",
+    content: [
+      "**Diversification:** Apni saari sarmayakari ek hi jagah na lagana ('Don't put all eggs in one basket').",
+      "**Systemic Risk:** Aise khatray jo poori economy ko affect karte hain (jaise mulki halat, inflation) jin se bachna mushkil hai.",
+      "**Unsystemic Risk:** Aise khatray jo sirf kisi ek company ya sector ko affect karte hain (jaise strike), jinhein diversification se kam kiya ja sakta hai.",
+      "**Asset Allocation:** Apni umer aur risk tolerance ke mutabiq stocks, gold aur cash mein balanced tarike se invest karna."
+    ]
+  },
+  10: {
+    title: "Advanced Planning & Filer System",
+    urduTitle: "ٹیکس فائلنگ اور فائلر بننے کے فائدے",
+    content: [
+      "**Active Filer:** Jo shakhs FBR mein income tax return file karta hai aur FBR ki Active Taxpayers List (ATL) mein shamil hota hai.",
+      "**Filer ke Fayde:** Bank transactions, car purchase, aur property transfer par withholding tax (WHT) rates adhay (50% kam) ho jate hain.",
+      "**FBR (Federal Board of Revenue):** Pakistan ka sarkari idara jo tax collect karne aur tax policies banaye rakhne ka zimmadar hai.",
+      "**Tax Saving:** VPS (Voluntary Pension Scheme) aur mutual funds mein invest karne se income tax return mein rebates/tax savings milti hain.",
+      "**Wealth Statement:** Tax return ke sath submit kiya jane wala document jo aap ke kul asase (assets) aur zimmadariyon (liabilities) ko zahir karta hai."
+    ]
+  }
+};
+
 export default function QuizPage() {
   const [level, setLevel] = useState<number>(1);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [showStudyMaterial, setShowStudyMaterial] = useState(true);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +179,8 @@ export default function QuizPage() {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [results, setResults] = useState<QuizResult | null>(null);
   const [expandedDetails, setExpandedDetails] = useState<Record<number, boolean>>({});
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
+  const [offlineQuestions, setOfflineQuestions] = useState<FullOfflineQuestion[]>([]);
 
   // Parse level parameter from window.location
   useEffect(() => {
@@ -84,6 +201,7 @@ export default function QuizPage() {
     const fetchQuestions = async () => {
       setLoading(true);
       setError(null);
+      setIsOfflineMode(false);
       try {
         const res = await fetch(`http://localhost:8000/api/quiz/questions/${level}`);
         if (!res.ok) {
@@ -92,8 +210,31 @@ export default function QuizPage() {
         const data = await res.json();
         setQuestions(data);
       } catch (err: any) {
-        console.error("Quiz questions error:", err);
-        setError(err.message || "Failed to fetch quiz questions. Please check your backend connection.");
+        console.warn("Backend fetch failed, falling back to offline mode:", err);
+        try {
+          const localRes = await fetch("/quiz_data.json");
+          if (!localRes.ok) {
+            throw new Error("Local quiz data asset is not accessible.");
+          }
+          const allLocalQuestions: FullOfflineQuestion[] = await localRes.json();
+          const filtered = allLocalQuestions.filter((q) => q.level === level);
+          if (filtered.length === 0) {
+            throw new Error(`No questions found for Level ${level} in local quiz data.`);
+          }
+          setOfflineQuestions(filtered);
+          
+          const strippedQuestions: Question[] = filtered.map((q) => ({
+            id: q.id,
+            level: q.level,
+            question: q.question,
+            options: q.options,
+          }));
+          setQuestions(strippedQuestions);
+          setIsOfflineMode(true);
+        } catch (localErr: any) {
+          console.error("Local quiz fallback failed:", localErr);
+          setError(localErr.message || "Failed to fetch quiz questions. Please check your connection.");
+        }
       } finally {
         setLoading(false);
       }
@@ -134,11 +275,65 @@ export default function QuizPage() {
 
     setSubmitting(true);
     setError(null);
+
+    if (isOfflineMode) {
+      try {
+        // Wait a small delay to simulate processing and give a high-quality feel
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        let score = 0;
+        const details: DetailResult[] = [];
+
+        offlineQuestions.forEach((q) => {
+          const userAns = selectedAnswers[q.id] || "a";
+          const isCorrect = userAns.toLowerCase().trim() === q.correct_option.toLowerCase().trim();
+          if (isCorrect) {
+            score++;
+          }
+          details.push({
+            question_id: q.id,
+            correct_option: q.correct_option,
+            explanation: q.explanation,
+            is_correct: isCorrect,
+          });
+        });
+
+        const passed = score >= 15;
+        let nextLevel = level;
+
+        if (passed) {
+          const storedLevelStr = localStorage.getItem("current_level") || "1";
+          const currentStoredLevel = parseInt(storedLevelStr);
+          if (currentStoredLevel === level) {
+            nextLevel = Math.min(level + 1, 10);
+            localStorage.setItem("current_level", nextLevel.toString());
+          } else {
+            nextLevel = currentStoredLevel;
+          }
+        }
+
+        const localResult: QuizResult = {
+          score,
+          passed,
+          current_level: nextLevel,
+          details,
+        };
+
+        setResults(localResult);
+      } catch (err: any) {
+        console.error("Local grading error:", err);
+        setError("Failed to grade quiz locally.");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
     try {
       const userId = localStorage.getItem("user_id") || "1";
       const answersPayload = questions.map((q) => ({
         question_id: q.id,
-        selected_option: selectedAnswers[q.id] || "a", // default choice fallback
+        selected_option: selectedAnswers[q.id] || "a",
       }));
 
       const res = await fetch("http://localhost:8000/api/quiz/submit", {
@@ -243,6 +438,13 @@ export default function QuizPage() {
             Wapis Dashboard
           </a>
         </header>
+
+        {isOfflineMode && (
+          <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 md:px-8 py-2.5 flex items-center gap-2 text-emerald-400 text-xs font-semibold animate-fade-in relative z-20">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Offline Mode: Quiz locally run ho raha hai.
+          </div>
+        )}
 
         <main className="flex-1 p-4 md:p-8 pb-24 overflow-y-auto">
           {!results ? (

@@ -144,13 +144,38 @@ export default function DashboardPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  const getConceptStatus = (conceptId: string, prereqs: string[]) => {
-    const score = scores[conceptId] || 0;
-    if (score >= 60) return "mastered";
+  const conceptToLevel: Record<string, number> = {
+    budgeting: 1,
+    saving: 2,
+    emergency_funds: 3,
+    inflation: 4,
+    investing: 5,
+    mutual_funds: 6,
+    islamic_banking: 7,
+    stock_market: 8,
+    diversification: 9,
+    tax_filer: 10,
+  };
 
-    // check prereqs
-    const allPrereqsMet = prereqs.every((p) => (scores[p] || 0) >= 60);
-    if (allPrereqsMet) return "unlocked";
+  const getConceptStatus = (conceptId: string) => {
+    const score = scores[conceptId] || 0;
+    const nodeLevel = conceptToLevel[conceptId] || 1;
+
+    // Mastered if score is >= 60 OR the user's current level is past this node's level
+    if (score >= 60 || currentLevel > nodeLevel) {
+      return "mastered";
+    }
+
+    // Unlocked if it is the current active level
+    if (nodeLevel === currentLevel) {
+      return "unlocked";
+    }
+
+    // Unlocked if it is a future level within the 3-level buffer AND not part of the last 3 linear levels (8, 9, 10)
+    if (nodeLevel > currentLevel && nodeLevel <= currentLevel + 2 && nodeLevel < 8) {
+      return "unlocked";
+    }
+
     return "locked";
   };
 
@@ -159,7 +184,7 @@ export default function DashboardPage() {
     if (!node) return null;
     const meta = conceptMetadata[conceptId] || { urdu: "", icon: "📖" };
     const score = scores[conceptId] || 0;
-    const status = getConceptStatus(conceptId, node.prereqs);
+    const status = getConceptStatus(conceptId);
 
     let borderClass = "border-white/5 bg-slate-900/40 text-slate-400 opacity-60";
     let statusBadge = null;
@@ -191,7 +216,7 @@ export default function DashboardPage() {
 
     const handleClick = () => {
       if (status !== "locked") {
-        window.location.href = `/tutor?concept=${conceptId}`;
+        window.location.href = `/study?concept=${conceptId}`;
       }
     };
 

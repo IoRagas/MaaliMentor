@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../**/*.{ts,tsx,js,jsx}";
 
 /* ─── Design Tokens ─── */
 :root {
@@ -31,8 +32,6 @@
 /* ─── Base Styles ─── */
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html {

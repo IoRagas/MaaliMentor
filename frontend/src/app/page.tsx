@@ -97,7 +97,7 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="min-h-screen overflow-x-hidden relative bg-[#090D1A] text-slate-100 pb-20">
+    <main className="min-h-screen overflow-x-hidden relative bg-[#090D1A] text-slate-100 pb-36">
       {/* Dynamic Embedded CSS Styles for waveform and custom background grid */}
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -133,7 +133,7 @@ export default function LandingPage() {
       <div className="absolute inset-0 bg-grid-pattern opacity-60 pointer-events-none z-0" />
 
       {/* Glassmorphic Navbar */}
-      <header className="relative z-50 mx-auto max-w-6xl px-6 sm:px-8 py-5 flex items-center justify-between border border-white/5 bg-slate-950/40 backdrop-blur-xl rounded-2xl shadow-2xl mt-4 w-[calc(100%-2rem)]">
+      <header className="relative z-50 mx-auto max-w-6xl px-6 sm:px-8 py-5 flex items-center justify-between border border-white/5 bg-slate-950/40 backdrop-blur-xl rounded-2xl shadow-2xl mt-8 w-[calc(100%-2rem)]">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Sparkles size={20} className="text-white" />
@@ -168,11 +168,11 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 px-6 pt-12 pb-20 md:pt-20 md:pb-28 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section className="relative z-10 px-6 pt-16 pb-32 md:pt-24 md:pb-40 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           
           {/* Left Column: Title & CTAs */}
-          <div className="lg:col-span-7 space-y-6 text-left">
+          <div className="lg:col-span-7 space-y-8 text-left">
             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
               <span className="w-2 h-2 rounded-sm bg-emerald-500 animate-pulse" />
               <span className="text-[10px] sm:text-xs text-emerald-400 font-bold uppercase tracking-wider">
@@ -194,13 +194,13 @@ export default function LandingPage() {
               Menehgai (inflation) se larna, budget banana aur shares mein invest karna seekhein, asaan bol kar.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-2 w-full sm:w-auto">
-              <Link href="/onboarding" className="glow-btn text-sm sm:text-base px-10 py-5 flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg">
+            <div className="flex flex-col sm:flex-row items-center gap-6 pt-4 w-full sm:w-auto">
+              <Link href="/onboarding" className="glow-btn text-sm sm:text-base px-12 py-6 flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg">
                 Shuru Karein <ArrowRight size={18} />
               </Link>
               <Link
                 href="/dashboard"
-                className="glow-btn-outline text-sm sm:text-base px-10 py-5 w-full sm:w-auto flex justify-center items-center gap-2 text-white border-white/10 hover:border-emerald-500/30"
+                className="glow-btn-outline text-sm sm:text-base px-12 py-6 w-full sm:w-auto flex justify-center items-center gap-2 text-white border-white/10 hover:border-emerald-500/30"
               >
                 Dashboard Dekhein
               </Link>
@@ -209,13 +209,13 @@ export default function LandingPage() {
 
           {/* Right Column: AI Assistant Mockup Card */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-[380px] animate-float-slow">
+            <div className="relative w-full max-w-[420px] animate-float-slow">
               {/* Outer neon backdrop */}
               <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-emerald-500 to-cyan-500 opacity-20 blur-xl pointer-events-none" />
               
               <GlassCard className="!p-0 border border-white/15 overflow-hidden rounded-3xl shadow-2xl bg-slate-950/80 backdrop-blur-2xl" hover={false}>
                 {/* Mock Header */}
-                <div className="px-5 py-4 border-b border-white/5 bg-slate-900/40 flex items-center justify-between">
+                <div className="px-6 py-5 border-b border-white/5 bg-slate-900/40 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 animate-pulse" />
                     <span className="text-xs font-bold text-slate-300">Maali Mentor Live Voice</span>
@@ -224,11 +224,11 @@ export default function LandingPage() {
                 </div>
 
                 {/* Mock Conversation Space */}
-                <div className="p-5 space-y-4 min-h-[260px] flex flex-col justify-end text-xs leading-relaxed">
+                <div className="p-7 space-y-6 min-h-[300px] flex flex-col justify-end text-xs leading-relaxed">
                   
                   {/* Bubble 1: User */}
                   <div className="flex justify-end animate-fade-in-up">
-                    <div className="max-w-[85%] rounded-lg rounded-tr-none px-6 py-3.5 bg-slate-800 text-slate-200 border border-white/5">
+                    <div className="max-w-[85%] rounded-lg rounded-tr-none px-7 py-5 bg-slate-800 text-slate-200 border border-white/5">
                       <p className="font-semibold text-[10px] text-slate-400 mb-0.5">Aap (User)</p>
                       <p className="text-slate-100 text-xs">Yaar, inflation (mehengai) meri cash savings ko kaise nuksan pahunchati hai?</p>
                     </div>
@@ -236,7 +236,7 @@ export default function LandingPage() {
 
                   {/* Bubble 2: AI Coach */}
                   <div className="flex justify-start animate-fade-in-up stagger-1">
-                    <div className="max-w-[90%] rounded-lg rounded-tl-none px-6 py-4.5 bg-emerald-500/10 text-slate-200 border border-emerald-500/20">
+                    <div className="max-w-[90%] rounded-lg rounded-tl-none px-7 py-6 bg-emerald-500/10 text-slate-200 border border-emerald-500/20">
                       <p className="font-semibold text-[10px] text-emerald-400 mb-0.5">Maali Mentor</p>
                       <p className="text-slate-100 text-xs">Aasan lafzon mein: agar saalana inflation 15% hai, to aap ke paas rakha 1,000 rupya agle saal sirf 850 rupay ki cheezein khareed sakega. Purchasing power kam ho jati hai!</p>
                     </div>
@@ -259,7 +259,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Footer Assistant Orb */}
-                <div className="px-5 py-4 border-t border-white/5 bg-slate-900/30 flex items-center justify-between">
+                <div className="px-6 py-5 border-t border-white/5 bg-slate-900/30 flex items-center justify-between">
                   <span className="text-[10px] text-slate-400">Audio playback active</span>
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shadow-md shadow-emerald-500/5 cursor-pointer hover:bg-emerald-500/20 transition-all">
                     <Mic size={16} className="text-emerald-400" />
@@ -274,8 +274,8 @@ export default function LandingPage() {
       </section>
 
       {/* Features Showcase */}
-      <section id="features" className="relative z-10 px-6 py-20 max-w-6xl mx-auto scroll-mt-12">
-        <div className="text-center max-w-lg mx-auto mb-16 space-y-2">
+      <section id="features" className="relative z-10 px-6 py-36 max-w-6xl mx-auto scroll-mt-24">
+        <div className="text-center max-w-lg mx-auto mb-24 space-y-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white">
             Core Modules
           </h2>
@@ -284,11 +284,11 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-14">
           {features.map((feature) => (
              <GlassCard
               key={feature.title}
-              className="group cursor-default p-8 md:p-10 flex flex-col justify-between min-h-[350px] border border-white/5 hover:border-white/10 transition-all duration-300 relative overflow-hidden"
+              className="group cursor-default p-10 md:p-12 flex flex-col justify-between min-h-[420px] border border-white/5 hover:border-white/10 transition-all duration-300 relative overflow-hidden"
             >
               <div className="absolute -top-10 -right-10 w-24 h-24 rounded-3xl blur-2xl pointer-events-none group-hover:scale-125 transition-transform" style={{ background: feature.glow }} />
               <div>
@@ -312,12 +312,12 @@ export default function LandingPage() {
       </section>
 
       {/* Interactive Financial Trivia Widget */}
-      <section id="trivia" className="relative z-10 px-6 py-16 max-w-4xl mx-auto">
-        <GlassCard className="p-10 md:p-12 border border-white/5 bg-slate-900/10 backdrop-blur-xl relative overflow-hidden" hover={false}>
+      <section id="trivia" className="relative z-10 px-6 py-28 max-w-5xl mx-auto">
+        <GlassCard className="p-12 md:p-16 border border-white/5 bg-slate-900/10 backdrop-blur-xl relative overflow-hidden" hover={false}>
           
           <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-3xl blur-3xl pointer-events-none" />
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
             
             <div className="md:col-span-6 space-y-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
@@ -332,7 +332,7 @@ export default function LandingPage() {
             </div>
 
             <div className="md:col-span-6">
-              <div className="p-7 rounded-xl bg-slate-950/70 border border-white/5 space-y-5 text-xs sm:text-sm">
+              <div className="p-9 rounded-xl bg-slate-950/70 border border-white/5 space-y-6 text-xs sm:text-sm">
                 <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">PAKISTAN TRIVIA</span>
                 <p className="font-bold text-slate-200">
                   Q: Agar mulk mein inflation (mehengai) 20% saalana ho, to paise ki value barhane ka sahi tareeqa kya hai?
@@ -342,7 +342,7 @@ export default function LandingPage() {
                   <button
                     disabled={showTriviaResult}
                     onClick={() => handleTriviaAnswer("a")}
-                    className={`w-full text-left py-4 px-6 rounded-lg border text-xs transition-all ${
+                    className={`w-full text-left py-5 px-8 rounded-lg border text-xs transition-all ${
                       triviaOption === "a"
                         ? "border-rose-500 bg-rose-500/10 text-white"
                         : "border-white/5 bg-white/5 hover:bg-white/10"
@@ -353,7 +353,7 @@ export default function LandingPage() {
                   <button
                     disabled={showTriviaResult}
                     onClick={() => handleTriviaAnswer("b")}
-                    className={`w-full text-left py-4 px-6 rounded-lg border text-xs transition-all ${
+                    className={`w-full text-left py-5 px-8 rounded-lg border text-xs transition-all ${
                       triviaOption === "b"
                         ? "border-emerald-500 bg-emerald-500/10 text-white"
                         : "border-white/5 bg-white/5 hover:bg-white/10"
@@ -364,7 +364,7 @@ export default function LandingPage() {
                   <button
                     disabled={showTriviaResult}
                     onClick={() => handleTriviaAnswer("c")}
-                    className={`w-full text-left py-4 px-6 rounded-lg border text-xs transition-all ${
+                    className={`w-full text-left py-5 px-8 rounded-lg border text-xs transition-all ${
                       triviaOption === "c"
                         ? "border-rose-500 bg-rose-500/10 text-white"
                         : "border-white/5 bg-white/5 hover:bg-white/10"
@@ -397,8 +397,8 @@ export default function LandingPage() {
       </section>
 
       {/* Learning Timeline Path */}
-      <section id="how-it-works" className="relative z-10 px-6 py-20 max-w-6xl mx-auto scroll-mt-12">
-        <div className="text-center max-w-lg mx-auto mb-16 space-y-2">
+      <section id="how-it-works" className="relative z-10 px-6 py-36 max-w-6xl mx-auto scroll-mt-24">
+        <div className="text-center max-w-lg mx-auto mb-24 space-y-4">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white">
             How It Works
           </h2>
@@ -407,13 +407,13 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
           {steps.map((step, index) => (
             <div key={step.number} className="relative group">
               {index < 3 && (
                 <div className="hidden lg:block absolute top-12 left-full w-full h-[1px] bg-gradient-to-r from-emerald-500/20 to-transparent z-0 -translate-x-6" />
               )}
-              <GlassCard className="p-8 h-full border border-white/5 bg-slate-900/30 backdrop-blur-md rounded-2xl flex flex-col justify-between group-hover:border-emerald-500/20 transition-all duration-300">
+              <GlassCard className="p-10 h-full border border-white/5 bg-slate-900/30 backdrop-blur-md rounded-2xl flex flex-col justify-between group-hover:border-emerald-500/20 transition-all duration-300">
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
                     <span className="text-3xl font-extrabold text-slate-800 group-hover:text-emerald-500/20 transition-colors duration-300">
@@ -438,13 +438,13 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section id="stats" className="relative z-10 px-6 pb-20 max-w-4xl mx-auto">
+      <section id="stats" className="relative z-10 px-6 pb-36 max-w-5xl mx-auto">
         <GlassCard className="!p-0 overflow-hidden border border-white/5 bg-slate-900/10 backdrop-blur-xl" hover={false}>
           <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/5">
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="flex flex-col items-center py-12 px-10"
+                className="flex flex-col items-center py-20 px-12"
               >
                 <div className="p-3 rounded-xl bg-emerald-500/10 mb-3">
                   <stat.icon size={22} className="text-emerald-400" />
@@ -458,7 +458,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 text-center py-12 border-t border-white/5 max-w-6xl mx-auto px-6 space-y-2">
+      <footer className="relative z-10 text-center py-20 border-t border-white/5 max-w-6xl mx-auto px-6 space-y-4">
         <p className="text-xs sm:text-sm text-slate-400">
           © 2026 Maali Mentor — مالی مینٹر. Built for Pakistan 🇵🇰
         </p>
