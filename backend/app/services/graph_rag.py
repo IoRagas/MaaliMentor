@@ -355,7 +355,7 @@ async def generate_tutor_response(
         system_prompt = get_tutor_system_prompt(context=kb_context)
 
         model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
+            model_name="gemini-3.5-flash",
             system_instruction=system_prompt,
         )
 

@@ -36,8 +36,8 @@ async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> 
         # Configure Gemini
         genai.configure(api_key=settings.GEMINI_API_KEY)
         
-        # We use gemini-2.5-flash as it excels at multimodal audio transcription and has active quota
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        # We use gemini-3.5-flash as it excels at multimodal audio transcription and has active quota
+        model = genai.GenerativeModel("gemini-3.5-flash")
         
         # Normalise mime_type (sometimes browsers send 'audio/webm;codecs=opus')
         clean_mime_type = mime_type.split(";")[0] if mime_type else "audio/wav"
@@ -119,7 +119,7 @@ async def translate_roman_to_urdu_script(roman_urdu_text: str) -> str:
         import google.generativeai as genai
 
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-3.5-flash")
         
         prompt = (
             "Aap ek assistant hain. Is Roman Urdu text ko saaf aur sahi Urdu script (Urdu characters/Nastaliq) mein convert/translate karein. "
