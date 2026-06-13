@@ -133,7 +133,7 @@ export default function LandingPage() {
       <div className="absolute inset-0 bg-grid-pattern opacity-60 pointer-events-none z-0" />
 
       {/* Glassmorphic Navbar */}
-      <header className="relative z-50 mx-auto max-w-6xl px-4 sm:px-6 py-4 flex items-center justify-between border border-white/5 bg-slate-950/40 backdrop-blur-xl rounded-2xl shadow-2xl mt-4 w-[calc(100%-2rem)]">
+      <header className="relative z-50 mx-auto max-w-6xl px-6 sm:px-8 py-5 flex items-center justify-between border border-white/5 bg-slate-950/40 backdrop-blur-xl rounded-2xl shadow-2xl mt-4 w-[calc(100%-2rem)]">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Sparkles size={20} className="text-white" />
@@ -173,7 +173,7 @@ export default function LandingPage() {
           
           {/* Left Column: Title & CTAs */}
           <div className="lg:col-span-7 space-y-6 text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
               <span className="w-2 h-2 rounded-sm bg-emerald-500 animate-pulse" />
               <span className="text-[10px] sm:text-xs text-emerald-400 font-bold uppercase tracking-wider">
                 AI Urdu Financial Literacy Coach
@@ -195,12 +195,12 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-2 w-full sm:w-auto">
-              <Link href="/onboarding" className="glow-btn text-sm sm:text-base px-8 py-4 flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg">
+              <Link href="/onboarding" className="glow-btn text-sm sm:text-base px-10 py-5 flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg">
                 Shuru Karein <ArrowRight size={18} />
               </Link>
               <Link
                 href="/dashboard"
-                className="glow-btn-outline text-sm sm:text-base px-8 py-4 w-full sm:w-auto flex justify-center items-center gap-2 text-white border-white/10 hover:border-emerald-500/30"
+                className="glow-btn-outline text-sm sm:text-base px-10 py-5 w-full sm:w-auto flex justify-center items-center gap-2 text-white border-white/10 hover:border-emerald-500/30"
               >
                 Dashboard Dekhein
               </Link>
@@ -228,7 +228,7 @@ export default function LandingPage() {
                   
                   {/* Bubble 1: User */}
                   <div className="flex justify-end animate-fade-in-up">
-                    <div className="max-w-[80%] rounded-lg rounded-tr-none px-4 py-2.5 bg-slate-800 text-slate-200 border border-white/5">
+                    <div className="max-w-[85%] rounded-lg rounded-tr-none px-6 py-3.5 bg-slate-800 text-slate-200 border border-white/5">
                       <p className="font-semibold text-[10px] text-slate-400 mb-0.5">Aap (User)</p>
                       <p className="text-slate-100 text-xs">Yaar, inflation (mehengai) meri cash savings ko kaise nuksan pahunchati hai?</p>
                     </div>
@@ -236,7 +236,7 @@ export default function LandingPage() {
 
                   {/* Bubble 2: AI Coach */}
                   <div className="flex justify-start animate-fade-in-up stagger-1">
-                    <div className="max-w-[85%] rounded-lg rounded-tl-none px-4 py-3 bg-emerald-500/10 text-slate-200 border border-emerald-500/20">
+                    <div className="max-w-[90%] rounded-lg rounded-tl-none px-6 py-4.5 bg-emerald-500/10 text-slate-200 border border-emerald-500/20">
                       <p className="font-semibold text-[10px] text-emerald-400 mb-0.5">Maali Mentor</p>
                       <p className="text-slate-100 text-xs">Aasan lafzon mein: agar saalana inflation 15% hai, to aap ke paas rakha 1,000 rupya agle saal sirf 850 rupay ki cheezein khareed sakega. Purchasing power kam ho jati hai!</p>
                     </div>
@@ -286,9 +286,9 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feature) => (
-            <GlassCard
+             <GlassCard
               key={feature.title}
-              className="group cursor-default p-6 flex flex-col justify-between min-h-[300px] border border-white/5 hover:border-white/10 transition-all duration-300 relative overflow-hidden"
+              className="group cursor-default p-8 md:p-10 flex flex-col justify-between min-h-[350px] border border-white/5 hover:border-white/10 transition-all duration-300 relative overflow-hidden"
             >
               <div className="absolute -top-10 -right-10 w-24 h-24 rounded-3xl blur-2xl pointer-events-none group-hover:scale-125 transition-transform" style={{ background: feature.glow }} />
               <div>
@@ -313,7 +313,7 @@ export default function LandingPage() {
 
       {/* Interactive Financial Trivia Widget */}
       <section id="trivia" className="relative z-10 px-6 py-16 max-w-4xl mx-auto">
-        <GlassCard className="p-8 border border-white/5 bg-slate-900/10 backdrop-blur-xl relative overflow-hidden" hover={false}>
+        <GlassCard className="p-10 md:p-12 border border-white/5 bg-slate-900/10 backdrop-blur-xl relative overflow-hidden" hover={false}>
           
           <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-3xl blur-3xl pointer-events-none" />
 
@@ -332,7 +332,7 @@ export default function LandingPage() {
             </div>
 
             <div className="md:col-span-6">
-              <div className="p-5 rounded-xl bg-slate-950/70 border border-white/5 space-y-4 text-xs sm:text-sm">
+              <div className="p-7 rounded-xl bg-slate-950/70 border border-white/5 space-y-5 text-xs sm:text-sm">
                 <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">PAKISTAN TRIVIA</span>
                 <p className="font-bold text-slate-200">
                   Q: Agar mulk mein inflation (mehengai) 20% saalana ho, to paise ki value barhane ka sahi tareeqa kya hai?
@@ -342,7 +342,7 @@ export default function LandingPage() {
                   <button
                     disabled={showTriviaResult}
                     onClick={() => handleTriviaAnswer("a")}
-                    className={`w-full text-left p-3 rounded-lg border text-xs transition-all ${
+                    className={`w-full text-left py-4 px-6 rounded-lg border text-xs transition-all ${
                       triviaOption === "a"
                         ? "border-rose-500 bg-rose-500/10 text-white"
                         : "border-white/5 bg-white/5 hover:bg-white/10"
@@ -353,7 +353,7 @@ export default function LandingPage() {
                   <button
                     disabled={showTriviaResult}
                     onClick={() => handleTriviaAnswer("b")}
-                    className={`w-full text-left p-3 rounded-lg border text-xs transition-all ${
+                    className={`w-full text-left py-4 px-6 rounded-lg border text-xs transition-all ${
                       triviaOption === "b"
                         ? "border-emerald-500 bg-emerald-500/10 text-white"
                         : "border-white/5 bg-white/5 hover:bg-white/10"
@@ -364,7 +364,7 @@ export default function LandingPage() {
                   <button
                     disabled={showTriviaResult}
                     onClick={() => handleTriviaAnswer("c")}
-                    className={`w-full text-left p-3 rounded-lg border text-xs transition-all ${
+                    className={`w-full text-left py-4 px-6 rounded-lg border text-xs transition-all ${
                       triviaOption === "c"
                         ? "border-rose-500 bg-rose-500/10 text-white"
                         : "border-white/5 bg-white/5 hover:bg-white/10"
@@ -413,7 +413,7 @@ export default function LandingPage() {
               {index < 3 && (
                 <div className="hidden lg:block absolute top-12 left-full w-full h-[1px] bg-gradient-to-r from-emerald-500/20 to-transparent z-0 -translate-x-6" />
               )}
-              <GlassCard className="p-6 h-full border border-white/5 bg-slate-900/30 backdrop-blur-md rounded-2xl flex flex-col justify-between group-hover:border-emerald-500/20 transition-all duration-300">
+              <GlassCard className="p-8 h-full border border-white/5 bg-slate-900/30 backdrop-blur-md rounded-2xl flex flex-col justify-between group-hover:border-emerald-500/20 transition-all duration-300">
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
                     <span className="text-3xl font-extrabold text-slate-800 group-hover:text-emerald-500/20 transition-colors duration-300">
@@ -444,7 +444,7 @@ export default function LandingPage() {
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="flex flex-col items-center py-8 px-6"
+                className="flex flex-col items-center py-12 px-10"
               >
                 <div className="p-3 rounded-xl bg-emerald-500/10 mb-3">
                   <stat.icon size={22} className="text-emerald-400" />
