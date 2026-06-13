@@ -23,6 +23,7 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     current_xp: int = Field(default=0)
     user_level: str = Field(default="Beginner")  # Beginner | Intermediate | Advanced
+    current_level: int = Field(default=1, ge=1, le=10)
     onboarding_completed: bool = Field(default=False)
 
 
@@ -66,3 +67,16 @@ class SimulatorState(SQLModel, table=True):
     cash_pct: float = Field(default=100.0)  # % of wealth held as cash
     full_state_json: Optional[str] = Field(default="{}")
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class QuizAttempt(SQLModel, table=True):
+    """Tracks user attempts and pass/fail for level-based quizzes."""
+
+    __tablename__ = "quiz_attempts"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
+    level: int = Field(index=True)
+    score: int  # number of correct answers (out of 20)
+    passed: bool = Field(default=False)
+    attempted_at: datetime = Field(default_factory=datetime.utcnow)

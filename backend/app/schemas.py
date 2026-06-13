@@ -198,7 +198,50 @@ class DashboardResponse(BaseModel):
     user_id: int
     username: str
     user_level: str
+    current_level: int
     current_xp: int
     onboarding_completed: bool
     concept_mastery: list[ConceptMasteryItem] = []
     goals: list[GoalResponse] = []
+
+
+# ═══════════════════════════════════════════════════════════════
+# QUIZ / LEVELS
+# ═══════════════════════════════════════════════════════════════
+
+class QuizQuestionResponse(BaseModel):
+    """Question representation sent to the client (excludes correct_option and explanation)."""
+    id: int
+    level: int
+    question: str
+    options: dict[str, str]
+
+
+class QuizAnswer(BaseModel):
+    """User response to a single quiz question."""
+    question_id: int
+    selected_option: str = Field(..., pattern=r"^[a-d]$", description="Must be one of a, b, c, or d")
+
+
+class QuizSubmitRequest(BaseModel):
+    """Payload to submit quiz answers for grading."""
+    user_id: int
+    level: int
+    answers: list[QuizAnswer] = Field(..., min_length=20, max_length=20, description="Answers to all 20 questions")
+
+
+class QuestionExplanation(BaseModel):
+    """Detailed result for a single question after grading."""
+    question_id: int
+    correct_option: str
+    explanation: str
+    is_correct: bool
+
+
+class QuizSubmitResponse(BaseModel):
+    """Grading results returned to the client."""
+    score: int
+    passed: bool
+    current_level: int
+    details: list[QuestionExplanation]
+

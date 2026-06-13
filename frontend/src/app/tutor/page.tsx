@@ -83,6 +83,7 @@ export default function TutorPage() {
           islamic_banking: "Islamic banking aur Shariah-compliant mutual funds kya hain?",
           stock_market: "Stock market kya hota hai aur shares kaise khareedte hain?",
           diversification: "Sarmayakari mein diversification ya risk kam karne ka tarika kya hai?",
+          tax_filer: "Salana tax planning aur active tax filer banne ke kya faide hain?",
         };
         const query = queryMap[concept];
         if (query) {

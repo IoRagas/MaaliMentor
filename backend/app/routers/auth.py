@@ -163,6 +163,7 @@ def get_dashboard(
         user_id=user.id,  # type: ignore[arg-type]
         username=user.username,
         user_level=user.user_level,
+        current_level=user.current_level,
         current_xp=user.current_xp,
         onboarding_completed=user.onboarding_completed,
         concept_mastery=mastery_items,

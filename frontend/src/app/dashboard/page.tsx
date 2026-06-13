@@ -21,6 +21,7 @@ interface DashboardData {
   user_id: number;
   username: string;
   user_level: string;
+  current_level: number;
   current_xp: number;
   concept_mastery: { concept_name: string; mastery_score: number }[];
   goals: any[];
@@ -36,6 +37,7 @@ const conceptMetadata: Record<string, { urdu: string; icon: string }> = {
   islamic_banking: { urdu: "اسلامی بینکاری", icon: "🕌" },
   stock_market: { urdu: "اسٹاک مارکیٹ", icon: "📈" },
   diversification: { urdu: "تنوع (Diversification)", icon: "🎯" },
+  tax_filer: { urdu: "ٹیکس فائلنگ اور پلاننگ", icon: "📄" },
 };
 
 const flowNodes = [
@@ -44,10 +46,11 @@ const flowNodes = [
   { id: "emergency_funds", label: "Emergency Funds", prereqs: ["saving"] },
   { id: "inflation", label: "Inflation & Money", prereqs: ["saving"] },
   { id: "investing", label: "Investing Principles", prereqs: ["inflation"] },
-  { id: "diversification", label: "Diversification", prereqs: ["investing"] },
   { id: "mutual_funds", label: "Mutual Funds", prereqs: ["investing"] },
-  { id: "stock_market", label: "Stock Market", prereqs: ["mutual_funds"] },
   { id: "islamic_banking", label: "Islamic Banking", prereqs: ["mutual_funds"] },
+  { id: "stock_market", label: "Stock Market", prereqs: ["mutual_funds"] },
+  { id: "diversification", label: "Diversification", prereqs: ["investing"] },
+  { id: "tax_filer", label: "Tax Planning & Filer", prereqs: ["stock_market"] },
 ];
 
 const recentActivity = [
@@ -74,6 +77,7 @@ export default function DashboardPage() {
             user_id: parseInt(userId),
             username: localStorage.getItem("username") || "Ahmed",
             user_level: localStorage.getItem("user_level") || "Beginner",
+            current_level: parseInt(localStorage.getItem("current_level") || "1"),
             current_xp: 0,
             concept_mastery: [
               { concept_name: "budgeting", mastery_score: 0 },
@@ -85,6 +89,7 @@ export default function DashboardPage() {
               { concept_name: "islamic_banking", mastery_score: 0 },
               { concept_name: "stock_market", mastery_score: 0 },
               { concept_name: "diversification", mastery_score: 0 },
+              { concept_name: "tax_filer", mastery_score: 0 },
             ],
             goals: [],
           });
@@ -116,13 +121,21 @@ export default function DashboardPage() {
   const financialIQ = Math.round((totalMastery / maxPossibleMastery) * 1000) || 100;
 
   // Level names
-  const levelNames: Record<string, string> = {
-    Beginner: "Bachat Rookie",
-    Intermediate: "Samajhdar Saver",
-    Advanced: "Maali Master",
+  const levelNames: Record<number, string> = {
+    1: "Bachat Rookie",
+    2: "Saving Sentinel",
+    3: "Emergency Expert",
+    4: "Inflation Fighter",
+    5: "Investing Apprentice",
+    6: "Mutual Fund Navigator",
+    7: "Shariah Finance Scholar",
+    8: "Stock Explorer",
+    9: "Risk Master",
+    10: "Maali Master",
   };
 
-  const levelName = levelNames[data.user_level] || "Finance Learner";
+  const currentLevel = data.current_level || 1;
+  const levelName = levelNames[currentLevel] || "Finance Learner";
 
   // Graph state lookup
   const scores = data.concept_mastery.reduce((acc, curr) => {
@@ -250,30 +263,30 @@ export default function DashboardPage() {
               <h3 className="text-sm font-medium text-slate-400 mb-3">Level Progress</h3>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-white font-bold text-lg">
-                  {data.user_level === "Beginner" ? "1" : data.user_level === "Intermediate" ? "2" : "3"}
+                  {currentLevel}
                 </div>
                 <div>
                   <p className="text-lg font-bold text-white">{levelName}</p>
-                  <p className="text-sm text-slate-400">Level {data.user_level}</p>
+                  <p className="text-sm text-slate-400">Level {currentLevel} of 10</p>
                 </div>
               </div>
               <div className="mb-2">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-400">{data.current_xp} / {(data.current_xp + 100)} XP</span>
-                  <span className="text-emerald-400 font-medium">Progress</span>
+                  <span className="text-slate-400">{data.current_xp} XP</span>
+                  <span className="text-emerald-400 font-medium">Rank {currentLevel}</span>
                 </div>
                 <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: `${Math.min((data.current_xp % 100), 100)}%` }} />
+                  <div className="progress-fill" style={{ width: `${(currentLevel / 10) * 100}%` }} />
                 </div>
               </div>
               <p className="text-xs text-slate-500 mt-3">
-                Lesson complete karein aur naye badges hasil karein
+                Agla rank barhane ke liye Level {currentLevel} ka quiz pass karein
               </p>
 
               {/* Mini badges */}
               <div className="flex flex-wrap gap-2 mt-4">
                 <span className="px-2 py-1 rounded-md bg-yellow-500/10 text-yellow-400 text-xs border border-yellow-500/20">
-                  🏆 Onboarded
+                  🏆 Level {currentLevel}
                 </span>
                 <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-xs border border-emerald-500/20">
                   ✅ Active Coach
@@ -285,6 +298,22 @@ export default function DashboardPage() {
             <GlassCard>
               <h3 className="text-sm font-medium text-slate-400 mb-4">Quick Actions</h3>
               <div className="space-y-3">
+                {currentLevel <= 10 && (
+                  <a
+                    href={`/quiz?level=${currentLevel}`}
+                    className="flex items-center gap-3 p-3 rounded-xl border border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/50 transition-all duration-200 group relative overflow-hidden"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-yellow-500/15 flex items-center justify-center group-hover:bg-yellow-500/25 transition-colors">
+                      <Award size={18} className="text-yellow-400 animate-pulse" />
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-sm font-medium text-white">Take Level {currentLevel} Quiz</span>
+                      <p className="text-xs text-slate-400">Level up karne ke liye pass karein</p>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-500 group-hover:text-yellow-400 transition-colors" />
+                  </a>
+                )}
+
                 <a
                   href="/tutor"
                   className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/20 transition-all duration-200 group"
@@ -344,24 +373,22 @@ export default function DashboardPage() {
                 {/* Level 2 */}
                 <div className="flex justify-center w-full">{renderNode("saving")}</div>
 
-                {/* Split Lines Down */}
-                <div className="w-full max-w-md h-8 relative">
-                  <svg className="w-full h-full text-emerald-500/30" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <path d="M 50,0 L 50,30 L 15,30 L 15,100 M 50,30 L 85,30 L 85,100" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4" />
-                  </svg>
-                </div>
+                {/* Line Down */}
+                <div className="w-[2px] h-6 bg-emerald-500/30" />
 
                 {/* Level 3 */}
-                <div className="grid grid-cols-2 gap-4 w-full max-w-xl">
-                  <div className="flex justify-center">{renderNode("emergency_funds")}</div>
-                  <div className="flex justify-center flex-col items-center">
-                    {renderNode("inflation")}
-                    {/* Line Down */}
-                    <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
-                  </div>
-                </div>
+                <div className="flex justify-center w-full">{renderNode("emergency_funds")}</div>
+
+                {/* Line Down */}
+                <div className="w-[2px] h-6 bg-emerald-500/30" />
 
                 {/* Level 4 */}
+                <div className="flex justify-center w-full">{renderNode("inflation")}</div>
+
+                {/* Line Down */}
+                <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+                {/* Level 5 */}
                 <div className="flex justify-center w-full">{renderNode("investing")}</div>
 
                 {/* Split Lines Down */}
@@ -371,21 +398,29 @@ export default function DashboardPage() {
                   </svg>
                 </div>
 
-                {/* Level 5 */}
+                {/* Level 6 & 7 */}
                 <div className="grid grid-cols-2 gap-4 w-full max-w-xl">
-                  <div className="flex justify-center">{renderNode("diversification")}</div>
                   <div className="flex justify-center flex-col items-center">
                     {renderNode("mutual_funds")}
-                    {/* Line Down */}
                     <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
                   </div>
-                </div>
-
-                {/* Level 6 */}
-                <div className="grid grid-cols-2 gap-4 w-full max-w-xl">
-                  <div className="flex justify-center">{renderNode("stock_market")}</div>
                   <div className="flex justify-center">{renderNode("islamic_banking")}</div>
                 </div>
+
+                {/* Level 8 */}
+                <div className="flex justify-center w-full">{renderNode("stock_market")}</div>
+
+                {/* Line Down */}
+                <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+                {/* Level 9 */}
+                <div className="flex justify-center w-full">{renderNode("diversification")}</div>
+
+                {/* Line Down */}
+                <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+                {/* Level 10 */}
+                <div className="flex justify-center w-full">{renderNode("tax_filer")}</div>
               </div>
             </GlassCard>
           </div>

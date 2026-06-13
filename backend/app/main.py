@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import create_db_and_tables
-from app.routers import auth, goals, simulator, tutor
+from app.routers import auth, goals, quiz, simulator, tutor
 
 
 # ── Lifespan (startup / shutdown) ────────────────────────────
@@ -64,6 +64,7 @@ app.include_router(auth.router)
 app.include_router(tutor.router)
 app.include_router(simulator.router)
 app.include_router(goals.router)
+app.include_router(quiz.router)
 
 
 # ── Root endpoint ────────────────────────────────────────────
