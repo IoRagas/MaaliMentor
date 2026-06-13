@@ -65,40 +65,41 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchDashboard = async () => {
+      const userId = localStorage.getItem("user_id") || "1";
       try {
-        const userId = localStorage.getItem("user_id") || "1";
         const res = await fetch(`http://localhost:8000/api/auth/dashboard/${userId}`);
         if (res.ok) {
           const result = await res.json();
           setData(result);
-        } else {
-          // Setup mock data if response fails
-          setData({
-            user_id: parseInt(userId),
-            username: localStorage.getItem("username") || "Ahmed",
-            user_level: localStorage.getItem("user_level") || "Beginner",
-            current_level: parseInt(localStorage.getItem("current_level") || "1"),
-            current_xp: 0,
-            concept_mastery: [
-              { concept_name: "budgeting", mastery_score: 0 },
-              { concept_name: "saving", mastery_score: 0 },
-              { concept_name: "emergency_funds", mastery_score: 0 },
-              { concept_name: "inflation", mastery_score: 0 },
-              { concept_name: "investing", mastery_score: 0 },
-              { concept_name: "mutual_funds", mastery_score: 0 },
-              { concept_name: "islamic_banking", mastery_score: 0 },
-              { concept_name: "stock_market", mastery_score: 0 },
-              { concept_name: "diversification", mastery_score: 0 },
-              { concept_name: "tax_filer", mastery_score: 0 },
-            ],
-            goals: [],
-          });
+          setLoading(false);
+          return;
         }
       } catch (err) {
-        console.error("Dashboard API error:", err);
-      } finally {
-        setLoading(false);
+        console.error("Dashboard API error, loading mock data:", err);
       }
+
+      // Fallback mock data if fetch fails or throws an exception
+      setData({
+        user_id: parseInt(userId),
+        username: localStorage.getItem("username") || "Ahmed",
+        user_level: localStorage.getItem("user_level") || "Beginner",
+        current_level: parseInt(localStorage.getItem("current_level") || "1"),
+        current_xp: 150,
+        concept_mastery: [
+          { concept_name: "budgeting", mastery_score: 75 },
+          { concept_name: "saving", mastery_score: 65 },
+          { concept_name: "emergency_funds", mastery_score: 30 },
+          { concept_name: "inflation", mastery_score: 10 },
+          { concept_name: "investing", mastery_score: 0 },
+          { concept_name: "mutual_funds", mastery_score: 0 },
+          { concept_name: "islamic_banking", mastery_score: 0 },
+          { concept_name: "stock_market", mastery_score: 0 },
+          { concept_name: "diversification", mastery_score: 0 },
+          { concept_name: "tax_filer", mastery_score: 0 },
+        ],
+        goals: [],
+      });
+      setLoading(false);
     };
 
     fetchDashboard();
