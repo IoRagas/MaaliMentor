@@ -8,6 +8,7 @@ Maintains a prerequisite graph of financial concepts and uses it to:
 4. Generate tutor responses (mock or OpenAI).
 """
 
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -150,7 +151,7 @@ def get_tutor_system_prompt(context: str = "") -> str:
         "2. Use respectful 'Aap' pronouns — never 'Tum' or 'Tu'.\n"
         "3. Explain financial concepts using Pakistani everyday analogies "
         "(chai ki dukaan, sabzi mandi, rickshaw driver, school fees).\n"
-        "4. Keep responses concise — 3 to 4 short paragraphs maximum.\n"
+        "4. Structure responses clearly in 3-5 paragraphs. Pehle concept define karein, phir analogy dein, phir practical example dein.\n"
         "5. If mentioning numbers, use Pakistani Rupee (PKR / Rs.).\n"
         "6. Encourage the learner and celebrate small wins.\n"
         "7. If the user asks about a concept they are not ready for, gently redirect "
@@ -161,7 +162,15 @@ def get_tutor_system_prompt(context: str = "") -> str:
         "saving, investing, taxation, or financial/economic education, gently but firmly decline to answer. "
         "For example, if asked about recipes, writing code, sports, history, or gossip, reply in Roman Urdu: "
         "'Maaf kijiyega, main aapka Maali Mentor hoon aur main sirf personal finance, bachat, aur sarmayakari ke sawalaat ke jawaabaat de sakta hoon. Chalein, bachat ke baare mein baat karte hain!'\n"
-        "10. PROVIDE COMPREHENSIVE EXPLANATIONS: Aap ka bunyadi maqsad user ke financial sawalaat ka mukammal, wazeh aur detailed jawab dena hai. Sirf sawal ki tareef (acknowledgement) na karein, balkay us ke peeche chupay financial concepts ko detail mein define karein, aam misal (analogy) dein aur aasan zaban mein samjhein taake user seekh sake.\n"
+        "10. MOST IMPORTANT RULE - PROVIDE DETAILED EXPLANATIONS, NEVER JUST ACKNOWLEDGE:\n"
+        "    - Har sawal ka mukammal jawab dena FARZ hai. Concept ko DEFINE karein, real-world ANALOGY dein, aur Pakistani EXAMPLE dein.\n"
+        "    - KABHI BHI sirf 'Bahut acha sawal hai' ya 'Bilkul sahi kaha aap ne' keh kar mat rukhein. Yeh GALAT response hai.\n"
+        "    - GALAT example: 'Haan, mutual funds mein invest karna acha hai. Aap ne acha sawal pucha!'\n"
+        "    - SAHI example: 'Mutual fund ek aisa tareeqa hai jismein bohut se log thora thora paisa jama karte hain aur ek expert fund manager us poore paisa ko invest karta hai. Soochiye jaise mohalle mein sab log Rs.1000 jama karein aur ek mahir banday ko bola jaye ke yeh Rs.50,000 kaam par lagao...'\n"
+        "    - Agar user ne kisi concept ke baare mein pucha, toh us concept ki DEFINITION + ANALOGY + EXAMPLE dena lazmi hai.\n"
+        "11. DO NOT USE ANY MARKDOWN OR SPECIAL FORMATTING in your response. No asterisks (*), no double asterisks (**), no hash (#), no brackets [], no parenthetical translations like (services). "
+        "Write everything as simple plain text. For emphasis use capital letters instead. For example write 'MEHANGAI' instead of '**mehangai**'. "
+        "Write translations inline naturally like 'khidmaat yani services' instead of 'khidmaat (services)'.\n"
     )
 
     if context:
@@ -208,81 +217,104 @@ def _detect_concepts(text: str) -> list[str]:
 
 _TUTOR_RESPONSE_CACHE: dict[str, str] = {
     "mutual funds kya hota hai": (
-        "Mutual Fund ko aasan lafzon mein samjhein toh yeh ek 'pooled investment' hai. Yani bohot se log (jaise aap aur hum) thore thore paise ek jagah jama karte hain, aur ek professional **Fund Manager** (jo market ka expert hota hai) us poore sarmaye ko mukhtalif shares, gold ya sarkari bonds mein invest karta hai.\n\n"
-        "Iska sab se bara faida yeh hai ke agar aap ke paas sirf Rs. 5,000 hain, tab bhi aap mutual fund ke zariye Pakistan ki top companies mein hissedar ban sakte hain. Aap ka risk spread (diversified) ho jata hai kyunke sara paisa ek company mein nahi laga hota.\n\n"
+        "Mutual Fund ko aasan lafzon mein samjhein toh yeh ek pooled investment hai. Yani bohot se log jaise aap aur hum thore thore paise ek jagah jama karte hain, aur ek professional Fund Manager jo market ka expert hota hai, us poore sarmaye ko mukhtalif shares, gold ya sarkari bonds mein invest karta hai.\n\n"
+        "Iska sab se bara faida yeh hai ke agar aap ke paas sirf Rs. 5,000 hain, tab bhi aap mutual fund ke zariye Pakistan ki top companies mein hissedar ban sakte hain. Aap ka risk spread yani diversified ho jata hai kyunke sara paisa ek company mein nahi laga hota.\n\n"
         "Pakistan mein SECP in companies ko regulate karti hai. Kya aap mutual funds ke rules ke baare mein mazeed jaan-na chahenge? Apne financial advisor se zaroor mashwara karein!"
     ),
     "mutual fund kya hota hai": (
-        "Mutual Fund ko aasan lafzon mein samjhein toh yeh ek 'pooled investment' hai. Yani bohot se log (jaise aap aur hum) thore thore paise ek jagah jama karte hain, aur ek professional **Fund Manager** (jo market ka expert hota hai) us poore sarmaye ko mukhtalif shares, gold ya sarkari bonds mein invest karta hai.\n\n"
-        "Iska sab se bara faida yeh hai ke agar aap ke paas sirf Rs. 5,000 hain, tab bhi aap mutual fund ke zariye Pakistan ki top companies mein hissedar ban sakte hain. Aap ka risk spread (diversified) ho jata hai kyunke sara paisa ek company mein nahi laga hota.\n\n"
+        "Mutual Fund ko aasan lafzon mein samjhein toh yeh ek pooled investment hai. Yani bohot se log jaise aap aur hum thore thore paise ek jagah jama karte hain, aur ek professional Fund Manager jo market ka expert hota hai, us poore sarmaye ko mukhtalif shares, gold ya sarkari bonds mein invest karta hai.\n\n"
+        "Iska sab se bara faida yeh hai ke agar aap ke paas sirf Rs. 5,000 hain, tab bhi aap mutual fund ke zariye Pakistan ki top companies mein hissedar ban sakte hain. Aap ka risk spread yani diversified ho jata hai kyunke sara paisa ek company mein nahi laga hota.\n\n"
         "Pakistan mein SECP in companies ko regulate karti hai. Kya aap mutual funds ke rules ke baare mein mazeed jaan-na chahenge? Apne financial advisor se zaroor mashwara karein!"
     ),
     "mutual funds": (
-        "Mutual Fund ko aasan lafzon mein samjhein toh yeh ek 'pooled investment' hai. Yani bohot se log (jaise aap aur hum) thore thore paise ek jagah jama karte hain, aur ek professional **Fund Manager** (jo market ka expert hota hai) us poore sarmaye ko mukhtalif shares, gold ya sarkari bonds mein invest karta hai.\n\n"
-        "Iska sab se bara faida yeh hai ke agar aap ke paas sirf Rs. 5,000 hain, tab bhi aap mutual fund ke zariye Pakistan ki top companies mein hissedar ban sakte hain. Aap ka risk spread (diversified) ho jata hai kyunke sara paisa ek company mein nahi laga hota.\n\n"
+        "Mutual Fund ko aasan lafzon mein samjhein toh yeh ek pooled investment hai. Yani bohot se log jaise aap aur hum thore thore paise ek jagah jama karte hain, aur ek professional Fund Manager jo market ka expert hota hai, us poore sarmaye ko mukhtalif shares, gold ya sarkari bonds mein invest karta hai.\n\n"
+        "Iska sab se bara faida yeh hai ke agar aap ke paas sirf Rs. 5,000 hain, tab bhi aap mutual fund ke zariye Pakistan ki top companies mein hissedar ban sakte hain. Aap ka risk spread yani diversified ho jata hai kyunke sara paisa ek company mein nahi laga hota.\n\n"
         "Pakistan mein SECP in companies ko regulate karti hai. Kya aap mutual funds ke rules ke baare mein mazeed jaan-na chahenge? Apne financial advisor se zaroor mashwara karein!"
     ),
     "saving aur investing mein kya farq hai": (
-        "Assalam-o-Alaikum! Bahut acha sawal hai aap ka. Dekhein, saving (bachat) aur investing (sarmayakari) mein asal farq yeh hai ke saving mein aap apna paisa mehfooz aur liquid rakhte hain (jaise emergency ke liye bank account mein ya cash rakhna).\n\n"
-        "Lekin investing ka maqsad apne paise ko kaam par lagana hai taake woh barh sake aur inflation (mehngai) ko hara sake, jaise mutual funds, gold ya stocks mein sarmaya lagana.\n\n"
+        "Assalam-o-Alaikum! Bahut acha sawal hai aap ka. Dekhein, saving yani bachat aur investing yani sarmayakari mein asal farq yeh hai ke saving mein aap apna paisa mehfooz aur liquid rakhte hain, jaise emergency ke liye bank account mein ya cash rakhna.\n\n"
+        "Lekin investing ka maqsad apne paise ko kaam par lagana hai taake woh barh sake aur inflation yani mehngai ko hara sake, jaise mutual funds, gold ya stocks mein sarmaya lagana.\n\n"
         "Soochiye aise ke saving ek matka hai jismein aap paani jama karte hain taake achanak pyaas lagne par pee sakein. Aur investing ek khet hai jahan aap beej bote hain taake future mein fasal aae. Lekin khet mein thora risk bhi hota hai! Pehle emergency fund banana behtar hai."
     ),
     "saving vs investing": (
-        "Assalam-o-Alaikum! Bahut acha sawal hai aap ka. Dekhein, saving (bachat) aur investing (sarmayakari) mein asal farq yeh hai ke saving mein aap apna paisa mehfooz aur liquid rakhte hain (jaise emergency ke liye bank account mein ya cash rakhna).\n\n"
-        "Lekin investing ka maqsad apne paise ko kaam par lagana hai taake woh barh sake aur inflation (mehngai) ko hara sake, jaise mutual funds, gold ya stocks mein sarmaya lagana.\n\n"
+        "Assalam-o-Alaikum! Bahut acha sawal hai aap ka. Dekhein, saving yani bachat aur investing yani sarmayakari mein asal farq yeh hai ke saving mein aap apna paisa mehfooz aur liquid rakhte hain, jaise emergency ke liye bank account mein ya cash rakhna.\n\n"
+        "Lekin investing ka maqsad apne paise ko kaam par lagana hai taake woh barh sake aur inflation yani mehngai ko hara sake, jaise mutual funds, gold ya stocks mein sarmaya lagana.\n\n"
         "Soochiye aise ke saving ek matka hai jismein aap paani jama karte hain taake achanak pyaas lagne par pee sakein. Aur investing ek khet hai jahan aap beej bote hain taake future mein fasal aae. Lekin khet mein thora risk bhi hota hai! Pehle emergency fund banana behtar hai."
     ),
     "budgeting kya hai": (
-        "Budgeting ka matlab hai apni monthly amdani (Income) aur kharchon (Expenses) ka mukammal hisab rakhna taake paisa zaya na ho. Kamyab budgeting ke liye **50-30-20 Rule** sab se behtareen hai.\n\n"
-        "Is rule ke mutabiq aap 50% hissa apni bunyadi zarooriyat (rent, bills, rashan) ke liye rakhte hain, 30% apni khwahishat (entertainment, shopping) ke liye, aur 20% savings aur investments ke liye alag karte hain.\n\n"
-        "Jab kharcha income se barh jaye toh use **Budget Deficit** kehte hain. Rozana ke kharche note karne se budget deficit se bacha ja sakta hai. Kya aap is bare mein kuch poochhna chahenge?"
+        "Budgeting ka matlab hai apni monthly amdani yani Income aur kharchon yani Expenses ka mukammal hisab rakhna taake paisa zaya na ho. Kamyab budgeting ke liye 50-30-20 Rule sab se behtareen hai.\n\n"
+        "Is rule ke mutabiq aap 50 percent hissa apni bunyadi zarooriyat jaise rent, bills, rashan ke liye rakhte hain, 30 percent apni khwahishat jaise entertainment aur shopping ke liye, aur 20 percent savings aur investments ke liye alag karte hain.\n\n"
+        "Jab kharcha income se barh jaye toh use Budget Deficit kehte hain. Rozana ke kharche note karne se budget deficit se bacha ja sakta hai. Kya aap is bare mein kuch poochhna chahenge?"
     ),
     "budgeting basics": (
-        "Budgeting ka matlab hai apni monthly amdani (Income) aur kharchon (Expenses) ka mukammal hisab rakhna taake paisa zaya na ho. Kamyab budgeting ke liye **50-30-20 Rule** sab se behtareen hai.\n\n"
-        "Is rule ke mutabiq aap 50% hissa apni bunyadi zarooriyat (rent, bills, rashan) ke liye rakhte hain, 30% apni khwahishat (entertainment, shopping) ke liye, aur 20% savings aur investments ke liye alag karte hain.\n\n"
-        "Jab kharcha income se barh jaye toh use **Budget Deficit** kehte hain. Rozana ke kharche note karne se budget deficit se bacha ja sakta hai. Kya aap is bare mein kuch poochhna chahenge?"
+        "Budgeting ka matlab hai apni monthly amdani yani Income aur kharchon yani Expenses ka mukammal hisab rakhna taake paisa zaya na ho. Kamyab budgeting ke liye 50-30-20 Rule sab se behtareen hai.\n\n"
+        "Is rule ke mutabiq aap 50 percent hissa apni bunyadi zarooriyat jaise rent, bills, rashan ke liye rakhte hain, 30 percent apni khwahishat jaise entertainment aur shopping ke liye, aur 20 percent savings aur investments ke liye alag karte hain.\n\n"
+        "Jab kharcha income se barh jaye toh use Budget Deficit kehte hain. Rozana ke kharche note karne se budget deficit se bacha ja sakta hai. Kya aap is bare mein kuch poochhna chahenge?"
     ),
     "inflation kya hai": (
-        "Inflation (afrao-te-zar) ko aam zaban mein **Mehngai** kehte hain. Yeh waqt ke sath cheezon ke daam barhne aur aap ke paise ki quwwat-e-khareed (purchasing power) girne ka naam hai.\n\n"
-        "Misal ke tor par, agar aaj Rs. 1,00,000 bank mein pare hon aur inflation 15% ho, toh agle saal nominal value Rs. 1,00,000 hi rahega par uski real value/purchasing power gir kar Rs. 85,000 ke barabar ho jayegi.\n\n"
+        "Inflation yani afrao-te-zar ko aam zaban mein MEHNGAI kehte hain. Yeh waqt ke sath cheezon ke daam barhne aur aap ke paise ki quwwat-e-khareed yani purchasing power girne ka naam hai.\n\n"
+        "Misal ke tor par, agar aaj Rs. 1,00,000 bank mein pare hon aur inflation 15 percent ho, toh agle saal nominal value Rs. 1,00,000 hi rahega par uski real value gir kar Rs. 85,000 ke barabar ho jayegi.\n\n"
         "SBP policy rate barha kar inflation control karta hai. Is se bachne ke liye humein apne paise ko aisi assets mein lagana chahiye jo inflation se zyada return dein, jaise Stocks ya Gold."
     ),
     "inflation kya hoti hai": (
-        "Inflation (afrao-te-zar) ko aam zaban mein **Mehngai** kehte hain. Yeh waqt ke sath cheezon ke daam barhne aur aap ke paise ki quwwat-e-khareed (purchasing power) girne ka naam hai.\n\n"
-        "Misal ke tor par, agar aaj Rs. 1,00,000 bank mein pare hon aur inflation 15% ho, toh agle saal nominal value Rs. 1,00,000 hi rahega par uski real value/purchasing power gir kar Rs. 85,000 ke barabar ho jayegi.\n\n"
+        "Inflation yani afrao-te-zar ko aam zaban mein MEHNGAI kehte hain. Yeh waqt ke sath cheezon ke daam barhne aur aap ke paise ki quwwat-e-khareed yani purchasing power girne ka naam hai.\n\n"
+        "Misal ke tor par, agar aaj Rs. 1,00,000 bank mein pare hon aur inflation 15 percent ho, toh agle saal nominal value Rs. 1,00,000 hi rahega par uski real value gir kar Rs. 85,000 ke barabar ho jayegi.\n\n"
         "SBP policy rate barha kar inflation control karta hai. Is se bachne ke liye humein apne paise ko aisi assets mein lagana chahiye jo inflation se zyada return dein, jaise Stocks ya Gold."
     ),
     "emergency fund kya hota hai": (
-        "Emergency Fund (hangami fund) ghair-mutawaqqe haadsaat ya mushkil waqt (jaise achanak beemari, naukri chale jana ya repair kharche) ke liye rakha gaya paisa hota hai.\n\n"
-        "Har shakhs ke paas kam az kam **3 se 6 mahine ke essential kharchon** ke barabar emergency fund hona chahiye, jo dynamic liquid bank account ya money market funds mein ho taake zaroorat par foran nikala ja sake.\n\n"
+        "Emergency Fund yani hangami fund ghair-mutawaqqe haadsaat ya mushkil waqt jaise achanak beemari, naukri chale jana ya repair kharche ke liye rakha gaya paisa hota hai.\n\n"
+        "Har shakhs ke paas kam az kam 3 se 6 mahine ke essential kharchon ke barabar emergency fund hona chahiye, jo liquid bank account ya money market funds mein ho taake zaroorat par foran nikala ja sake.\n\n"
         "Emergency fund ko gold ya real estate mein nahi rakhna chahiye kyunke unhein foran cash mein tabdeel karna mushkil hota hai. Apne normal savings se ise separate rakhna behtar hai."
     ),
     "emergency funds": (
-        "Emergency Fund (hangami fund) ghair-mutawaqqe haadsaat ya mushkil waqt (jaise achanak beemari, naukri chale jana ya repair kharche) ke liye rakha gaya paisa hota hai.\n\n"
-        "Har shakhs ke paas kam az kam **3 se 6 mahine ke essential kharchon** ke barabar emergency fund hona chahiye, jo dynamic liquid bank account ya money market funds mein ho taake zaroorat par foran nikala ja sake.\n\n"
+        "Emergency Fund yani hangami fund ghair-mutawaqqe haadsaat ya mushkil waqt jaise achanak beemari, naukri chale jana ya repair kharche ke liye rakha gaya paisa hota hai.\n\n"
+        "Har shakhs ke paas kam az kam 3 se 6 mahine ke essential kharchon ke barabar emergency fund hona chahiye, jo liquid bank account ya money market funds mein ho taake zaroorat par foran nikala ja sake.\n\n"
         "Emergency fund ko gold ya real estate mein nahi rakhna chahiye kyunke unhein foran cash mein tabdeel karna mushkil hota hai. Apne normal savings se ise separate rakhna behtar hai."
     ),
     "islamic banking kya hai": (
-        "Islami Banking sood (Riba) se paak banking system hai jo Shariah ke principles par chalta hai. Conventional bank guaranteed fixed interest dete hain jo sood hai, jabke Islamic banks **Profit and Loss Sharing (PLS)** par kaam karte hain.\n\n"
-        "Is mein **Mudarabah** (ek partner paisa deta hai aur dusra mehnat karta hai) aur **Musharakah** (sajhedari / joint venture) ke contracts hote hain. Bank products ko Shariah Board aur scholars supervise karte hain.\n\n"
-        "Gari ke liye bank direct loan nahi deta balke cost-plus sale (**Murabahah**) ya renting (**Ijarah**) ke zariye asset farahim karta hai. Yeh halal finance ki behtareen misal hai."
+        "Islami Banking sood yani Riba se paak banking system hai jo Shariah ke principles par chalta hai. Conventional bank guaranteed fixed interest dete hain jo sood hai, jabke Islamic banks Profit and Loss Sharing yani PLS par kaam karte hain.\n\n"
+        "Is mein Mudarabah yani ek partner paisa deta hai aur dusra mehnat karta hai, aur Musharakah yani sajhedari ke contracts hote hain. Bank products ko Shariah Board aur scholars supervise karte hain.\n\n"
+        "Gari ke liye bank direct loan nahi deta balke cost-plus sale yani Murabahah ya renting yani Ijarah ke zariye asset farahim karta hai. Yeh halal finance ki behtareen misal hai."
     ),
     "islamic banking": (
-        "Islami Banking sood (Riba) se paak banking system hai jo Shariah ke principles par chalta hai. Conventional bank guaranteed fixed interest dete hain jo sood hai, jabke Islamic banks **Profit and Loss Sharing (PLS)** par kaam karte hain.\n\n"
-        "Is mein **Mudarabah** (ek partner paisa deta hai aur dusra mehnat karta hai) aur **Musharakah** (sajhedari / joint venture) ke contracts hote hain. Bank products ko Shariah Board aur scholars supervise karte hain.\n\n"
-        "Gari ke liye bank direct loan nahi deta balke cost-plus sale (**Murabahah**) ya renting (**Ijarah**) ke zariye asset farahim karta hai. Yeh halal finance ki behtareen misal hai."
+        "Islami Banking sood yani Riba se paak banking system hai jo Shariah ke principles par chalta hai. Conventional bank guaranteed fixed interest dete hain jo sood hai, jabke Islamic banks Profit and Loss Sharing yani PLS par kaam karte hain.\n\n"
+        "Is mein Mudarabah yani ek partner paisa deta hai aur dusra mehnat karta hai, aur Musharakah yani sajhedari ke contracts hote hain. Bank products ko Shariah Board aur scholars supervise karte hain.\n\n"
+        "Gari ke liye bank direct loan nahi deta balke cost-plus sale yani Murabahah ya renting yani Ijarah ke zariye asset farahim karta hai. Yeh halal finance ki behtareen misal hai."
     ),
     "stock market kya hai": (
-        "Stock Market (Hissas Bazaar) listed companies ke shares ki khareed-o-ferokht ka platform hai, jaise Pakistan Stock Exchange (PSX). Share khareedne se aap company ke fractional owner (hissadar) ban jate hain.\n\n"
-        "Shareholders do tarah se kamate hain: **Dividend** (company ke munafay ka cash hissa) aur **Capital Gain** (share price barhne par sasta khareed kar mehnga bechne par hota hai).\n\n"
+        "Stock Market yani Hissas Bazaar listed companies ke shares ki khareed-o-ferokht ka platform hai, jaise Pakistan Stock Exchange yani PSX. Share khareedne se aap company ke fractional owner yani hissadar ban jate hain.\n\n"
+        "Shareholders do tarah se kamate hain. Pehla tareeqa Dividend hai yani company ke munafay ka cash hissa, aur dusra Capital Gain hai yani share price barhne par sasta khareed kar mehnga bechne par hota hai.\n\n"
         "Stock market mein invest karne ke liye licensed broker ke paas trading aur CDC account hona zaroori hai. Speculation se bach kar fundamental analysis ke sath blue chip stocks mein invest karna safe rehta hai."
     ),
     "stock market": (
-        "Stock Market (Hissas Bazaar) listed companies ke shares ki khareed-o-ferokht ka platform hai, jaise Pakistan Stock Exchange (PSX). Share khareedne se aap company ke fractional owner (hissadar) ban jate hain.\n\n"
-        "Shareholders do tarah se kamate hain: **Dividend** (company ke munafay ka cash hissa) aur **Capital Gain** (share price barhne par sasta khareed kar mehnga bechne par hota hai).\n\n"
+        "Stock Market yani Hissas Bazaar listed companies ke shares ki khareed-o-ferokht ka platform hai, jaise Pakistan Stock Exchange yani PSX. Share khareedne se aap company ke fractional owner yani hissadar ban jate hain.\n\n"
+        "Shareholders do tarah se kamate hain. Pehla tareeqa Dividend hai yani company ke munafay ka cash hissa, aur dusra Capital Gain hai yani share price barhne par sasta khareed kar mehnga bechne par hota hai.\n\n"
         "Stock market mein invest karne ke liye licensed broker ke paas trading aur CDC account hona zaroori hai. Speculation se bach kar fundamental analysis ke sath blue chip stocks mein invest karna safe rehta hai."
     ),
 }
+
+# ═══════════════════════════════════════════════════════════════
+# MARKDOWN / SYMBOL STRIPPING
+# ═══════════════════════════════════════════════════════════════
+
+def _strip_markdown(text: str) -> str:
+    """Remove markdown formatting symbols that TTS engines read aloud."""
+    # Remove bold/italic markers: **text** → text, *text* → text
+    text = re.sub(r'\*{1,3}', '', text)
+    # Remove heading markers: ### text → text
+    text = re.sub(r'^#{1,6}\s*', '', text, flags=re.MULTILINE)
+    # Remove bracket links: [text](url) → text
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    # Remove standalone brackets: [text] → text
+    text = re.sub(r'\[([^\]]+)\]', r'\1', text)
+    # Remove bullet markers at line start: - text → text
+    text = re.sub(r'^\s*[-•]\s+', '', text, flags=re.MULTILINE)
+    # Remove backticks: `code` → code
+    text = re.sub(r'`', '', text)
+    # Collapse multiple spaces
+    text = re.sub(r'  +', ' ', text)
+    return text.strip()
+
 
 # ═══════════════════════════════════════════════════════════════
 # TUTOR RESPONSE GENERATION
@@ -315,9 +347,10 @@ async def generate_tutor_response(
             break
 
     if cached_response:
-        all_detected = list(set(detected + _detect_concepts(cached_response)))
+        clean_response = _strip_markdown(cached_response)
+        all_detected = list(set(detected + _detect_concepts(clean_response)))
         return {
-            "response": cached_response,
+            "response": clean_response,
             "detected_concepts": all_detected,
             "next_lesson": next_lesson,
         }
@@ -355,19 +388,19 @@ async def generate_tutor_response(
         system_prompt = get_tutor_system_prompt(context=kb_context)
 
         model = genai.GenerativeModel(
-            model_name="gemini-3.5-flash",
+            model_name=settings.GEMINI_MODEL_NAME,
             system_instruction=system_prompt,
         )
 
         response = model.generate_content(
             user_message,
             generation_config=genai.types.GenerationConfig(
-                max_output_tokens=600,
+                max_output_tokens=400,
                 temperature=0.7,
             )
         )
 
-        response_text = response.text or ""
+        response_text = _strip_markdown(response.text or "")
         # Re-detect concepts from the LLM response to augment user-side detection
         all_detected = list(set(detected + _detect_concepts(response_text)))
 

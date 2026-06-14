@@ -105,8 +105,10 @@ async def voice_tutor(
     Voice-based tutoring pipeline:
     1. Transcribe uploaded audio to text (STT)
     2. Generate tutor response via Graph-RAG + LLM
-    3. Synthesise response audio (TTS)
+    3. Translate + synthesise audio CONCURRENTLY for speed
     """
+    import asyncio
+
     # Check file size safeguard (max 10MB)
     MAX_AUDIO_SIZE = 10 * 1024 * 1024  # 10 MB
     content_length = audio.headers.get("content-length")
@@ -128,9 +130,13 @@ async def voice_tutor(
     # 2 — Generate response
     result = await generate_tutor_response(transcript, user_id, session)
 
-    # 3 — Translate Roman Urdu to Urdu script and synthesise speech
-    urdu_script_text = await translate_roman_to_urdu_script(result["response"])
-    audio_url = await synthesize_speech(urdu_script_text)
+    # 3 — Translate and synthesise CONCURRENTLY (saves ~1-2s)
+    async def _translate_and_speak(text: str):
+        urdu_text = await translate_roman_to_urdu_script(text)
+        audio_url = await synthesize_speech(urdu_text)
+        return audio_url
+
+    audio_url = await _translate_and_speak(result["response"])
 
     return TutorVoiceResponse(
         user_transcript=transcript,
@@ -149,10 +155,18 @@ async def text_chat(
     """Text-based chat with the Maali Mentor tutor."""
     result = await generate_tutor_response(request.message, request.user_id, session)
 
+    # Generate audio in background for text chat too
+    try:
+        urdu_text = await translate_roman_to_urdu_script(result["response"])
+        audio_url = await synthesize_speech(urdu_text)
+    except Exception:
+        audio_url = None
+
     return TutorTextResponse(
         tutor_response=result["response"],
         detected_concepts=result["detected_concepts"],
         next_recommended_lesson=result["next_lesson"],
+        audio_response_url=audio_url,
     )
 
 

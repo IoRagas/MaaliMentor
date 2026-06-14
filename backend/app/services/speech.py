@@ -4,8 +4,12 @@ and gTTS (Google Text-to-Speech) for Urdu Speech Synthesis.
 
 When USE_MOCK_SPEECH is True, returns hardcoded responses so the app
 runs without external API keys during development.
+
+Performance: Gemini client is configured once at module level to avoid
+repeated API key configuration overhead on every call.
 """
 
+import asyncio
 import os
 import uuid
 from pathlib import Path
@@ -14,6 +18,21 @@ from app.config import settings
 # Directory where generated audio files are stored
 AUDIO_DIR = Path(__file__).resolve().parent.parent.parent / "static" / "audio"
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+
+# ── Configure Gemini ONCE at module level ────────────────────
+# Avoids re-importing and re-configuring on every request
+_genai = None
+_gemini_model = None
+
+def _get_gemini_model():
+    """Lazy-initialize and cache the Gemini model singleton."""
+    global _genai, _gemini_model
+    if _gemini_model is None:
+        import google.generativeai as genai
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        _genai = genai
+        _gemini_model = genai.GenerativeModel(settings.GEMINI_MODEL_NAME)
+    return _gemini_model, _genai
 
 
 async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> str:
@@ -31,19 +50,14 @@ async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> 
         return "Mujhe batayein ke saving aur investing mein kya farq hai?"
 
     try:
-        import google.generativeai as genai
-
-        # Configure Gemini
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        
-        # We use gemini-3.5-flash as it excels at multimodal audio transcription and has active quota
-        model = genai.GenerativeModel("gemini-3.5-flash")
+        model, genai = _get_gemini_model()
         
         # Normalise mime_type (sometimes browsers send 'audio/webm;codecs=opus')
         clean_mime_type = mime_type.split(";")[0] if mime_type else "audio/wav"
 
-        # Call Gemini passing the raw audio data directly with speed optimizations
-        response = model.generate_content(
+        # Run the blocking Gemini call in a thread to not block the event loop
+        response = await asyncio.to_thread(
+            model.generate_content,
             [
                 "Aap ek financial assistant hain. Transcribe this Urdu speech audio file to text. "
                 "Respond with ONLY the exact transcription in Urdu script or Roman Urdu depending on how it was spoken. "
@@ -99,7 +113,9 @@ async def synthesize_speech(text: str) -> str:
         tts_lang = "ur" if is_urdu_script else "en"
 
         tts = gTTS(text=text, lang=tts_lang, slow=False)
-        tts.save(str(file_path))
+
+        # Run blocking file I/O + network call in a thread to not block the event loop
+        await asyncio.to_thread(tts.save, str(file_path))
 
         return f"/static/audio/{filename}"
 
@@ -116,10 +132,7 @@ async def translate_roman_to_urdu_script(roman_urdu_text: str) -> str:
         return "بچت اور سرمایہ کاری میں بہت فرق ہے۔"
 
     try:
-        import google.generativeai as genai
-
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel("gemini-3.5-flash")
+        model, genai = _get_gemini_model()
         
         prompt = (
             "Aap ek assistant hain. Is Roman Urdu text ko saaf aur sahi Urdu script (Urdu characters/Nastaliq) mein convert/translate karein. "
@@ -127,10 +140,12 @@ async def translate_roman_to_urdu_script(roman_urdu_text: str) -> str:
             f"Text: {roman_urdu_text}"
         )
         
-        response = model.generate_content(
+        # Run the blocking Gemini call in a thread
+        response = await asyncio.to_thread(
+            model.generate_content,
             prompt,
             generation_config=genai.types.GenerationConfig(
-                max_output_tokens=600,
+                max_output_tokens=400,
                 temperature=0.0
             )
         )

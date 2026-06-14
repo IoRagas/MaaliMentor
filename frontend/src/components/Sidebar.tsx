@@ -11,11 +11,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Award,
 } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", urdu: "ڈیش بورڈ", icon: LayoutDashboard },
   { href: "/tutor", label: "Tutor", urdu: "ٹیوٹر", icon: MessageCircle },
+  { href: "/quiz", label: "Quiz Graph", urdu: "کوئز گراف", icon: Award },
   { href: "/simulator", label: "Simulator", urdu: "سمیولیٹر", icon: Gamepad2 },
   { href: "/goals", label: "Goals", urdu: "مقاصد", icon: Target },
 ];

@@ -56,6 +56,16 @@ ASSESSMENT_QUESTIONS = [
             "d": "30%+ — mutual funds, stocks, ya real estate",
         },
     },
+    {
+        "id": 4,
+        "question": "If you invest Rs. 100,000 with a 10% annual return compounded annually, how much will you have after 2 years?",
+        "options": {
+            "a": "Rs. 110,000",
+            "b": "Rs. 120,000",
+            "c": "Rs. 121,000",
+            "d": "Rs. 130,000",
+        },
+    },
 ]
 
 
@@ -66,7 +76,9 @@ def _evaluate_level(answers: list) -> tuple[str, list[str]]:
     Returns:
         (level_name, recommended_topics)
     """
-    total = sum(_OPTION_SCORES.get(a.selected_option, 0) for a in answers)
+    # Evaluate level based on the first 3 self-assessment questions
+    eval_answers = [a for a in answers if a.question_id in (1, 2, 3)]
+    total = sum(_OPTION_SCORES.get(a.selected_option, 0) for a in eval_answers)
 
     if total <= 3:
         level = "Beginner"
@@ -97,11 +109,19 @@ def onboard_user(
     # Evaluate level from answers
     level, recommended = _evaluate_level(request.answers)
 
+    # If the user answered the hard question (ID: 4) correctly ('c'), they start at Level 3
+    start_level = 1
+    for ans in request.answers:
+        if ans.question_id == 4 and ans.selected_option.lower().strip() == "c":
+            start_level = 3
+            break
+
     # Create user
     user = User(
         username=request.username,
         email=request.email,
         user_level=level,
+        current_level=start_level,
         onboarding_completed=True,
     )
     session.add(user)
@@ -122,6 +142,7 @@ def onboard_user(
         user_id=user.id,  # type: ignore[arg-type]
         assigned_level=level,
         recommended_topics=recommended,
+        current_level=start_level,
     )
 
 

@@ -53,6 +53,17 @@ const steps: StepData[] = [
       { label: "30%+ — mutual funds, stocks, ya real estate", labelUrdu: "30%+ — میوچل فنڈز، اسٹاکس، یا رئیل اسٹیٹ", value: "d" },
     ],
   },
+  {
+    id: 4,
+    question: "If you invest Rs. 100,000 with a 10% annual return compounded annually, how much will you have after 2 years?",
+    questionUrdu: "اگر آپ سالانہ 10٪ کمپاؤنڈ پرافٹ پر 100,000 روپے انویسٹ کریں، تو 2 سال بعد آپ کے پاس کتنی رقم ہوگی؟",
+    options: [
+      { label: "Rs. 110,000", labelUrdu: "110,000 روپے", value: "a" },
+      { label: "Rs. 120,000", labelUrdu: "120,000 روپے", value: "b" },
+      { label: "Rs. 121,000", labelUrdu: "121,000 روپے", value: "c" },
+      { label: "Rs. 130,000", labelUrdu: "130,000 روپے", value: "d" },
+    ],
+  },
 ];
 
 export default function OnboardingPage() {
@@ -84,6 +95,7 @@ export default function OnboardingPage() {
             { question_id: 1, selected_option: answers[1] },
             { question_id: 2, selected_option: answers[2] },
             { question_id: 3, selected_option: answers[3] },
+            { question_id: 4, selected_option: answers[4] },
           ],
         };
 
@@ -100,13 +112,16 @@ export default function OnboardingPage() {
           localStorage.setItem("user_id", data.user_id.toString());
           localStorage.setItem("username", username.trim());
           localStorage.setItem("user_level", data.assigned_level);
+          localStorage.setItem("current_level", data.current_level.toString());
           router.push("/dashboard");
         } else {
           console.error("Onboarding failed");
           // Fallback redirect
+          const hasHardCorrect = answers[4] === "c";
           localStorage.setItem("user_id", "1");
           localStorage.setItem("username", username.trim() || "Sarmayakar");
-          localStorage.setItem("user_level", "Beginner");
+          localStorage.setItem("user_level", hasHardCorrect ? "Intermediate" : "Beginner");
+          localStorage.setItem("current_level", hasHardCorrect ? "3" : "1");
           router.push("/dashboard");
         }
       } catch (err) {

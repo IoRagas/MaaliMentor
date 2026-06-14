@@ -75,39 +75,73 @@ maali-mentor/
 
 ---
 
-## 🚀 How to Run Locally
+## 🚀 Setup and Installation
 
-### 1. Start the FastAPI Backend
-1. Open your terminal and navigate to the backend folder:
+### Prerequisites
+Before setting up the project, make sure you have the following installed on your machine:
+* **Python** (version 3.10 or higher)
+* **Node.js** (version 18 or higher, with npm)
+* **Git**
+
+---
+
+### Step-by-Step Setup
+
+#### 1. Clone the Repository
+Clone the project repository from GitHub and navigate into the root directory:
+```bash
+git clone <repository_url>
+cd MaaliMentor
+```
+
+#### 2. Configure and Run the FastAPI Backend
+1. Navigate to the backend directory:
    ```bash
    cd backend
    ```
 2. Create and activate a virtual environment:
    ```bash
+   # Create venv
    python -m venv venv
-   # On Windows:
+
+   # Activate on Windows:
    venv\Scripts\activate
-   # On macOS/Linux:
+
+   # Activate on macOS/Linux:
    source venv/bin/activate
    ```
-3. Install required Python packages:
+3. Install the required Python dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-4. Configure your `.env` file inside `backend/.env`:
+4. Create a `.env` configuration file:
+   Copy the `.env.example` file to `.env` or create it manually:
+   ```bash
+   # On Windows (cmd):
+   copy .env.example .env
+   # On PowerShell:
+   Copy-Item .env.example .env
+   # On macOS/Linux:
+   cp .env.example .env
+   ```
+5. Open the `.env` file and insert your Gemini API Key:
    ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_API_KEY=your_actual_gemini_api_key_here
+   GEMINI_MODEL_NAME=gemini-3.1-flash-lite
    USE_MOCK_SPEECH=false
    USE_MOCK_LLM=false
    ```
-5. Run the FastAPI development server:
+6. Run the FastAPI development server:
    ```bash
    uvicorn app.main:app --reload
    ```
-   *The backend will be running at `http://localhost:8000`.*
+   *Note: On first startup, the application will automatically create a local SQLite database (`maali_mentor.db`) and initialize the tables. No manual database setup is required.*
+   *The backend API will run at `http://localhost:8000`.*
 
-### 2. Start the Next.js Frontend
-1. Open a new terminal and navigate to the frontend folder:
+---
+
+#### 3. Configure and Run the Next.js Frontend
+1. Open a new terminal window and navigate to the frontend directory:
    ```bash
    cd frontend
    ```
@@ -115,11 +149,12 @@ maali-mentor/
    ```bash
    npm install
    ```
-3. Run the development environment:
+3. Start the Next.js development server:
    ```bash
    npm run dev
    ```
-4. Open your browser and go to `http://localhost:3000`.
+4. Access the application:
+   Open your browser and navigate to `http://localhost:3000`.
 
 ---
 

@@ -8,6 +8,10 @@ import {
   TrendingUp,
   Shield,
   PiggyBank,
+  Volume2,
+  Pause,
+  Play,
+  Square,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import GlassCard from "@/components/GlassCard";
@@ -44,11 +48,70 @@ export default function TutorPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [voiceState, setVoiceState] = useState<"idle" | "recording" | "processing">("idle");
   const [showTopics, setShowTopics] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Helper to play audio with controls wired up
+  const playAudioUrl = (url: string) => {
+    // Stop any currently playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+    }
+
+    const audio = new Audio();
+    audio.preload = "auto";
+    audio.playbackRate = 1.2;
+    audioRef.current = audio;
+
+    audio.addEventListener("canplaythrough", () => {
+      audio.play().catch(e => console.error("Audio playback error:", e));
+      setIsPlaying(true);
+      setIsPaused(false);
+    }, { once: true });
+
+    audio.addEventListener("ended", () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+      audioRef.current = null;
+    }, { once: true });
+
+    audio.addEventListener("error", (e) => {
+      console.error("Audio load error:", e);
+      setIsPlaying(false);
+      setIsPaused(false);
+      audioRef.current = null;
+    }, { once: true });
+
+    audio.src = url;
+    audio.load();
+  };
+
+  const togglePauseResume = () => {
+    if (!audioRef.current) return;
+    if (audioRef.current.paused) {
+      audioRef.current.play();
+      setIsPaused(false);
+    } else {
+      audioRef.current.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const stopAudio = () => {
+    if (!audioRef.current) return;
+    audioRef.current.pause();
+    audioRef.current.src = "";
+    audioRef.current = null;
+    setIsPlaying(false);
+    setIsPaused(false);
+  };
 
   // Auto-resize textarea height as text flows
   useEffect(() => {
@@ -102,6 +165,8 @@ export default function TutorPage() {
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
+    // Stop any playing audio when user sends a new message
+    stopAudio();
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -139,6 +204,11 @@ export default function TutorPage() {
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         };
         setMessages((prev) => [...prev, tutorMsg]);
+
+        // Play audio if available
+        if (data.audio_response_url) {
+          playAudioUrl(`http://localhost:8000${data.audio_response_url}`);
+        }
       } else {
         throw new Error("API error");
       }
@@ -159,7 +229,7 @@ export default function TutorPage() {
   const handleVoice = async () => {
     if (voiceState === "idle") {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, sampleRate: 16000 } });
         
         // Detect browser supported mime type
         let mimeType = "audio/webm";
@@ -182,7 +252,7 @@ export default function TutorPage() {
 
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType,
-          audioBitsPerSecond: 32000 // Compress audio to 32kbps to reduce upload latency and network transit time
+          audioBitsPerSecond: 16000 // Compress audio to 16kbps mono — sufficient for speech, halves upload size
         });
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
@@ -232,9 +302,7 @@ export default function TutorPage() {
                 setMessages((prev) => [...prev, voiceUserMsg, voiceTutorMsg]);
 
                 if (data.audio_response_url) {
-                  const audio = new Audio(`http://localhost:8000${data.audio_response_url}`);
-                  audio.playbackRate = 1.2; // Set playback rate to 1.2x for faster, more natural Urdu speaking speed
-                  audio.play().catch(e => console.error("Audio playback error:", e));
+                  playAudioUrl(`http://localhost:8000${data.audio_response_url}`);
                 }
               }
             }
@@ -332,6 +400,30 @@ export default function TutorPage() {
 
             <div ref={bottomRef} />
           </div>
+
+          {/* Audio playback controls — floating bar */}
+          {isPlaying && (
+            <div className="sticky bottom-36 md:bottom-20 z-40 px-4 md:px-6 flex justify-center animate-fade-in">
+              <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-900/70 border border-emerald-500/30 backdrop-blur-xl shadow-lg shadow-emerald-500/10">
+                <Volume2 size={18} className="text-emerald-400 animate-pulse" />
+                <span className="text-sm text-emerald-200 font-medium">AI Awaaz chal rahi hai...</span>
+                <button
+                  onClick={togglePauseResume}
+                  className="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all duration-200"
+                  title={isPaused ? "Resume" : "Pause"}
+                >
+                  {isPaused ? <Play size={16} /> : <Pause size={16} />}
+                </button>
+                <button
+                  onClick={stopAudio}
+                  className="w-9 h-9 rounded-lg bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center text-red-300 hover:text-red-200 transition-all duration-200"
+                  title="Stop"
+                >
+                  <Square size={14} />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Input area */}
           <div className="sticky bottom-20 md:bottom-0 px-4 md:px-6 py-4 border-t border-white/5 bg-slate-900/80 backdrop-blur-xl">

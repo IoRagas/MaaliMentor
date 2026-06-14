@@ -33,9 +33,9 @@ class OnboardingRequest(BaseModel):
     email: Optional[str] = Field(default=None, max_length=100, description="Optional valid email address")
     answers: list[OnboardingAnswer] = Field(
         ...,
-        min_length=3,
-        max_length=3,
-        description="Answers to the 3 assessment questions",
+        min_length=4,
+        max_length=4,
+        description="Answers to the 4 assessment questions",
     )
 
 
@@ -44,6 +44,7 @@ class OnboardingResponse(BaseModel):
     user_id: int
     assigned_level: str
     recommended_topics: list[str]
+    current_level: int
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -70,6 +71,7 @@ class TutorTextResponse(BaseModel):
     tutor_response: str
     detected_concepts: list[str] = []
     next_recommended_lesson: Optional[str] = None
+    audio_response_url: Optional[str] = None
 
 
 class DictionaryResponse(BaseModel):
@@ -220,7 +222,7 @@ class QuizQuestionResponse(BaseModel):
 class QuizAnswer(BaseModel):
     """User response to a single quiz question."""
     question_id: int
-    selected_option: str = Field(..., pattern=r"^[a-d]$", description="Must be one of a, b, c, or d")
+    selected_option: str = Field(..., pattern=r"^[a-d]?$", description="Must be one of a, b, c, d, or empty if skipped")
 
 
 class QuizSubmitRequest(BaseModel):

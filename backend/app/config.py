@@ -27,6 +27,7 @@ class Settings(BaseSettings):
 
     # ── Gemini ───────────────────────────────────────────────
     GEMINI_API_KEY: str = "your-gemini-api-key-here"
+    GEMINI_MODEL_NAME: str = "gemini-3.1-flash-lite"
 
     # ── OpenAI (Deprecated/Optional) ─────────────────────────
     OPENAI_API_KEY: str = "your-openai-api-key-here"

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import GlassCard from "@/components/GlassCard";
 import {
@@ -18,6 +19,7 @@ import {
   ChevronUp,
   Loader2,
   Trophy,
+  Lock,
 } from "lucide-react";
 
 interface Question {
@@ -169,7 +171,7 @@ const studyMaterials: Record<number, { title: string; urduTitle: string; content
 };
 
 export default function QuizPage() {
-  const [level, setLevel] = useState<number>(1);
+  const [level, setLevel] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [showStudyMaterial, setShowStudyMaterial] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -182,6 +184,9 @@ export default function QuizPage() {
   const [isOfflineMode, setIsOfflineMode] = useState(false);
   const [offlineQuestions, setOfflineQuestions] = useState<FullOfflineQuestion[]>([]);
 
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+
   // Parse level parameter from window.location
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -190,11 +195,52 @@ export default function QuizPage() {
       if (levelParam) {
         setLevel(parseInt(levelParam));
       } else {
-        const storedLevel = localStorage.getItem("current_level") || "1";
-        setLevel(parseInt(storedLevel));
+        setLevel(null);
       }
     }
   }, []);
+
+  // Fetch dashboard data for locking status when level selection is active
+  useEffect(() => {
+    if (level === null) {
+      const fetchDashboard = async () => {
+        setDashboardLoading(true);
+        const userId = localStorage.getItem("user_id") || "1";
+        try {
+          const res = await fetch(`http://localhost:8000/api/auth/dashboard/${userId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setDashboardData(data);
+          } else {
+            throw new Error("Failed to fetch dashboard data");
+          }
+        } catch (err) {
+          console.warn("Quiz dashboard fetch failed, using mock fallback data:", err);
+          setDashboardData({
+            user_id: parseInt(userId),
+            username: localStorage.getItem("username") || "Ahmed",
+            user_level: localStorage.getItem("user_level") || "Beginner",
+            current_level: parseInt(localStorage.getItem("current_level") || "1"),
+            concept_mastery: [
+              { concept_name: "budgeting", mastery_score: 75 },
+              { concept_name: "saving", mastery_score: 65 },
+              { concept_name: "emergency_funds", mastery_score: 30 },
+              { concept_name: "inflation", mastery_score: 10 },
+              { concept_name: "investing", mastery_score: 0 },
+              { concept_name: "mutual_funds", mastery_score: 0 },
+              { concept_name: "islamic_banking", mastery_score: 0 },
+              { concept_name: "stock_market", mastery_score: 0 },
+              { concept_name: "diversification", mastery_score: 0 },
+              { concept_name: "tax_filer", mastery_score: 0 },
+            ],
+          });
+        } finally {
+          setDashboardLoading(false);
+        }
+      };
+      fetchDashboard();
+    }
+  }, [level]);
 
   // Fetch questions when level is determined
   useEffect(() => {
@@ -240,8 +286,10 @@ export default function QuizPage() {
       }
     };
 
-    if (level) {
+    if (level !== null) {
       fetchQuestions();
+    } else {
+      setLoading(false);
     }
   }, [level]);
 
@@ -285,7 +333,7 @@ export default function QuizPage() {
         const details: DetailResult[] = [];
 
         offlineQuestions.forEach((q) => {
-          const userAns = selectedAnswers[q.id] || "a";
+          const userAns = selectedAnswers[q.id] || "";
           const isCorrect = userAns.toLowerCase().trim() === q.correct_option.toLowerCase().trim();
           if (isCorrect) {
             score++;
@@ -299,13 +347,14 @@ export default function QuizPage() {
         });
 
         const passed = score >= 15;
-        let nextLevel = level;
+        const activeLevel = level || 1;
+        let nextLevel = activeLevel;
 
         if (passed) {
           const storedLevelStr = localStorage.getItem("current_level") || "1";
           const currentStoredLevel = parseInt(storedLevelStr);
-          if (currentStoredLevel === level) {
-            nextLevel = Math.min(level + 1, 10);
+          if (currentStoredLevel === activeLevel) {
+            nextLevel = Math.min(activeLevel + 1, 10);
             localStorage.setItem("current_level", nextLevel.toString());
           } else {
             nextLevel = currentStoredLevel;
@@ -333,7 +382,7 @@ export default function QuizPage() {
       const userId = localStorage.getItem("user_id") || "1";
       const answersPayload = questions.map((q) => ({
         question_id: q.id,
-        selected_option: selectedAnswers[q.id] || "a",
+        selected_option: selectedAnswers[q.id] || "",
       }));
 
       const res = await fetch("http://localhost:8000/api/quiz/submit", {
@@ -379,6 +428,229 @@ export default function QuizPage() {
       [questionId]: !prev[questionId],
     }));
   };
+
+  const renderQuizNode = (levelNum: number, conceptId: string, title: string, urduTitle: string, icon: string) => {
+    if (!dashboardData) return null;
+
+    // Unlocking status
+    const currentLevel = dashboardData.current_level || 1;
+
+    // Build a map of concept mastery scores
+    const scores = dashboardData.concept_mastery.reduce((acc: any, curr: any) => {
+      acc[curr.concept_name] = curr.mastery_score;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const conceptToLevel: Record<string, number> = {
+      budgeting: 1,
+      saving: 2,
+      emergency_funds: 3,
+      inflation: 4,
+      investing: 5,
+      mutual_funds: 6,
+      islamic_banking: 7,
+      stock_market: 8,
+      diversification: 9,
+      tax_filer: 10,
+    };
+
+    const score = scores[conceptId] || 0;
+    const nodeLevel = conceptToLevel[conceptId] || 1;
+
+    let status: "mastered" | "unlocked" | "locked" = "locked";
+
+    // Mastered if score is >= 60 OR the user's current level is past this node's level
+    if (score >= 60 || currentLevel > nodeLevel) {
+      status = "mastered";
+    } else if (nodeLevel === currentLevel) {
+      status = "unlocked";
+    } else if (nodeLevel > currentLevel && nodeLevel <= currentLevel + 2 && nodeLevel < 8) {
+      status = "unlocked";
+    }
+
+    let borderClass = "border-white/5 bg-slate-900/40 text-slate-400 opacity-60";
+    let statusBadge = null;
+    let cursorClass = "cursor-not-allowed";
+
+    if (status === "mastered") {
+      borderClass = "border-emerald-500/40 bg-emerald-500/5 text-slate-200 shadow-md shadow-emerald-500/5 hover:border-emerald-500/60";
+      statusBadge = (
+        <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-bold animate-fade-in">
+          Passed ✅
+        </span>
+      );
+      cursorClass = "cursor-pointer";
+    } else if (status === "unlocked") {
+      borderClass = "border-cyan-500/40 bg-cyan-500/5 text-slate-200 shadow-lg shadow-cyan-500/5 hover:border-cyan-500/60 ring-2 ring-cyan-500/10 animate-pulse-glow";
+      statusBadge = (
+        <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-bold animate-fade-in">
+          Start Quiz
+        </span>
+      );
+      cursorClass = "cursor-pointer";
+    } else {
+      statusBadge = (
+        <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-slate-800 text-slate-500 text-[10px] font-bold flex items-center gap-1 border border-white/5 animate-fade-in">
+          <Lock size={8} /> Locked
+        </span>
+      );
+    }
+
+    const handleClick = () => {
+      if (status !== "locked") {
+        window.location.href = `/quiz?level=${levelNum}`;
+      }
+    };
+
+    return (
+      <div
+        onClick={handleClick}
+        className={`relative w-full max-w-[220px] p-4 rounded-xl border text-center transition-all duration-300 hover:scale-[1.02] ${borderClass} ${cursorClass}`}
+      >
+        {statusBadge}
+        <div className="text-xl mb-1">{icon}</div>
+        <h4 className="text-xs sm:text-sm font-bold truncate">Level {levelNum}: {title}</h4>
+        <p className="text-[10px] sm:text-xs text-slate-400 font-urdu mt-0.5" dir="rtl">
+          {urduTitle}
+        </p>
+      </div>
+    );
+  };
+
+  const renderGraphNodes = () => {
+    return (
+      <div className="flex flex-col items-center gap-4 w-full">
+        {/* Level 1 */}
+        <div className="flex justify-center w-full">
+          {renderQuizNode(1, "budgeting", "Budgeting", "بجٹ کے اصول", "📊")}
+        </div>
+
+        {/* Line Down */}
+        <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+        {/* Level 2 */}
+        <div className="flex justify-center w-full">
+          {renderQuizNode(2, "saving", "Saving Habits", "بچت کی عادت", "🏦")}
+        </div>
+
+        {/* Line Down */}
+        <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+        {/* Level 3 */}
+        <div className="flex justify-center w-full">
+          {renderQuizNode(3, "emergency_funds", "Emergency Funds", "ایمرجنسی فنڈ", "🛡️")}
+        </div>
+
+        {/* Line Down */}
+        <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+        {/* Level 4 */}
+        <div className="flex justify-center w-full">
+          {renderQuizNode(4, "inflation", "Inflation", "مہنگائی کا اثر", "📈")}
+        </div>
+
+        {/* Line Down */}
+        <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+        {/* Level 5 */}
+        <div className="flex justify-center w-full">
+          {renderQuizNode(5, "investing", "Investing Principles", "سرمایہ کاری", "💹")}
+        </div>
+
+        {/* Split Lines Down */}
+        <div className="w-full max-w-md h-8 relative">
+          <svg className="w-full h-full text-emerald-500/30" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M 50,0 L 50,30 L 15,30 L 15,100 M 50,30 L 85,30 L 85,100" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4" />
+          </svg>
+        </div>
+
+        {/* Level 6 & 7 */}
+        <div className="grid grid-cols-2 gap-4 w-full max-w-xl">
+          <div className="flex justify-center flex-col items-center">
+            {renderQuizNode(6, "mutual_funds", "Mutual Funds", "میوچل فنڈز", "📋")}
+            <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
+          </div>
+          <div className="flex justify-center flex-col items-center">
+            {renderQuizNode(7, "islamic_banking", "Islamic Banking", "اسلامی بینکاری", "🕌")}
+            <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
+          </div>
+        </div>
+
+        {/* Level 8 */}
+        <div className="flex justify-center w-full">
+          {renderQuizNode(8, "stock_market", "Stock Market", "اسٹاک مارکیٹ", "📈")}
+        </div>
+
+        {/* Line Down */}
+        <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+        {/* Level 9 */}
+        <div className="flex justify-center w-full">
+          {renderQuizNode(9, "diversification", "Diversification", "تنوع (Diversification)", "🎯")}
+        </div>
+
+        {/* Line Down */}
+        <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+        {/* Level 10 */}
+        <div className="flex justify-center w-full">
+          {renderQuizNode(10, "tax_filer", "Tax Planning & Filer", "ٹیکس فائلنگ اور پلاننگ", "📄")}
+        </div>
+      </div>
+    );
+  };
+
+  if (level === null) {
+    return (
+      <div className="flex min-h-screen bg-slate-950 text-white animate-fade-in">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen relative overflow-hidden">
+          {/* Decorative glow */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-emerald-500/5 blur-[130px] pointer-events-none" />
+
+          <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-8 py-4 border-b border-white/5 bg-slate-900/60 backdrop-blur-xl">
+            <div>
+              <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                <Award className="text-emerald-400 animate-pulse" size={20} />
+                Financial Concept Quizzes
+              </h1>
+              <p className="text-xs md:text-sm text-slate-400">کوئز گراف — Select a level to start</p>
+            </div>
+            <a
+              href="/dashboard"
+              className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              Wapis Dashboard
+            </a>
+          </header>
+
+          <main className="flex-1 p-4 md:p-8 pb-24 overflow-y-auto">
+            {dashboardLoading ? (
+              <div className="flex flex-col items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mb-4" />
+                <p className="text-slate-400 animate-pulse">Quiz graph load ho raha hai...</p>
+              </div>
+            ) : (
+              <div className="max-w-4xl mx-auto space-y-6">
+                <div className="text-center mb-8">
+                  <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Quiz Level Selection</h2>
+                  <p className="text-sm text-slate-400">
+                    Sikhnay ke khakay (Learning Flow Graph) ke mutabiq unlocked levels ke quizzes shuru karein.
+                  </p>
+                </div>
+                
+                <GlassCard hover={false} className="p-6 md:p-8 bg-slate-900/30 backdrop-blur-md border border-white/5">
+                  <div className="flex flex-col items-center gap-4">
+                    {renderGraphNodes()}
+                  </div>
+                </GlassCard>
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -431,12 +703,12 @@ export default function QuizPage() {
             </h1>
             <p className="text-xs md:text-sm text-slate-400">{quizTitle}</p>
           </div>
-          <a
-            href="/dashboard"
+          <Link
+            href="/quiz"
             className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors"
           >
-            Wapis Dashboard
-          </a>
+            ← Back to Graph
+          </Link>
         </header>
 
         {isOfflineMode && (
