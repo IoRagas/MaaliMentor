@@ -81,3 +81,18 @@ class QuizAttempt(SQLModel, table=True):
     score: int  # number of correct answers (out of 20)
     passed: bool = Field(default=False)
     attempted_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ChatMessage(SQLModel, table=True):
+    """Stores tutor conversation logs for memory context."""
+
+    __tablename__ = "chat_messages"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
+    sender: str = Field(index=True)  # "user" | "tutor"
+    text: str
+    roman_urdu: Optional[str] = Field(default=None)
+    urdu_script: Optional[str] = Field(default=None)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+

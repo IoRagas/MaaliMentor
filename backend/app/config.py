@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     # ── OpenAI (Deprecated/Optional) ─────────────────────────
     OPENAI_API_KEY: str = "your-openai-api-key-here"
 
+    # ── ElevenLabs ───────────────────────────────────────────
+    ELEVENLABS_API_KEY: str = ""
+    ELEVENLABS_VOICE_ID: str = "21m00Tcm4TlvDq8ikWAM"
+
     # ── Mock flags (for hackathon / offline dev) ─────────────
     USE_MOCK_SPEECH: bool = True
     USE_MOCK_LLM: bool = True

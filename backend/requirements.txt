@@ -9,4 +9,5 @@ aiofiles
 python-dotenv
 google-generativeai
 gTTS
-
+redis
+edge-tts

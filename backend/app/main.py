@@ -21,14 +21,22 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import create_db_and_tables
+from app.services.graph_rag import initialize_vector_db
+from app.services.speech import warmup_speech_models
 from app.routers import auth, goals, quiz, simulator, tutor
+import asyncio
 
 
 # ── Lifespan (startup / shutdown) ────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Create DB tables on startup."""
+    """Create DB tables, initialize vector search index, and warm up model on startup."""
     create_db_and_tables()
+    initialize_vector_db()
+    
+    # Warm up local Whisper model in the background so it doesn't block boot,
+    # but is warm before the first user request arrives.
+    asyncio.create_task(asyncio.to_thread(warmup_speech_models))
     yield
 
 
