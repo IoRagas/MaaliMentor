@@ -19,7 +19,7 @@
 
 | Screen | Narration |
 |--------|-----------|
-| **Black screen** with text fading in: *"67% of Pakistanis have no access to formal financial education"* | *"In Pakistan, over 67 percent of adults have never received any kind of formal financial education."* |
+| **Black screen** with text fading in: *"More than 4 out of 5 adults lack basic financial literacy"* | *"In Pakistan, more than four out of five adults lack basic financial literacy."* |
 | Fade to: **Google search results** showing "financial literacy Pakistan statistics" or a relevant news headline screenshot | *"Millions use digital wallets like Easypaisa and JazzCash every day — but most don't understand inflation, investing, or even how to budget properly."* |
 | Fade to: **Landing page of Maali Mentor** (hero section visible with the glowing orb) | *"The information that does exist? It's either in English, full of jargon, or locked behind expensive courses. We thought — what if learning finance felt like chatting with a friend… in your own language?"* |
 
@@ -90,7 +90,7 @@
 | Screen | Narration |
 |--------|-----------|
 | **Go back to Dashboard** — show the updated level/XP | *"Maali Mentor is built with Next.js, FastAPI, and Google's Gemini 3.1 Flash Lite — entirely free-tier friendly."* |
-| **Landing page hero section** (or a closing title card you prepare) | *"Our goal is simple: make financial literacy accessible, conversational, and voice-first — for the millions who need it most."* |
+| **Landing page hero section** (or a closing title card you prepare) | *"Our goal is simple: to make financial literacy not a privilege for the few, but a civic superpower in the hands of every household. Let’s build a financially inclusive Pakistan, together."* |
 | **Fade to black** with text: **"Maali Mentor — مالی مینٹر"** and your team name | *"This is Maali Mentor. Aapka apna maali masheer."* *(Your own financial advisor.)* |
 
 ---

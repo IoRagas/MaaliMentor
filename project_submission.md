@@ -1,12 +1,12 @@
 # 🏆 Maali Mentor (مالی مینٹر) — Your AI-Powered Roman Urdu Financial Guide
 
-> **"Aapka Apna Maali Masheer"** — Democratizing financial literacy for 240 million Pakistanis through voice-first AI, interactive learning maps, and real-time simulators.
+> **"Aapka Apna Maali Masheer"** — Democratizing financial literacy through voice-first AI, interactive learning maps, and real-time simulators, in a nation where more than four out of five adults lack basic financial skills.
 
 ---
 
 ## 💡 Inspiration
 
-In Pakistan, formal financial literacy is critically low, hovering around **18%**. While millions of citizens actively use digital wallets like *Easypaisa*, *JazzCash*, and *Nayapay*, a vast majority do not understand the silent erosion of their money due to inflation, the difference between simple saving and active investing, or the benefits of becoming a tax filer. 
+In Pakistan, formal financial literacy is critically low, with **more than four out of five adults** lacking basic financial literacy. While millions of citizens actively use digital wallets like *Easypaisa*, *JazzCash*, and *Nayapay*, a vast majority do not understand the silent erosion of their money due to inflation, the difference between simple saving and active investing, or the benefits of becoming a tax filer. 
 
 The primary barrier isn't a lack of interest—it's **accessibility**. Financial concepts are heavily gatekept behind dense English jargon or dry, text-heavy curricula that do not resonate. 
 
@@ -31,10 +31,10 @@ Maali Mentor is designed as a modular, decoupled full-stack application built us
 
 * **Frontend**: **Next.js 16** (using React hooks and Tailwind CSS) styled with a high-fidelity glassmorphic dark theme, Nastaliq typography rendering, smooth micro-animations, and dynamic canvas graphs.
 * **Backend**: **FastAPI** with **SQLModel (SQLite)** for high-throughput, structured storage of user profiles, learning progress, XP metrics, and simulator states.
-* **AI Brain**: **Gemini 3.1 Flash Lite** API. We selected this model for its sub-second latency, robust multilingual understanding, and cost-effective token parameters, making it ideal for real-time mobile chat.
+* **AI Brain**: **Gemini 3.1 Flash Lite** API. We selected this model for its fast response times, robust multilingual understanding, and cost-effective performance parameters, making it ideal for real-time mobile chat.
 * **Voice Pipeline**:
-  - **Speech-to-Text (STT)**: Gemini's native multimodal audio framework directly processes raw recorded user voice messages (`audio/webm`).
-  - **Text-to-Speech (TTS)**: To maintain a native, warm Urdu accent rather than a robotic English voice pronouncing Urdu words, the LLM translates its Roman Urdu response to native Urdu script behind the scenes. This script is synthesized via Google Text-To-Speech (`gTTS`) in Urdu (`lang="ur"`) and played back to the user at a natural cadence ($1.2\times$ human speech speed).
+  - **Speech-to-Text (STT)**: Processes spoken user questions in Roman Urdu or spoken Urdu directly, optimizing response time and usability.
+  - **Text-to-Speech (TTS)**: Synthesizes responses into an accent-accurate native Urdu voice. By translating Roman Urdu text to native script in the background before synthesis, we ensure the speech sounds authentic and warm, optimized to run smoothly on unstable 3G networks.
 
 ---
 
@@ -42,15 +42,15 @@ Maali Mentor is designed as a modular, decoupled full-stack application built us
 
 ### 1. The Accent Gap in Roman Urdu TTS
 Using typical English speech engines to read Roman Urdu text (e.g., *"mehangai"* or *"bachat"*) sounds robotic and incomprehensible. However, Urdu speech engines cannot read English letters. 
-* **The Solution**: We built a fast, internal translation layer. When the AI tutor generates a response, it returns clean Roman Urdu text for the UI, but asynchronously triggers a Gemini task to output the equivalent text in native Nastaliq Urdu script. The backend feeds this Urdu script to `gTTS`, which pronounces it with a perfect native accent.
+* **The Solution**: We built a fast, internal translation layer. When the AI tutor generates a response, it returns clean Roman Urdu text for the UI, but asynchronously triggers a Gemini task to output the equivalent text in native Nastaliq Urdu script. The backend feeds this Urdu script to a speech engine, which pronounces it with a natural native accent.
 
-### 2. Eliminating Event Loop Blocking (Saving ~1.5 Seconds)
-Early versions felt slow due to the sequential execution of transcription, response generation, Urdu translation, and voice synthesis.
-* **The Solution**: We optimized the backend pipeline by using `asyncio.gather` to execute the translation task and the text-to-speech audio synthesis concurrently. We also wrapped the blocking I/O calls (like gTTS filesaving and Gemini client initialization) inside `asyncio.to_thread` to prevent thread-blocking on the main event loop, reducing overall response-to-voice latency by **over 40%**.
+### 2. Network Latency and Responsiveness
+Early versions felt sluggish on slower connections because the system had to transcribe audio, generate responses, translate scripts, and prepare voice output sequentially.
+* **The Solution**: We restructured our processing pipeline to run translation and speech preparation concurrently. By resolving background resource bottlenecks, we significantly reduced the delay between a user asking a question and hearing the response, making it feel like a real-time conversation even on unstable 3G networks.
 
 ### 3. Visual Layout Scaling on Small Screens
 During initial tests on mobile devices (e.g. 375px wide), text wrapped awkwardly and layout borders conflicted with padding boundaries.
-* **The Solution**: We refactored typography sizes using responsive fluid scale bounds (e.g. changing `text-5xl md:text-8xl` to `text-4xl sm:text-6xl md:text-7xl lg:text-8xl`), configured our Tailwind compiler to scan all components directories explicitly, and safely removed custom universal style resets, letting Tailwind's Preflight layout engine render beautiful padding.
+* **The Solution**: We refactored typography sizes using responsive fluid scale bounds (e.g. changing `text-5xl md:text-8xl` to `text-4xl sm:text-6xl md:text-7xl lg:text-8xl`), configured our layout compiler to scan all components directories explicitly, and safely removed custom universal style resets, letting the layout engine render beautiful padding.
 
 ---
 
@@ -70,9 +70,9 @@ To encourage compound interest habits, we present the approximate doubling durat
 
 ## 🏆 Accomplishments We're Proud Of
 
-* **Sub-Millisecond Caching Engine**: Built a smart cache mapper for common beginner questions (e.g., *"mutual funds kiya hai"*, *"saving vs investing"*), bypassing LLM calls entirely to deliver instant, pre-loaded audio guides.
-* **Dual-Mode Quiz Engine**: Developed a robust grading system that automatically switches to a lightweight frontend local engine (`/quiz_data.json` and `localStorage` tracking) if the backend API is unreachable, ensuring zero learning interruptions.
-* **Clean & Secure Input Sanitization**: Implemented strict Pydantic regex sanitizers on usernames (`^[a-zA-Z0-9_\s\-]+$`), quiz options, and file upload size caps (10MB max limits on `/voice` endpoint) to guard against injection or DDoS.
+* **Instant-Response Audio Guides**: Built a smart cache mapper for common beginner questions (e.g., *"mutual funds kiya hai"*, *"saving vs investing"*), bypassing AI model generation entirely to deliver pre-loaded audio guides instantly.
+* **Dual-Mode Quiz Engine**: Developed a robust grading system that automatically switches to a lightweight local engine on the user's browser if the backend API is unreachable, ensuring zero learning interruptions.
+* **Robust Input Sanitization**: Implemented strict security validations on usernames, quiz choices, and file sizes to protect user accounts and prevent service interruptions.
 
 ---
 
