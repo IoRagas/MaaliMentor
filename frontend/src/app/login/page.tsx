@@ -51,7 +51,7 @@ export default function LoginPage() {
       
       // Fallback local verification for robust demonstration
       if (username.trim() === "demo1" && password.trim() === "demo123") {
-        localStorage.setItem("user_id", "999");
+        localStorage.setItem("user_id", "1");
         localStorage.setItem("username", "demo1");
         localStorage.setItem("user_level", "Intermediate");
         localStorage.setItem("current_level", "3");

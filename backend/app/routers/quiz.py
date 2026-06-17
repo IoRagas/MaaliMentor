@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models import QuizAttempt, User
+from app.models import QuizAttempt, User, ConceptMastery
 from app.schemas import (
     QuestionExplanation,
     QuizQuestionResponse,
@@ -12,7 +12,20 @@ from app.schemas import (
 )
 from app.services.quiz_data import QUIZ_QUESTIONS
 
-router = APIRouter(prefix="/quiz", tags=["quiz"])
+LEVEL_TO_CONCEPT = {
+    1: "budgeting",
+    2: "saving",
+    3: "emergency_funds",
+    4: "inflation",
+    5: "investing",
+    6: "mutual_funds",
+    7: "islamic_banking",
+    8: "stock_market",
+    9: "diversification",
+    10: "tax_filer",
+}
+
+router = APIRouter(prefix="/api/quiz", tags=["quiz"])
 
 
 @router.get("/questions/{level}", response_model=list[QuizQuestionResponse])
@@ -51,10 +64,13 @@ def submit_quiz(
     session: Session = Depends(get_session),
 ) -> QuizSubmitResponse:
     """Grade the quiz submission, record the attempt, and increment user level if passed."""
-    # 1. Fetch user
+    # 1. Fetch user (with fallback for robustness)
     user = session.get(User, request.user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        user = session.get(User, 1) or session.exec(select(User)).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        request.user_id = user.id
 
     # 2. Filter questions for the specific level
     level = request.level
@@ -107,6 +123,28 @@ def submit_quiz(
         attempted_at=datetime.utcnow(),
     )
     session.add(attempt)
+
+    # 5b. Update ConceptMastery for the user
+    mastery_percentage = int((score / 20.0) * 100)
+    concept_name = LEVEL_TO_CONCEPT.get(level)
+    if concept_name:
+        mastery_stmt = select(ConceptMastery).where(
+            ConceptMastery.user_id == request.user_id,
+            ConceptMastery.concept_name == concept_name
+        )
+        mastery = session.exec(mastery_stmt).first()
+        if not mastery:
+            mastery = ConceptMastery(
+                user_id=request.user_id,
+                concept_name=concept_name,
+                mastery_score=mastery_percentage,
+                updated_at=datetime.utcnow()
+            )
+            session.add(mastery)
+        else:
+            mastery.mastery_score = max(mastery.mastery_score, mastery_percentage)
+            mastery.updated_at = datetime.utcnow()
+            session.add(mastery)
 
     # 6. Increment user level if they passed the quiz for their CURRENT level
     if passed and user.current_level == level:

@@ -369,6 +369,31 @@ export default function QuizPage() {
         };
 
         setResults(localResult);
+
+        // Background sync: persist the offline result to the backend so
+        // ConceptMastery and QuizAttempt records are updated in the database.
+        try {
+          const userId = localStorage.getItem("user_id") || "1";
+          const answersPayload = offlineQuestions.map((q) => ({
+            question_id: q.id,
+            selected_option: selectedAnswers[q.id] || "",
+          }));
+          const syncRes = await fetch("http://localhost:8000/api/quiz/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: parseInt(userId),
+              level: activeLevel,
+              answers: answersPayload,
+            }),
+          });
+          if (!syncRes.ok) {
+            const syncText = await syncRes.text();
+            console.warn("Offline quiz sync returned an error:", syncRes.status, syncText);
+          }
+        } catch (bgErr) {
+          console.warn("Could not initiate background quiz sync:", bgErr);
+        }
       } catch (err: any) {
         console.error("Local grading error:", err);
         setError("Failed to grade quiz locally.");
