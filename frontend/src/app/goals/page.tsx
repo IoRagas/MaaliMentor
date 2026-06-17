@@ -124,6 +124,7 @@ export default function GoalsPage() {
 
     setLoading(true);
     try {
+      const expectedReturn = risk === "low" ? 0.08 : risk === "high" ? 0.16 : 0.12;
       const res = await fetch("http://localhost:8000/api/goals/calculate", {
         method: "POST",
         headers: {
@@ -133,6 +134,8 @@ export default function GoalsPage() {
           target_amount: target,
           target_years: years,
           risk_tolerance: risk,
+          expected_annual_return: expectedReturn,
+          inflation_rate: 0.15,
         }),
       });
 
@@ -327,6 +330,9 @@ export default function GoalsPage() {
                       <p className="text-xl font-bold text-emerald-400">
                         PKR {result.monthlyNeeded.toLocaleString()}
                       </p>
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        Calculated at {risk === "low" ? "8%" : risk === "high" ? "16%" : "12%"} expected annual return
+                      </p>
                     </div>
                   </div>
                   <div>
@@ -391,8 +397,14 @@ export default function GoalsPage() {
                         <span className="text-white font-medium">PKR {goal.target.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Future Cost (Adjusted):</span>
+                        <span className="text-slate-400">Future Cost (Adjusted @ 15% Inflation):</span>
                         <span className="text-yellow-400 font-medium">PKR {goal.futureCost.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">Expected Annual Return:</span>
+                        <span className="text-cyan-400 font-medium">
+                          {goal.risk === "low" ? "8% (Conservative)" : goal.risk === "high" ? "16% (Aggressive)" : "12% (Moderate)"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400">Saved:</span>
@@ -400,7 +412,7 @@ export default function GoalsPage() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400">Monthly Needed:</span>
-                        <span className="text-cyan-400 font-medium">PKR {goal.monthlyNeeded.toLocaleString()}</span>
+                        <span className="text-cyan-400 font-medium font-bold">PKR {goal.monthlyNeeded.toLocaleString()}</span>
                       </div>
                     </div>
 
