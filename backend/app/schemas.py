@@ -75,7 +75,10 @@ class TutorVoiceResponse(BaseModel):
     """Response from the voice-based tutoring endpoint."""
     user_transcript: str
     tutor_text_response: str
+    roman_urdu: Optional[str] = None
+    urdu_script: Optional[str] = None
     audio_response_url: Optional[str] = None
+    audio_response_base64: Optional[str] = None
     detected_concepts: list[str] = []
     next_recommended_lesson: Optional[str] = None
 
@@ -89,9 +92,13 @@ class TutorTextRequest(BaseModel):
 class TutorTextResponse(BaseModel):
     """Response from the text-based tutoring endpoint."""
     tutor_response: str
+    roman_urdu: Optional[str] = None
+    urdu_script: Optional[str] = None
     detected_concepts: list[str] = []
     next_recommended_lesson: Optional[str] = None
     audio_response_url: Optional[str] = None
+    audio_response_base64: Optional[str] = None
+
 
 
 class DictionaryResponse(BaseModel):
@@ -117,15 +124,24 @@ class SimulatorStartRequest(BaseModel):
 class SimulatorTurnRequest(BaseModel):
     """Player decision for one simulator turn (1 year)."""
     user_id: int
-    decision_saving_method: str = Field(
-        ...,
-        description="One of: cash, savings_account, mutual_funds, islamic_funds",
-    )
     decision_lifestyle_spend: float = Field(
         ...,
         ge=0.0,
         le=1.0,
         description="Fraction of income spent on lifestyle (0-1)",
+    )
+    # Portfolio allocation split (percentages summing to 1.0)
+    allocation_cash: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    allocation_savings: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    allocation_mutual_funds: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    allocation_islamic_funds: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    allocation_gold: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    allocation_real_estate: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    
+    # Backwards compatibility
+    decision_saving_method: Optional[str] = Field(
+        default=None,
+        description="One of: cash, savings_account, mutual_funds, islamic_funds",
     )
 
 
@@ -140,6 +156,12 @@ class SimulatorTurnResponse(BaseModel):
     cash_value: float
     invested_value: float
     monthly_income: float
+    # Individual asset values
+    savings_value: Optional[float] = 0.0
+    mutual_funds_value: Optional[float] = 0.0
+    islamic_funds_value: Optional[float] = 0.0
+    gold_value: Optional[float] = 0.0
+    real_estate_value: Optional[float] = 0.0
 
 
 class SimulatorStateResponse(BaseModel):
@@ -149,6 +171,13 @@ class SimulatorStateResponse(BaseModel):
     nominal_wealth: float
     real_purchasing_power: float
     cash_pct: float
+    # Individual asset values
+    cash_value: Optional[float] = 0.0
+    savings_value: Optional[float] = 0.0
+    mutual_funds_value: Optional[float] = 0.0
+    islamic_funds_value: Optional[float] = 0.0
+    gold_value: Optional[float] = 0.0
+    real_estate_value: Optional[float] = 0.0
 
 
 # ═══════════════════════════════════════════════════════════════

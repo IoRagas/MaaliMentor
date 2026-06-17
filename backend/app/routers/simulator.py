@@ -67,6 +67,12 @@ def start_simulator(
         nominal_wealth=db_state.nominal_wealth,
         real_purchasing_power=db_state.real_purchasing_power,
         cash_pct=db_state.cash_pct,
+        cash_value=state.get("cash_value", db_state.nominal_wealth),
+        savings_value=state.get("savings_value", 0.0),
+        mutual_funds_value=state.get("mutual_funds_value", 0.0),
+        islamic_funds_value=state.get("islamic_funds_value", 0.0),
+        gold_value=state.get("gold_value", 0.0),
+        real_estate_value=state.get("real_estate_value", 0.0),
     )
 
 
@@ -98,19 +104,26 @@ def play_turn(
             detail="Simulator session not found. POST /api/simulator/start pehle call karein.",
         )
 
-    # Validate saving method
-    valid_methods = {"cash", "savings_account", "mutual_funds", "islamic_funds"}
-    if request.decision_saving_method not in valid_methods:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid saving method. Choose from: {', '.join(valid_methods)}",
-        )
+    # Validate saving method (only if allocations are not provided)
+    if request.allocation_cash is None:
+        valid_methods = {"cash", "savings_account", "mutual_funds", "islamic_funds"}
+        if request.decision_saving_method not in valid_methods:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid saving method. Choose from: {', '.join(valid_methods)}",
+            )
 
     # Run the math
     new_state = process_turn(
         state=state,
-        decision_saving_method=request.decision_saving_method,
         decision_lifestyle_spend=request.decision_lifestyle_spend,
+        allocation_cash=request.allocation_cash,
+        allocation_savings=request.allocation_savings,
+        allocation_mutual_funds=request.allocation_mutual_funds,
+        allocation_islamic_funds=request.allocation_islamic_funds,
+        allocation_gold=request.allocation_gold,
+        allocation_real_estate=request.allocation_real_estate,
+        decision_saving_method=request.decision_saving_method,
     )
     _state_cache[request.user_id] = new_state
 
@@ -137,6 +150,11 @@ def play_turn(
         cash_value=new_state["cash_value"],
         invested_value=new_state["invested_value"],
         monthly_income=new_state["monthly_income"],
+        savings_value=new_state.get("savings_value", 0.0),
+        mutual_funds_value=new_state.get("mutual_funds_value", 0.0),
+        islamic_funds_value=new_state.get("islamic_funds_value", 0.0),
+        gold_value=new_state.get("gold_value", 0.0),
+        real_estate_value=new_state.get("real_estate_value", 0.0),
     )
 
 
@@ -152,10 +170,24 @@ def get_state(
     if not db_state:
         raise HTTPException(status_code=404, detail="No simulator state found for this user.")
 
+    import json
+    state = {}
+    if db_state.full_state_json:
+        try:
+            state = json.loads(db_state.full_state_json)
+        except Exception:
+            pass
+
     return SimulatorStateResponse(
         user_id=user_id,
         current_turn=db_state.current_turn,
         nominal_wealth=db_state.nominal_wealth,
         real_purchasing_power=db_state.real_purchasing_power,
         cash_pct=db_state.cash_pct,
+        cash_value=state.get("cash_value", db_state.nominal_wealth),
+        savings_value=state.get("savings_value", 0.0),
+        mutual_funds_value=state.get("mutual_funds_value", 0.0),
+        islamic_funds_value=state.get("islamic_funds_value", 0.0),
+        gold_value=state.get("gold_value", 0.0),
+        real_estate_value=state.get("real_estate_value", 0.0),
     )
