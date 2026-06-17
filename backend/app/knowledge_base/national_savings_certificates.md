@@ -1,99 +1,83 @@
-# National Savings Certificates — Pakistan
+# National Savings Certificates (Qaumi Bachat) — Pakistan
 
-## National Savings Kya Hai?
+Central Directorate of National Savings (CDNS) Pakistan ki hukoomat ka aik muaziz aur qadeem tareen bachat ka idara hai. Isme kiye jane wali har sarmayakari ki guarantee **Government of Pakistan** khud deti hai. Isliye isme risk **Zero** hota hai.
 
-Central Directorate of National Savings (CDNS) Pakistan ki hukoomat ka idara hai jo aam logon ko savings instruments provide karta hai. Yeh **government-backed** hain, matlab aap ka paisa bilkul mehfooz hai.
+---
 
-## Products
+## 1. Qaumi Bachat Key Products & Expected Profit Rates
 
-### 1. Defence Savings Certificates (DSC)
-- **Muddat**: 10 saal
-- **Minimum Investment**: Rs.500
-- **Maximum**: Koi hadd nahi
-- **Profit Rate**: ~12-13% saalana (compound, bi-annual)
-- **Profit Payment**: Maturity par ya premature encashment par
-- **Khaas Baat**: Tax-free for investments up to Rs.5 million (filers)
-- **Kis Ke Liye**: Long-term investors jo paisa 10 saal ke liye rakh sakte hain
+Mukhtalif timelines aur sarmayakaron ki zaroorat ke mutabiq CDNS ke products darj-zail hain:
 
-### 2. Special Savings Certificates (SSC) — Regular
-- **Muddat**: 3 saal
-- **Minimum Investment**: Rs.25,000
-- **Profit Rate**: ~12-14% saalana
-- **Profit Payment**: Har 6 maah baad
-- **Khaas Baat**: Regular income ke liye best — har 6 maah munafa milta hai
-- **Kis Ke Liye**: Middle-term investors
+### A. Behbood Savings Certificates (BSC)
+* **Target Audience**: Beva (widows), Senior Citizens (60 saal se zayed umar ke afrad), aur Mazoor (disabled) afrad.
+* **Muddat**: 10 saal.
+* **Profit Payment**: Monthly (har mahine profit milta hai).
+* **Expected Return**: ~13.5% - 15.5% saalana (Government policies ke tehat change hota rehta hai).
+* **Khaas Baat**: Yeh certificates withholding tax se mustasna (exempt) hain agar investment Rs. 5 million (50 lakh) se kam ho.
 
-### 3. Special Savings Certificates (SSC) — Registered
-- **Muddat**: 3 saal
-- **Minimum Investment**: Rs.25,000
-- **Profit Rate**: ~12-14% saalana (slightly higher than regular)
-- **Profit Payment**: Monthly ya maturity par
-- **Khaas Baat**: Registered form mein — zyada mehfooz
-- **Kis Ke Liye**: Regular monthly income chahne wale
+### B. Defence Savings Certificates (DSC)
+* **Target Audience**: Long-term sarmayakar.
+* **Muddat**: 10 saal.
+* **Profit Payment**: Maturity par (compound profit). Agar aap 10 saal tak rakhenge, toh sarmaya taqreeban double se bhi zyada ho jata hai.
+* **Expected Return**: ~12% - 13.5% (average compound yield).
+* **Encashment**: Kisi bhi waqt encash karwaya ja sakta hai (lekin jaldi nikalne par profit rate kam hota hai).
 
-### 4. Behbood Savings Certificates
-- **Eligible**: Widows, Senior Citizens (60+), Disabled persons
-- **Muddat**: 10 saal
-- **Minimum Investment**: Rs.10,000
-- **Maximum**: Rs.50,00,000 (Rs.50 lakh)
-- **Profit Rate**: ~13-15% saalana (usually highest rate)
-- **Profit Payment**: Monthly
-- **Khaas Baat**: Sabse zyada profit rate — lekin sirf eligible logon ke liye
-- **Tax**: Withholding tax applicable for amount exceeding Rs.5 million
+### C. Special Savings Certificates (SSC)
+* **Target Audience**: Mid-term investors.
+* **Muddat**: 3 saal.
+* **Profit Payment**: Bi-annual (har 6 maah baad profit milta hai).
+* **Expected Return**: ~12.5% - 14% saalana.
+* **Khaas Baat**: Regular income ke liye behtareen hai jo har 6 mahine baad mil jati hai.
 
-### 5. Regular Income Certificates (RIC)
-- **Muddat**: 5 saal
-- **Minimum Investment**: Rs.1,00,000
-- **Profit Rate**: ~11-13% saalana
-- **Profit Payment**: Monthly
-- **Khaas Baat**: Monthly regular income — salaried class ke liye acha
-- **Kis Ke Liye**: Retired logon ya monthly income chahne walon ke liye
+### D. Regular Income Certificates (RIC)
+* **Target Audience**: Retired afrad ya salaried class jo monthly regular income chahte hain.
+* **Muddat**: 5 saal.
+* **Minimum Investment**: Rs. 50,000.
+* **Profit Payment**: Monthly (har mahine profit seedha aap ke bank account mein jata hai).
+* **Expected Return**: ~11.5% - 13% saalana.
 
-### 6. Savings Account
-- **Minimum Balance**: Rs.100
-- **Profit Rate**: ~8-11% saalana
-- **Profit Payment**: Monthly
-- **Khaas Baat**: Bank savings account se zyada profit, lekin ATM facility nahi
+### E. Sarwa Islamic Savings Account (SISA) & Certificates (SISC)
+* **Target Audience**: Shariah-compliant saving chahne wale afrad.
+* **Muddat**: 1 saal, 3 saal, 5 saal ya open account.
+* **Concept**: National Savings ne hal hi mein Islamic products muta'arif karwaye hain jo sood se paak hain aur Mudarabah par mabni hain.
+* **Expected Return**: Conventional certificates ke taqreeban barabar (average ~12% - 14%).
 
-### 7. Short-Term Savings Certificates (STSC)
-- **Muddat**: 3, 6, ya 12 months
-- **Minimum Investment**: Rs.1,00,000
-- **Profit Rate**: ~10-12% saalana
-- **Profit Payment**: Maturity par
-- **Khaas Baat**: Short-term parking of funds
+### F. Pensioners Benefit Account (PBA)
+* **Target Audience**: Sirf retired government employees.
+* **Muddat**: 10 saal.
+* **Profit Payment**: Monthly.
+* **Expected Return**: Behbood certificates ke barabar aur behtareen rates.
 
-### 8. Prize Bonds
-- **Denominations**: Rs.200, Rs.750, Rs.1,500, Rs.7,500, Rs.15,000, Rs.25,000, Rs.40,000
-- **Draw**: Quarterly (har 3 maah)
-- **Prizes**: 1st Prize: Rs.7,50,000 (for Rs.200 bond) to Rs.8,00,00,000 (for Rs.40,000 bond)
-- **Khaas Baat**: No regular profit — sirf lottery type system
+---
 
-## Kahan Se Khareedein?
+## 2. Withholding Tax on National Savings Profits (2024-25)
 
-1. **National Savings Centres**: Har bade sheher mein branches hain
-2. **Designated Bank Branches**: HBL, NBP, UBL wagairah
-3. **Online**: Abhi limited online services — mostly physical visit zaroori
+National Savings ke munafa par Filer aur Non-Filer ke mutabiq tax deduct hota hai (Filers enjoy 50% discount on tax rates):
 
-### Zaruri Documents
-- CNIC (original + copy)
-- Cash ya cheque
-- Nominee details (waris ka naam)
+| Investor Status | Tax Rate on Profit | Misaal (Rs. 10,000 Profit par Tax) | Net Profit Received |
+|---|---|---|---|
+| **Filer (ATL)** | **15%** | Rs. 1,500 | Rs. 8,500 |
+| **Non-Filer** | **35%** | Rs. 3,500 | Rs. 6,500 |
 
-## National Savings vs Bank Deposits
+* **Important Note**: Non-filers ko profit ka aik bara hissa tax ki surat mein dena parta hai, isliye National Savings mein invest karne se pehle Filer banna nihayat zaroori hai.
 
-| Feature | National Savings | Bank FD/TDR |
-|---|---|---|
-| Guarantee | Government of Pakistan | Bank (PIDMC up to Rs.500,000) |
-| Profit Rate | Usually higher (12-15%) | Usually lower (10-13%) |
-| Liquidity | Premature encashment possible (with penalty) | Break FD possible (with penalty) |
-| Tax | Varies by product | 15% (filer), 30% (non-filer) |
-| Accessibility | National Savings centres | Any bank branch + online |
-| Minimum | Rs.100 - Rs.1,00,000 | Usually Rs.10,000+ |
+---
 
-## Tips
+## 3. Account Opening Process & Requirements
 
-- **Behbood Certificates**: Agar aap ya aap ke ghar mein koi eligible hai, toh yeh sabse acha option hai — highest profit rate
-- **DSC**: Long-term ke liye best — 10 saal mein paisa double se zyada ho jata hai
-- **SSC**: 3 saal ke liye rakhein aur har 6 maah munafa lein
-- **Diversify karein**: Sirf National Savings mein mat rakhein — mutual funds aur stocks bhi consider karein
-- **Inflation ko yaad rakhein**: Agar inflation 15% hai aur profit 12% mil raha hai, toh asal mein aap ka paisa kam ho raha hai purchasing power ke hisaab se
+National Savings account kholne ke do tareeqe hain:
+
+### Method A: National Savings Centre (NSC) Branch Visit (Recommended)
+1. Apne qareebi NSC centre visit karein (har bade sheher mein branches hain).
+2. Account Opening Form aur SC-1 form haasil karein.
+3. CNIC copy shamil karein aur form fill karein.
+4. **Waris (Nominee)** ki details lazmi fill karein (death ki surat mein jise paise milenge).
+5. Payment cheque ya cash ke zariye karein.
+
+### Method B: State Bank or Commercial Banks
+* Designated banks (jaise **NBP - National Bank of Pakistan**) bhi National Savings Certificates bechte hain aur wahan se bhi accounts manage ho sakte hain.
+
+### Zaruri Documents Checklist:
+* CNIC copy (Sarmayakar aur Nominee dono ki).
+* Income Proof (Salary slip, pension paper, ya business letterhead).
+* Zakat Exemption Form (Affidavit CZ-50) agar Zakat ki deduction se bachna ho.

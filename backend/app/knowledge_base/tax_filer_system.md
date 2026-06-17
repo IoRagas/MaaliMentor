@@ -1,59 +1,75 @@
-# FBR Tax Filer System — Pakistan
+# FBR Tax Filer System in Pakistan (Filer vs Non-Filer)
 
-## Filer vs Non-Filer: Kya Farq Hai?
+Pakistan mein **Federal Board of Revenue (FBR)** tax system chalata hai. FBR ke records ke mutabiq jo afrad saalana income tax return jama karwate hain aur unka naam Active Taxpayers List (ATL) mein hota hai, unhein **Filer** kaha jata hai. Jo return file nahi karte, unhein **Non-Filer** kaha jata hai.
 
-Pakistan mein FBR (Federal Board of Revenue) ke paas jo shakhs apna income tax return file karta hai, woh **Filer** kehlata hai. Jo nahi karta, woh **Non-Filer** hai.
+---
 
-### Filer Hone Ke Faide
+## 1. Filer Status Check Karne Ka Tareeqa
 
-| Transaction | Filer Tax Rate | Non-Filer Tax Rate |
+Aap aasani se check kar sakte hain ke aap ya koi aur shakhs Filer hai ya nahi:
+
+### A. SMS Ke Zariye (Quick Check):
+1. Mobile SMS mein jayein.
+2. Type karein: `ATL [space] 13-digit CNIC (bina dash ke)` (Misaal: `ATL 6110112345678`).
+3. Is message ko **9966** par send karein.
+4. FBR aap ko fori reply karein ga ke aap Active (Filer) hain ya Inactive (Non-Filer).
+
+### B. Online Portal:
+* FBR ki official website check.fbr.gov.pk par online portal se CNIC number enter karke active taxpayer status check kiya ja sakta hai.
+
+---
+
+## 2. FBR IRIS System aur Filing Forms
+
+Tax return file karne ke liye FBR ka online platform **IRIS** (iris.fbr.gov.pk) istemal hota hai.
+
+### Key IRIS Forms:
+* **Form 181 (Registration Form)**: NTN (National Tax Number) hasil karne aur details modify karne ke liye.
+* **Form 114 (Income Tax Return)**: Saalana amdani (income), expenses (kharche), aur paid taxes declare karne ka form.
+* **Wealth Statement 116(2)**: Aap ki total wealth (assets jaise property, cash, gold, bank accounts, cars) aur liabilities (loans) ki tafseel.
+* **Reconciliation Statement**: Pichle saal ke assets aur is saal ke assets ke darmiyan farq ko income ke sath match (reconcile) karna.
+
+---
+
+## 3. Real-world Savings Examples (Filer vs Non-Filer)
+
+Filer hone ke faide aur sarmaya bachat ke real-world examples:
+
+### Example A: Gaari Khareedna (Suzuki Alto / Toyota Yaris)
+* **Suzuki Alto VXR (Ex-factory price: Rs. 2,300,000)**:
+  * **Filer Advance Tax (approx 1%)**: Rs. 23,000
+  * **Non-Filer Advance Tax (approx 3%)**: Rs. 69,000
+  * **Bachat (Savings)**: **Rs. 46,000** bachat fori registration par!
+* **Toyota Yaris ATIV (Price: Rs. 4,800,000)**:
+  * **Filer Tax (approx 1.5%)**: Rs. 72,000
+  * **Non-Filer Tax (approx 4.5%)**: Rs. 216,000
+  * **Bachat**: **Rs. 144,000** savings!
+
+### Example B: Property Khareedna (DHA / Clifton / Bahria Town)
+* **10 Marla Plot (Price: Rs. 20,000,000)**:
+  * **Filer registration tax rate (3%)**: Rs. 600,000
+  * **Non-Filer registration tax rate (10%)**: Rs. 2,000,000
+  * **Bachat (Savings)**: **Rs. 1,400,000 (14 Lakh Rupees)** bachat! Non-filers ke liye property khareedna nihayat mushkil aur expensive bana diya gaya hai.
+
+---
+
+## 4. Tax Rates on Bank Profit, Dividends and Cash Withdrawals
+
+| Transaction Type | Filer Tax Rate | Non-Filer Tax Rate |
 |---|---|---|
-| Bank profit / savings | 15% | 30% |
-| Property khareedna (immovable) | 1-2% | 4-8% |
-| Gaari registration | 1-2.5% | 5-10% |
-| Prize bond winnings | 15% | 30% |
-| Cash withdrawal (Rs.50,000+) | 0.6% | 1.2% |
-| Dividend income | 15% | 30% |
+| **Bank profit / PLS profit** | **15%** | **35%** |
+| **Mutual Fund Dividend** | **15%** | **30%** |
+| **Stock Market Dividend** | **15%** | **30%** |
+| **Prize Bond Winning** | **15%** | **30%** |
+| **Cash withdrawal (Rs. 50k+ daily)** | **0%** | **0.6%** |
+| **Dividend from IPPs / Mutual Funds** | **15%** | **30%** |
 
-### Withholding Tax Rates (2024-25)
+---
 
-- **Banking transactions**: Filer 0.6%, Non-Filer 1.2% (Rs.50,000 se zyada cash withdrawal par)
-- **Vehicle purchase**: Filer ko engine size ke hisaab se 1-2.5%, Non-Filer ko 5-10%
-- **Property sale**: Filer 1%, Non-Filer 2% (holding period ke hisaab se)
-- **Mobile phone purchase**: Filer 1%, Non-Filer 2% (import stage par)
+## 5. Tax Credits (Section 61, 62, 63) — Tax Bachane Ke Halal Tareeqe
 
-### Filer Kaise Banein?
+Income Tax Ordinance ke tehat sarmayakar tax credits haasil karke apne payable tax ko kam kar sakte hain:
 
-1. **IRIS Portal par Register Karein**: iris.fbr.gov.pk par jayein
-2. **NTN (National Tax Number) Lein**: CNIC se automatically generate hota hai
-3. **Income Tax Return File Karein**: Saalana income return IRIS portal par submit karein
-4. **ATL (Active Taxpayer List) Mein Naam Aaye**: Return file karne ke baad aap ka naam ATL mein aa jata hai
-
-### Zaruri Documents
-- CNIC (original aur copy)
-- Bank statement (pichle saal ki)
-- Salary certificate ya business income proof
-- Utility bills (bijli, gas)
-- Property papers (agar hon)
-
-### Important Dates
-- Tax return filing deadline: Usually 30th September (individual)
-- Extension sometimes given till 31st October/November
-
-## Tax Slabs (Salaried Individuals — 2024-25)
-
-| Annual Income (PKR) | Tax Rate |
-|---|---|
-| 0 - 6,00,000 | 0% |
-| 6,00,001 - 12,00,000 | 5% of amount exceeding 6 lakh |
-| 12,00,001 - 22,00,000 | Rs.30,000 + 15% of amount exceeding 12 lakh |
-| 22,00,001 - 32,00,000 | Rs.1,80,000 + 25% of amount exceeding 22 lakh |
-| 32,00,001 - 41,00,000 | Rs.4,30,000 + 30% of amount exceeding 32 lakh |
-| Above 41,00,000 | Rs.7,00,000 + 35% of amount exceeding 41 lakh |
-
-## Tips
-
-- Filer hone se aap lakhon rupay bacha sakte hain
-- Agar aap salaried hain aur income Rs.6 lakh se kam hai, tab bhi return file karna faydemand hai
-- Return file karna mushkil nahi — IRIS portal par 30 minute mein ho jata hai
-- Tax consultant ki fee usually Rs.3,000-10,000 hoti hai — ek baar ki investment hai
+* **Section 61 (Charity & Donations)**: Agar aap kisi SECP aur FBR approved charity organisation (jaise Edhi Foundation, Indus Hospital, Shaukat Khanum, Citizens Foundation) ko cheque ke zariye donation dete hain, toh aap ko tax rebate/credit milta hai.
+* **Section 63 (Pension Funds)**: Agar aap SECP se registered Voluntary Pension Schemes (VPS) jaise *Meezan Tahaffuz Pension Fund* ya *NBP Pension Fund* mein invest karte hain, toh aap ko **20% tak tax credit/rebate** milta hai.
+* **Section 62 (Investment in Shares/Mutual Funds)**: Pehle mutual funds mein equity investments par rebate milta tha (halaanki haliya budget mein isey revise/limit kiya gaya hai, lekin voluntary pension funds par rebate ab bhi barkarar hai).
