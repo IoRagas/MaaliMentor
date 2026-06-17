@@ -20,14 +20,28 @@
 * **Dynamic Grading & Anti-Cheat:** 200 high-quality MCQs (20 per level) graded securely. Correct option keys and explanations are omitted from network payloads to prevent browser inspector cheating.
 * **Offline Quiz Fallback:** If the backend API goes offline, the frontend transparently transitions to **Offline Mode**, loading questions from static assets, grading locally, and persisting rank ascension in `localStorage`.
 
-### 4. Urdu Voice Coach (AI Tutor)
+### 4. Adaptive Voice & Text AI Tutor (Roman/Script Urdu)
+* **Mastery-Aware Prompt Tailoring:** Automatically queries the database for the user's `ConceptMastery` scores on each chat/voice request. Classifies the learner dynamically:
+  * **Beginner (Mubtadi)**: Uses simple everyday analogies (tea stalls, local market prices) and avoids technical jargon.
+  * **Intermediate (Darmiyana)**: Introduces standard financial terms with brief explanations.
+  * **Advanced (Mahir)**: Engages in professional discussions on portfolio asset allocation, SECP rules, tax brackets, and Shariah compliance.
+* **Persistent Chat History:** Uses a state-synchronized client-side `localStorage` cache to preserve chat sessions when navigating between dashboard pages, capped to the last **5 previous chats** (10 messages total) to keep sessions clean.
 * **Audio Transcription (STT):** Uses Google Gemini Flash to transcribe user voice messages spoken in Urdu or Roman Urdu.
-* **Speech Synthesis (TTS):** Converts text responses back to Urdu speech using Google TTS.
-* **Conversational Speed Control:** Configured with a natural `1.2x` voice playback rate so synthesized speech flows clearly and conversational pace feels organic.
+* **Speech Synthesis (TTS):** Converts text responses back to Urdu speech using Google TTS, set to a natural `1.15x` playback speed.
 
-### 5. Financial Simulator & Goals Planner
-* **Wealth Simulator:** Compare nominal wealth vs. real purchasing power over a 10-year timeline under adjustable inflation rates.
-* **Goals Tracker:** Allocate target goals and calculate the exact monthly savings required based on personalized risk metrics.
+### 5. Multi-Asset Wealth Simulator (Inflation vs. Investing)
+* **Portfolio Allocation Sliders:** Distribute your annual savings across **six asset classes** (Cash, PLS Savings, Mutual Funds, Islamic Funds, Gold, Real Estate) via interactive sliders.
+* **Summation Validation:** Includes real-time validation badges. The "Agla Saal" (Advance Year) button is disabled unless the allocations sum to **exactly 100%**.
+* **Portfolio Visualizer:** Renders a premium horizontal stacked bar showing real-time asset weights alongside a detailed PKR holdings grid.
+* **Dynamic Rates & Hedge Math:** Bank savings track inflation policy rates dynamically (`inflation_rate - 2%`), Gold returns model real-world inflation hedging, and Mutual Funds fluctuate with equity market volatility.
+* **Emergency Fund Mitigation:** If your liquid assets (Cash + Savings Account) are at least 3 months of your monthly income when a negative event (Medical Emergency, House Repair) strikes, the financial impact is **mitigated by 60%** with educational feedback.
+
+### 6. Goals Tracker & Sinking Fund Planner
+* **Aligned Sinking-Fund Formula:** Uses the exact sinking-fund formula adjusted for inflation and risk-adjusted returns to calculate monthly savings:
+  * **Low Risk**: Calculated at `8%` expected return.
+  * **Moderate Risk**: Calculated at `12%` expected return.
+  * **High Risk**: Calculated at `16%` expected return.
+* **Calculations Transparency:** Cards explicitly list underlying assumptions: e.g. `Calculated at 8% expected annual return` and `Future Cost (Adjusted @ 15% Inflation)`.
 
 ---
 
@@ -36,6 +50,7 @@
 ### Backend
 * **FastAPI:** Python web framework for asynchronous API endpoints.
 * **SQLModel & SQLite:** Combined database modeling and ORM engine with SQLite storage.
+* **ChromaDB Vector Store:** Indexes local markdown articles with custom Gemini Embedding function fallbacks.
 * **Google Gemini AI SDK:** Generates context-aware, Roman Urdu financial advisory responses and transcribes audio uploads.
 * **gTTS (Google Text-to-Speech):** Synthesizes response text into Urdu speech.
 * **Pydantic Validation:** Sanitizes usernames, message lengths, and simulator parameters against SQL injection and DoS attacks.
@@ -59,8 +74,9 @@ maali-mentor/
 │   │   ├── models.py         # DB models (User, QuizAttempt, Goal, etc.)
 │   │   ├── schemas.py        # Validation schemas & constraints
 │   │   ├── main.py           # FastAPI initialization & routers registry
+│   │   ├── knowledge_base/   # Markdown financial articles (Islamic, Mutual Funds, Tax, Savings)
 │   │   ├── routers/          # Endpoints (auth, tutor, simulator, quiz, goals)
-│   │   └── services/         # speech, gemini_client, quiz_data
+│   │   └── services/         # speech, gemini_client, quiz_data, graph_rag, simulator_math, planner_math
 │   └── requirements.txt      # Python package dependencies
 ├── frontend/                 # Next.js Frontend Service
 │   ├── src/
