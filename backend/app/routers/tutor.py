@@ -1,16 +1,27 @@
 """
 Tutor router — voice and text-based financial tutoring.
 
-Provides:
-- Voice endpoint (upload audio → transcribe → generate response → TTS)
-- Text chat endpoint
-- Financial dictionary endpoint with Urdu definitions
+Provides REST and WebSocket endpoints for low-latency, in-memory voice/text tutoring.
 """
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from sqlmodel import Session
+import json
+import base64
+import asyncio
+from typing import Optional
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
+from sqlmodel import Session, select
 
 from app.database import get_session
+from app.models import ChatMessage
 from app.schemas import (
     DictionaryResponse,
     TutorTextRequest,
@@ -18,7 +29,12 @@ from app.schemas import (
     TutorVoiceResponse,
 )
 from app.services.graph_rag import generate_tutor_response
-from app.services.speech import synthesize_speech, transcribe_audio, translate_roman_to_urdu_script
+from app.services.speech import (
+    synthesize_speech_bytes,
+    transcribe_audio,
+    translate_roman_to_urdu_script,
+)
+from app.services.profiler import ConsoleProfiler
 
 router = APIRouter(prefix="/api/tutor", tags=["Tutor"])
 
@@ -35,7 +51,7 @@ FINANCIAL_DICTIONARY: dict[str, dict] = {
         "related_concepts": ["purchasing_power", "investing", "saving"],
     },
     "mutual_fund": {
-        "urdu_term": "باہمی فنڈ (Bahami Fund)",
+        "urdu_term": "باهمی فنڈ (Bahami Fund)",
         "definition": "Bohut se logon ka paisa ikattha karke ek professional fund manager invest karta hai. Aap ko shares ki jagah 'units' milte hain.",
         "example": "Al-Meezan Islamic Fund mein aap Rs.5,000 se start kar sakte hain. Aap ka paisa aur logon ke saath mil kar shares aur sukuk mein lagaya jata hai.",
         "related_concepts": ["investing", "diversification", "islamic_banking"],
@@ -92,7 +108,7 @@ FINANCIAL_DICTIONARY: dict[str, dict] = {
 
 
 # ═══════════════════════════════════════════════════════════════
-# ENDPOINTS
+# REST ENDPOINTS
 # ═══════════════════════════════════════════════════════════════
 
 @router.post("/voice", response_model=TutorVoiceResponse)
@@ -101,50 +117,60 @@ async def voice_tutor(
     audio: UploadFile = File(...),
     session: Session = Depends(get_session),
 ) -> TutorVoiceResponse:
-    """
-    Voice-based tutoring pipeline:
-    1. Transcribe uploaded audio to text (STT)
-    2. Generate tutor response via Graph-RAG + LLM
-    3. Translate + synthesise audio CONCURRENTLY for speed
-    """
-    import asyncio
-
-    # Check file size safeguard (max 10MB)
-    MAX_AUDIO_SIZE = 10 * 1024 * 1024  # 10 MB
-    content_length = audio.headers.get("content-length")
-    if content_length and int(content_length) > MAX_AUDIO_SIZE:
-        raise HTTPException(
-            status_code=413,
-            detail="Audio file exceeds the 10MB size limit.",
-        )
-
-    # 1 — Transcribe
+    """Voice-based tutoring endpoint using Whisper (local) and memory logging."""
+    MAX_AUDIO_SIZE = 10 * 1024 * 1024
     audio_bytes = await audio.read()
     if len(audio_bytes) > MAX_AUDIO_SIZE:
         raise HTTPException(
             status_code=413,
             detail="Audio file exceeds the 10MB size limit.",
         )
-    transcript = await transcribe_audio(audio_bytes, mime_type=audio.content_type)
 
-    # 2 — Generate response
-    result = await generate_tutor_response(transcript, user_id, session)
+    with ConsoleProfiler("REST /voice request handler pipeline", "tutor_api"):
+        # 1 — Transcribe audio using Whisper
+        transcript = await transcribe_audio(audio_bytes, mime_type=audio.content_type)
 
-    # 3 — Translate and synthesise CONCURRENTLY (saves ~1-2s)
-    async def _translate_and_speak(text: str):
-        urdu_text = await translate_roman_to_urdu_script(text)
-        audio_url = await synthesize_speech(urdu_text)
-        return audio_url
+        # 2 — Log user request
+        with ConsoleProfiler("DB User message log", "tutor_api"):
+            user_msg = ChatMessage(user_id=user_id, sender="user", text=transcript)
+            session.add(user_msg)
+            session.commit()
 
-    audio_url = await _translate_and_speak(result["response"])
+        # 3 — Generate tutor response
+        result = await generate_tutor_response(transcript, user_id, session)
+        roman_urdu = result["roman_urdu"]
+        urdu_script = result["urdu_script"]
 
-    return TutorVoiceResponse(
-        user_transcript=transcript,
-        tutor_text_response=result["response"],
-        audio_response_url=audio_url,
-        detected_concepts=result["detected_concepts"],
-        next_recommended_lesson=result["next_lesson"],
-    )
+        # 4 — Log tutor response
+        with ConsoleProfiler("DB Tutor message log", "tutor_api"):
+            tutor_msg = ChatMessage(
+                user_id=user_id,
+                sender="tutor",
+                text=roman_urdu,
+                roman_urdu=roman_urdu,
+                urdu_script=urdu_script,
+            )
+            session.add(tutor_msg)
+            session.commit()
+
+        # 5 — Generate speech in memory (base64)
+        audio_base64 = None
+        try:
+            speech_bytes, _ = await synthesize_speech_bytes(urdu_script)
+            if speech_bytes:
+                audio_base64 = base64.b64encode(speech_bytes).decode("utf-8")
+        except Exception as e:
+            print(f"[tutor] Speech generation error: {e}")
+
+        return TutorVoiceResponse(
+            user_transcript=transcript,
+            tutor_text_response=roman_urdu,
+            roman_urdu=roman_urdu,
+            urdu_script=urdu_script,
+            audio_response_base64=audio_base64,
+            detected_concepts=result["detected_concepts"],
+            next_recommended_lesson=result["next_lesson"],
+        )
 
 
 @router.post("/chat", response_model=TutorTextResponse)
@@ -152,31 +178,53 @@ async def text_chat(
     request: TutorTextRequest,
     session: Session = Depends(get_session),
 ) -> TutorTextResponse:
-    """Text-based chat with the Maali Mentor tutor."""
-    result = await generate_tutor_response(request.message, request.user_id, session)
+    """Text-based chat endpoint with memory logs and base64 audio response."""
+    with ConsoleProfiler("REST /chat request handler pipeline", "tutor_api"):
+        # 1 — Log user request
+        with ConsoleProfiler("DB User message log", "tutor_api"):
+            user_msg = ChatMessage(user_id=request.user_id, sender="user", text=request.message)
+            session.add(user_msg)
+            session.commit()
 
-    # Generate audio in background for text chat too
-    try:
-        urdu_text = await translate_roman_to_urdu_script(result["response"])
-        audio_url = await synthesize_speech(urdu_text)
-    except Exception:
-        audio_url = None
+        # 2 — Generate tutor response
+        result = await generate_tutor_response(request.message, request.user_id, session)
+        roman_urdu = result["roman_urdu"]
+        urdu_script = result["urdu_script"]
 
-    return TutorTextResponse(
-        tutor_response=result["response"],
-        detected_concepts=result["detected_concepts"],
-        next_recommended_lesson=result["next_lesson"],
-        audio_response_url=audio_url,
-    )
+        # 3 — Log tutor response
+        with ConsoleProfiler("DB Tutor message log", "tutor_api"):
+            tutor_msg = ChatMessage(
+                user_id=request.user_id,
+                sender="tutor",
+                text=roman_urdu,
+                roman_urdu=roman_urdu,
+                urdu_script=urdu_script,
+            )
+            session.add(tutor_msg)
+            session.commit()
+
+        # 4 — Generate audio in memory (base64)
+        audio_base64 = None
+        try:
+            speech_bytes, _ = await synthesize_speech_bytes(urdu_script)
+            if speech_bytes:
+                audio_base64 = base64.b64encode(speech_bytes).decode("utf-8")
+        except Exception as e:
+            print(f"[tutor] Speech generation error: {e}")
+
+        return TutorTextResponse(
+            tutor_response=roman_urdu,
+            roman_urdu=roman_urdu,
+            urdu_script=urdu_script,
+            detected_concepts=result["detected_concepts"],
+            next_recommended_lesson=result["next_lesson"],
+            audio_response_base64=audio_base64,
+        )
 
 
 @router.get("/dictionary/{term}", response_model=DictionaryResponse)
 def get_dictionary_entry(term: str) -> DictionaryResponse:
-    """
-    Look up a financial term and return its Urdu definition,
-    example, and related concepts.
-    """
-    # Normalise lookup key
+    """Look up a financial term and return its Urdu definition."""
     key = term.lower().replace(" ", "_").replace("-", "_")
     entry = FINANCIAL_DICTIONARY.get(key)
 
@@ -193,3 +241,131 @@ def get_dictionary_entry(term: str) -> DictionaryResponse:
         example=entry["example"],
         related_concepts=entry["related_concepts"],
     )
+
+
+# ═══════════════════════════════════════════════════════════════
+# WEBSOCKET STREAMING ENDPOINT
+# ═══════════════════════════════════════════════════════════════
+
+async def process_ws_text(text: str, user_id: int, websocket: WebSocket, session: Session):
+    """Log user text query, stream typewriter tokens, and send generated TTS audio."""
+    with ConsoleProfiler("WebSocket process_ws_text pipeline", "websocket"):
+        # 1. Log user message
+        with ConsoleProfiler("DB User log", "websocket"):
+            user_msg = ChatMessage(user_id=user_id, sender="user", text=text)
+            session.add(user_msg)
+            session.commit()
+
+        # 2. Generate tutor response
+        result = await generate_tutor_response(text, user_id, session)
+        roman_urdu = result["roman_urdu"]
+        urdu_script = result["urdu_script"]
+        detected_concepts = result["detected_concepts"]
+        next_lesson = result["next_lesson"]
+
+        # 3. Stream Roman Urdu text chunks for premium look & feel
+        with ConsoleProfiler("Text typewriter WebSocket streaming delay", "websocket"):
+            words = roman_urdu.split(" ")
+            for i, word in enumerate(words):
+                is_final = (i == len(words) - 1)
+                await websocket.send_json({
+                    "type": "text_chunk",
+                    "text": word + (" " if not is_final else ""),
+                    "is_final": is_final
+                })
+                await asyncio.sleep(0.03)
+
+        # 4. Save tutor message to database
+        with ConsoleProfiler("DB Tutor log", "websocket"):
+            tutor_msg = ChatMessage(
+                user_id=user_id,
+                sender="tutor",
+                text=roman_urdu,
+                roman_urdu=roman_urdu,
+                urdu_script=urdu_script,
+            )
+            session.add(tutor_msg)
+            session.commit()
+
+        # 5. Generate TTS in memory
+        audio_base64 = None
+        try:
+            speech_bytes, _ = await synthesize_speech_bytes(urdu_script)
+            if speech_bytes:
+                audio_base64 = base64.b64encode(speech_bytes).decode("utf-8")
+        except Exception as e:
+            print(f"[websocket] Speech generation failed: {e}")
+
+        # 6. Send final metadata package with audio payload
+        await websocket.send_json({
+            "type": "metadata",
+            "roman_urdu": roman_urdu,
+            "urdu_script": urdu_script,
+            "audio_base64": audio_base64,
+            "detected_concepts": detected_concepts,
+            "next_recommended_lesson": next_lesson
+        })
+
+
+async def process_ws_audio(audio_bytes: bytes, user_id: int, websocket: WebSocket, session: Session):
+    """Transcribe client binary audio stream and proceed with chat generation."""
+    with ConsoleProfiler("WebSocket process_ws_audio pipeline", "websocket"):
+        await websocket.send_json({"type": "status", "message": "Transcribing speech..."})
+
+        # Run Speech-to-Text using Whisper service
+        transcript = await transcribe_audio(audio_bytes)
+        
+        # Broadcast decoded transcription back to user interface
+        await websocket.send_json({"type": "user_transcript", "text": transcript})
+        
+        # Proceed to trigger LLM response
+        await process_ws_text(transcript, user_id, websocket, session)
+
+
+@router.websocket("/ws")
+async def tutor_websocket(
+    websocket: WebSocket,
+    user_id: int,
+    session: Session = Depends(get_session)
+):
+    """
+    WebSocket endpoint for real-time speech and text tutoring.
+    
+    Connection parameters:
+        user_id: ID of the active user session.
+    """
+    await websocket.accept()
+    audio_buffer = bytearray()
+    
+    try:
+        while True:
+            # Receive frame
+            frame = await websocket.receive()
+            
+            if "bytes" in frame:
+                # Accumulate raw microphone binary audio streams
+                audio_buffer.extend(frame["bytes"])
+                
+            elif "text" in frame:
+                payload = json.loads(frame["text"])
+                msg_type = payload.get("type")
+                
+                if msg_type == "text_message":
+                    user_text = payload.get("text", "")
+                    await process_ws_text(user_text, user_id, websocket, session)
+                    
+                elif msg_type == "stop_speaking":
+                    if audio_buffer:
+                        await process_ws_audio(bytes(audio_buffer), user_id, websocket, session)
+                        audio_buffer.clear()
+                    else:
+                        await websocket.send_json({"type": "error", "message": "Empty audio stream received."})
+                        
+    except WebSocketDisconnect:
+        print(f"[websocket] Client session {user_id} disconnected.")
+    except Exception as e:
+        print(f"[websocket] Session error: {e}")
+        try:
+            await websocket.send_json({"type": "error", "message": str(e)})
+        except Exception:
+            pass

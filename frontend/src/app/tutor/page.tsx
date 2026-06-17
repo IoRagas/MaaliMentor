@@ -36,30 +36,52 @@ const suggestedTopics = [
 
 export default function TutorPage() {
   const [userId, setUserId] = useState(1);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "tutor",
-      text: "Assalam-o-Alaikum! 👋 Main Maali Mentor hoon — aapka AI financial coach. Aap mujhse koi bhi financial sawal Urdu ya Roman Urdu mein pooch sakte hain. Main bol kar aur likh kar, dono tarah madad kar sakta hoon. Aaj aap kya seekhna chahein ge?",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [voiceState, setVoiceState] = useState<"idle" | "recording" | "processing">("idle");
   const [showTopics, setShowTopics] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [useWebSocket, setUseWebSocket] = useState(true); // Default to live streaming mode
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
 
-  // Helper to play audio with controls wired up
+  // Close WebSocket on unmount
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+    };
+  }, []);
+
+  // Helper to play base64-encoded audio directly
+  const playBase64Audio = (base64Data: string) => {
+    stopAudio();
+    try {
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "audio/mpeg" });
+      const blobUrl = URL.createObjectURL(blob);
+      playAudioUrl(blobUrl);
+    } catch (e) {
+      console.error("Error decoding base64 audio:", e);
+    }
+  };
+
+  // Helper to play audio URL with controls
   const playAudioUrl = (url: string) => {
-    // Stop any currently playing audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -67,7 +89,7 @@ export default function TutorPage() {
 
     const audio = new Audio();
     audio.preload = "auto";
-    audio.playbackRate = 1.2;
+    audio.playbackRate = 1.15; // Slightly faster for natural rhythm
     audioRef.current = audio;
 
     audio.addEventListener("canplaythrough", () => {
@@ -113,7 +135,7 @@ export default function TutorPage() {
     setIsPaused(false);
   };
 
-  // Auto-resize textarea height as text flows
+  // Auto-resize textarea height
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -130,7 +152,68 @@ export default function TutorPage() {
     }
   }, []);
 
-  // Pre-load concept lesson if redirected from the dashboard graph
+  // Load chat history from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("tutor_chat_history");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.length > 0) {
+            setMessages(parsed);
+            setHasLoaded(true);
+            return;
+          }
+        } catch (e) {
+          console.error("Failed to parse saved chat history:", e);
+        }
+      }
+
+      // Seed default welcome message
+      setMessages([
+        {
+          id: "1",
+          role: "tutor",
+          text: "Assalam-o-Alaikum! 👋 Main Maali Mentor hoon — aapka AI financial coach. Aap mujhse koi bhi financial sawal Urdu ya Roman Urdu mein pooch sakte hain. Main bol kar aur likh kar, dono tarah madad kar sakta hoon. Aaj aap kya seekhna chahein ge?",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+      setHasLoaded(true);
+    }
+  }, []);
+
+  // Save chat history to localStorage on messages update
+  useEffect(() => {
+    if (typeof window !== "undefined" && hasLoaded && messages.length > 0) {
+      // Keep up to the last 10 messages (which corresponds to 5 previous Q&A chats)
+      const chatsToSave = messages.slice(-10);
+      localStorage.setItem("tutor_chat_history", JSON.stringify(chatsToSave));
+    }
+  }, [messages, hasLoaded]);
+
+  const [masteryScores, setMasteryScores] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchMastery = async () => {
+      if (!userId) return;
+      try {
+        const res = await fetch(`http://localhost:8000/api/auth/dashboard/${userId}`);
+        if (res.ok) {
+          const result = await res.json();
+          const scores: Record<string, number> = {};
+          result.concept_mastery?.forEach((m: { concept_name: string; mastery_score: number }) => {
+            scores[m.concept_name] = m.mastery_score;
+          });
+          setMasteryScores(scores);
+        }
+      } catch (err) {
+        console.error("Error fetching concept mastery for tutor page:", err);
+      }
+    };
+    fetchMastery();
+  }, [userId]);
+
+  // Pre-load concept lesson if redirected from dashboard
   useEffect(() => {
     if (typeof window !== "undefined") {
       const searchParams = new URLSearchParams(window.location.search);
@@ -163,11 +246,106 @@ export default function TutorPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const sendMessage = async (text: string) => {
-    if (!text.trim()) return;
-    // Stop any playing audio when user sends a new message
-    stopAudio();
+  // Connect and manage WebSocket connection
+  const connectWebSocket = (): Promise<WebSocket> => {
+    return new Promise((resolve, reject) => {
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        resolve(socketRef.current);
+        return;
+      }
 
+      const wsUrl = `ws://localhost:8000/api/tutor/ws?user_id=${userId}`;
+      const ws = new WebSocket(wsUrl);
+      socketRef.current = ws;
+
+      ws.onopen = () => {
+        resolve(ws);
+      };
+
+      ws.onerror = (err) => {
+        console.error("WebSocket connection error:", err);
+        reject(err);
+      };
+
+      ws.onclose = () => {
+        socketRef.current = null;
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === "text_chunk") {
+            setIsTyping(false);
+            setMessages((prev) => {
+              const last = prev[prev.length - 1];
+              if (last && last.role === "tutor" && last.id === "streaming-tutor") {
+                return [
+                  ...prev.slice(0, -1),
+                  { ...last, text: last.text + data.text }
+                ];
+              } else {
+                return [
+                  ...prev,
+                  {
+                    id: "streaming-tutor",
+                    role: "tutor",
+                    text: data.text,
+                    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                  }
+                ];
+              }
+            });
+          }
+          
+          else if (data.type === "user_transcript") {
+            setIsTyping(true);
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: Date.now().toString(),
+                role: "user",
+                text: data.text,
+                timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              }
+            ]);
+          }
+
+          else if (data.type === "status") {
+            setIsTyping(true);
+          }
+
+          else if (data.type === "metadata") {
+            setIsTyping(false);
+            setMessages((prev) => {
+              // Replace streaming placeholder message with final formatted response
+              const filtered = prev.filter(m => m.id !== "streaming-tutor");
+              const tutorMsg: Message = {
+                id: Date.now().toString(),
+                role: "tutor",
+                text: data.roman_urdu,
+                concepts: data.detected_concepts?.map((c: string) => ({
+                  name: c.split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+                  mastery: masteryScores[c] ?? 0,
+                })),
+                timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              };
+              return [...filtered, tutorMsg];
+            });
+
+            if (data.audio_base64) {
+              playBase64Audio(data.audio_base64);
+            }
+          }
+        } catch (e) {
+          console.error("Error parsing WS frame:", e);
+        }
+      };
+    });
+  };
+
+  // RESTful Fallback
+  const sendMessageREST = async (text: string) => {
     const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -199,18 +377,17 @@ export default function TutorPage() {
           text: data.tutor_response,
           concepts: data.detected_concepts?.map((c: string) => ({
             name: c.split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
-            mastery: 50,
+            mastery: masteryScores[c] ?? 0,
           })),
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         };
         setMessages((prev) => [...prev, tutorMsg]);
 
-        // Play audio if available
-        if (data.audio_response_url) {
-          playAudioUrl(`http://localhost:8000${data.audio_response_url}`);
+        if (data.audio_response_base64) {
+          playBase64Audio(data.audio_response_base64);
         }
       } else {
-        throw new Error("API error");
+        throw new Error("REST API failure");
       }
     } catch (err) {
       console.error(err);
@@ -226,12 +403,41 @@ export default function TutorPage() {
     }
   };
 
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) return;
+    stopAudio();
+
+    if (useWebSocket) {
+      try {
+        const ws = await connectWebSocket();
+        const userMsg: Message = {
+          id: Date.now().toString(),
+          role: "user",
+          text: text.trim(),
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+        setMessages((prev) => [...prev, userMsg]);
+        setInput("");
+        setIsTyping(true);
+
+        ws.send(JSON.stringify({
+          type: "text_message",
+          text: text.trim()
+        }));
+      } catch (err) {
+        console.error("WS error, falling back to REST:", err);
+        await sendMessageREST(text);
+      }
+    } else {
+      await sendMessageREST(text);
+    }
+  };
+
   const handleVoice = async () => {
     if (voiceState === "idle") {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, sampleRate: 16000 } });
         
-        // Detect browser supported mime type
         let mimeType = "audio/webm";
         let extension = "webm";
         if (typeof MediaRecorder !== "undefined") {
@@ -252,19 +458,41 @@ export default function TutorPage() {
 
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType,
-          audioBitsPerSecond: 16000 // Compress audio to 16kbps mono — sufficient for speech, halves upload size
+          audioBitsPerSecond: 16000
         });
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
 
+        let ws: WebSocket | null = null;
+        if (useWebSocket) {
+          try {
+            ws = await connectWebSocket();
+            setVoiceState("recording");
+          } catch (e) {
+            console.error("Failed to connect WS for voice streaming");
+          }
+        }
+
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
+            if (useWebSocket && ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(event.data);
+            } else {
+              audioChunksRef.current.push(event.data);
+            }
           }
         };
 
         mediaRecorder.onstop = async () => {
           setVoiceState("processing");
+
+          if (useWebSocket && ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "stop_speaking" }));
+            setVoiceState("idle");
+            return;
+          }
+
+          // REST Fallback
           const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
           
           try {
@@ -294,15 +522,15 @@ export default function TutorPage() {
                   text: data.tutor_text_response,
                   concepts: data.detected_concepts?.map((c: string) => ({
                     name: c.split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
-                    mastery: 50,
+                    mastery: masteryScores[c] ?? 0,
                   })),
                   timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                 };
                 
                 setMessages((prev) => [...prev, voiceUserMsg, voiceTutorMsg]);
 
-                if (data.audio_response_url) {
-                  playAudioUrl(`http://localhost:8000${data.audio_response_url}`);
+                if (data.audio_response_base64) {
+                  playBase64Audio(data.audio_response_base64);
                 }
               }
             }
@@ -313,8 +541,11 @@ export default function TutorPage() {
           }
         };
 
-        mediaRecorder.start();
-        setVoiceState("recording");
+        // If using WS, record in 500ms slice chunks
+        mediaRecorder.start(useWebSocket ? 500 : undefined);
+        if (!useWebSocket) {
+          setVoiceState("recording");
+        }
       } catch (err) {
         console.error("Mic access denied or error:", err);
       }
@@ -346,12 +577,36 @@ export default function TutorPage() {
                 </span>
               </div>
             </div>
-            <button
-              className="lg:hidden text-slate-400 hover:text-white transition-colors"
-              onClick={() => setShowTopics(!showTopics)}
-            >
-              <BookOpen size={20} />
-            </button>
+            <div className="flex items-center gap-4">
+              {/* Glowing WebSocket toggle */}
+              <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-xs font-semibold text-slate-400 select-none">Live Streaming</span>
+                <button
+                  onClick={() => {
+                    if (socketRef.current) {
+                      socketRef.current.close();
+                    }
+                    setUseWebSocket(!useWebSocket);
+                  }}
+                  className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none relative ${
+                    useWebSocket ? "bg-emerald-500" : "bg-slate-700"
+                  }`}
+                  title={useWebSocket ? "Disable WebSocket Streaming" : "Enable WebSocket Streaming"}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
+                      useWebSocket ? "translate-x-4" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+              <button
+                className="lg:hidden text-slate-400 hover:text-white transition-colors"
+                onClick={() => setShowTopics(!showTopics)}
+              >
+                <BookOpen size={20} />
+              </button>
+            </div>
           </header>
 
           {/* Messages */}
@@ -401,7 +656,7 @@ export default function TutorPage() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Audio playback controls — floating bar */}
+          {/* Audio playback controls */}
           {isPlaying && (
             <div className="sticky bottom-36 md:bottom-20 z-40 px-4 md:px-6 flex justify-center animate-fade-in">
               <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-900/70 border border-emerald-500/30 backdrop-blur-xl shadow-lg shadow-emerald-500/10">
