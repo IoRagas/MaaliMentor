@@ -153,7 +153,7 @@ export default function LandingPage() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/onboarding"
+            href="/login"
             className="text-xs sm:text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors duration-200 px-3 py-1.5"
           >
             Login

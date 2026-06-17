@@ -16,6 +16,8 @@ from app.schemas import (
     GoalResponse,
     OnboardingRequest,
     OnboardingResponse,
+    LoginRequest,
+    LoginResponse,
 )
 from app.services.graph_rag import ALL_CONCEPTS, get_next_recommended
 
@@ -119,6 +121,7 @@ def onboard_user(
     # Create user
     user = User(
         username=request.username,
+        password=request.password,
         email=request.email,
         user_level=level,
         current_level=start_level,
@@ -143,6 +146,32 @@ def onboard_user(
         assigned_level=level,
         recommended_topics=recommended,
         current_level=start_level,
+    )
+
+
+@router.post("/login", response_model=LoginResponse)
+def login_user(
+    request: LoginRequest,
+    session: Session = Depends(get_session),
+) -> LoginResponse:
+    """
+    Authenticate a user by username and password.
+    """
+    user = session.exec(
+        select(User).where(User.username == request.username)
+    ).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if user.password != request.password:
+        raise HTTPException(status_code=401, detail="Invalid password")
+        
+    return LoginResponse(
+        user_id=user.id,  # type: ignore[arg-type]
+        username=user.username,
+        user_level=user.user_level,
+        current_level=user.current_level,
     )
 
 

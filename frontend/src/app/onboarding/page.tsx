@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowLeft, CheckCircle, Sparkles, User } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle, Sparkles, User, Lock } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 
 interface StepData {
@@ -11,6 +11,7 @@ interface StepData {
   questionUrdu: string;
   options?: { label: string; labelUrdu: string; value: string }[];
   isInput?: boolean;
+  isPassword?: boolean;
 }
 
 const steps: StepData[] = [
@@ -22,6 +23,13 @@ const steps: StepData[] = [
   },
   {
     id: 1,
+    question: "Apna password set karein",
+    questionUrdu: "اپنا پاس ورڈ سیٹ کریں",
+    isInput: true,
+    isPassword: true,
+  },
+  {
+    id: 2,
     question: "Aap ko 'inflation' (mehengai) ka matlab pata hai?",
     questionUrdu: "کیا آپ کو 'انفلیشن' (مہنگائی) کا مطلب معلوم ہے؟",
     options: [
@@ -32,7 +40,7 @@ const steps: StepData[] = [
     ],
   },
   {
-    id: 2,
+    id: 3,
     question: "Kya aap ne kabhi mutual funds ya shares mein invest kiya hai?",
     questionUrdu: "کیا آپ نے کبھی میوچل فنڈز یا شیئرز میں انویسٹ کیا ہے؟",
     options: [
@@ -43,7 +51,7 @@ const steps: StepData[] = [
     ],
   },
   {
-    id: 3,
+    id: 4,
     question: "Aap apni monthly savings ka kitna hissa invest karte hain?",
     questionUrdu: "آپ اپنی ماہانہ بچت کا کتنا حصہ انویسٹ کرتے ہیں؟",
     options: [
@@ -54,7 +62,7 @@ const steps: StepData[] = [
     ],
   },
   {
-    id: 4,
+    id: 5,
     question: "If you invest Rs. 100,000 with a 10% annual return compounded annually, how much will you have after 2 years?",
     questionUrdu: "اگر آپ سالانہ 10٪ کمپاؤنڈ پرافٹ پر 100,000 روپے انویسٹ کریں، تو 2 سال بعد آپ کے پاس کتنی رقم ہوگی؟",
     options: [
@@ -70,6 +78,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
 
@@ -82,20 +91,28 @@ export default function OnboardingPage() {
   };
 
   const next = async () => {
-    if (step.isInput && !username.trim()) return;
-    if (!step.isInput && !answers[currentStep]) return;
+    if (step.isInput) {
+      if (step.isPassword) {
+        if (password.trim().length < 4) return;
+      } else {
+        if (!username.trim()) return;
+      }
+    } else {
+      if (!answers[currentStep]) return;
+    }
 
     if (isLast) {
       setLoading(true);
       try {
         const payload = {
           username: username.trim(),
+          password: password.trim(),
           email: `${username.trim().toLowerCase().replace(/\s+/g, "")}@example.com`,
           answers: [
-            { question_id: 1, selected_option: answers[1] },
-            { question_id: 2, selected_option: answers[2] },
-            { question_id: 3, selected_option: answers[3] },
-            { question_id: 4, selected_option: answers[4] },
+            { question_id: 1, selected_option: answers[2] },
+            { question_id: 2, selected_option: answers[3] },
+            { question_id: 3, selected_option: answers[4] },
+            { question_id: 4, selected_option: answers[5] },
           ],
         };
 
@@ -117,7 +134,7 @@ export default function OnboardingPage() {
         } else {
           console.error("Onboarding failed");
           // Fallback redirect
-          const hasHardCorrect = answers[4] === "c";
+          const hasHardCorrect = answers[5] === "c";
           localStorage.setItem("user_id", "1");
           localStorage.setItem("username", username.trim() || "Sarmayakar");
           localStorage.setItem("user_level", hasHardCorrect ? "Intermediate" : "Beginner");
@@ -127,9 +144,11 @@ export default function OnboardingPage() {
       } catch (err) {
         console.error("Error communicating with backend:", err);
         // Fallback redirect
+        const hasHardCorrect = answers[5] === "c";
         localStorage.setItem("user_id", "1");
         localStorage.setItem("username", username.trim() || "Sarmayakar");
-        localStorage.setItem("user_level", "Beginner");
+        localStorage.setItem("user_level", hasHardCorrect ? "Intermediate" : "Beginner");
+        localStorage.setItem("current_level", hasHardCorrect ? "3" : "1");
         router.push("/dashboard");
       } finally {
         setLoading(false);
@@ -145,10 +164,14 @@ export default function OnboardingPage() {
     setCurrentStep((prev) => prev - 1);
   };
 
-  const isNextDisabled = step.isInput ? !username.trim() : !answers[currentStep];
+  const isNextDisabled = step.isInput
+    ? step.isPassword
+      ? password.trim().length < 4
+      : !username.trim()
+    : !answers[currentStep];
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative">
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative bg-slate-950 text-white">
       {/* Ambient glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none" />
 
@@ -206,17 +229,29 @@ export default function OnboardingPage() {
           {step.isInput ? (
             <div className="relative mb-8">
               <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400">
-                <User size={22} />
+                {step.isPassword ? <Lock size={22} /> : <User size={22} />}
               </div>
               <input
-                type="text"
-                value={username}
+                type={step.isPassword ? "password" : "text"}
+                value={step.isPassword ? password : username}
                 maxLength={20}
-                onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_\s\-]/g, ""))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && username.trim()) next();
+                onChange={(e) => {
+                  if (step.isPassword) {
+                    setPassword(e.target.value);
+                  } else {
+                    setUsername(e.target.value.replace(/[^a-zA-Z0-9_\s\-]/g, ""));
+                  }
                 }}
-                placeholder="Apna naam likhein (e.g. Ahmed)"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    if (step.isPassword) {
+                      if (password.trim().length >= 4) next();
+                    } else {
+                      if (username.trim()) next();
+                    }
+                  }
+                }}
+                placeholder={step.isPassword ? "Kam az kam 4 characters ka password" : "Apna naam likhein (e.g. Ahmed)"}
                 className="w-full pl-14 pr-6 py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg md:text-xl focus:outline-none focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/5 transition-all duration-250"
                 autoFocus
               />

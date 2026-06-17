@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Sparkles,
   Award,
+  LogOut,
 } from "lucide-react";
 
 const navItems = [
@@ -85,6 +86,25 @@ export default function Sidebar({ className = "" }: SidebarProps) {
             );
           })}
         </nav>
+
+        {/* Logout button */}
+        <div className="px-3 py-2 border-t border-white/5">
+          <button
+            onClick={() => {
+              localStorage.clear();
+              window.location.href = "/";
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all duration-200 group relative"
+          >
+            <LogOut size={22} className="flex-shrink-0 text-rose-500 group-hover:text-rose-400" />
+            {!collapsed && (
+              <div className="animate-fade-in text-left">
+                <span className="text-sm font-medium">Logout</span>
+                <span className="block text-[10px] text-rose-500/70">لاگ آؤٹ</span>
+              </div>
+            )}
+          </button>
+        </div>
 
         {/* Collapse toggle */}
         <div className="p-3 border-t border-white/5">

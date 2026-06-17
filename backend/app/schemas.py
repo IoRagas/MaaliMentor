@@ -30,6 +30,12 @@ class OnboardingRequest(BaseModel):
         pattern=r"^[a-zA-Z0-9_\s\-]+$",
         description="Username must contain only alphanumeric characters, underscores, spaces, or hyphens",
     )
+    password: str = Field(
+        ...,
+        min_length=4,
+        max_length=30,
+        description="Password must be between 4 and 30 characters",
+    )
     email: Optional[str] = Field(default=None, max_length=100, description="Optional valid email address")
     answers: list[OnboardingAnswer] = Field(
         ...,
@@ -44,6 +50,20 @@ class OnboardingResponse(BaseModel):
     user_id: int
     assigned_level: str
     recommended_topics: list[str]
+    current_level: int
+
+
+class LoginRequest(BaseModel):
+    """Payload to login a user."""
+    username: str = Field(..., min_length=2, max_length=30)
+    password: str = Field(..., min_length=4, max_length=30)
+
+
+class LoginResponse(BaseModel):
+    """Returned after successful login."""
+    user_id: int
+    username: str
+    user_level: str
     current_level: int
 
 
