@@ -67,6 +67,19 @@ const studyMaterials: Record<number, StudyGuide> = {
     ]
   },
   5: {
+    title: "Tax Basics & Filing",
+    urduTitle: "ٹیکس فائلنگ اور فائلر بننے کے فائدے",
+    content: [
+      "**Filer vs Non-Filer & ATL:** Filer woh shakhs hai jo FBR mein tax returns file karta hai aur Active Taxpayer List (ATL) mein shamil hota hai, jis se dynamic tax discounts milte hain. Non-Filer return file nahi karte aur un par heavy penalty tax rates lagte hain.",
+      "**Status Check Kaise Karein:** Mobile SMS mein `ATL [space] CNIC (bina dash ke)` likh kar **9966** par send karein, ya check.fbr.gov.pk portal par ja kar status check karein.",
+      "**FBR IRIS online system:** Tax return file karne ke liye FBR ka online platform **IRIS** (iris.fbr.gov.pk) use hota hai. **Form 114** saalana income aur expenses declare karne ke liye hai, aur **Form 116** (Wealth Statement) assets aur liabilities declare karne ke liye hai.",
+      "**Filer Banking & Profit Benefits:** Active filer ko bank cash withdrawal par zero tax dena parta hai, jabke non-filer par 50,000 daily se zyada nikalne par **0.6% tax** lagta hai. Saving bank accounts ke profit par filer ko **15% tax** aur non-filer ko **35% tax** dena parta hai.",
+      "**Gari aur Property par Bachat:** Alto ya Yaris khareedne par filer ko normal rate (1-1.5%) jabke non-filer ko double/triple (3-4.5%) tax dena parta hai. DHA ya Bahria Town mein 10 Marla property transfer par filer par **3% tax** jabke non-filer par **10% ya zyada** tax lagta hai.",
+      "**Stocks & Mutual Funds Tax Relief:** Stock profits (CGT) aur mutual fund profits par Active Filer par **15% tax** lagta hai, jabke non-filer par double **30% tax** lagta hai.",
+      "**Halal Tax Credits (Section 61 & 63):** legal tareeqay se payable tax kam karne ke liye approved charities ko donations (**Section 61**) dene par ya Voluntary Pension Schemes (VPS) mein invest karne par (**Section 63**) up to 20% tax rebate milta hai."
+    ]
+  },
+  6: {
     title: "Investing Principles",
     urduTitle: "سرمایہ کاری کے بنیادی اصول",
     content: [
@@ -80,7 +93,7 @@ const studyMaterials: Record<number, StudyGuide> = {
       "**Pehli Priority & Emotional Control:** Investing shuru karne ki pehli shart high-interest debts (jaise credit cards) se azaad hona aur basic emergency fund banana hai, kyunke debt markup (20-30%) return se zyada hota hai. Market fluctuations mein panic selling se bachne ke liye **Emotional Control** zaroori hai. **Liquidity Risk** zaroorat ke waqt asset ko jaldi cash na kar paana hai."
     ]
   },
-  6: {
+  71: {
     title: "Mutual Funds",
     urduTitle: "میوچل فنڈز کی تفصیل",
     content: [
@@ -93,7 +106,7 @@ const studyMaterials: Record<number, StudyGuide> = {
       "**Mutual Fund Advantages:** Direct stocks ke muqable mutual fund mein professional management aur choti raqam (jaise Rs. 5000) se auto-diversification milti hai, jis se single company default ka risk kam ho jata hai. Invest karne se pehle fund **Prospectus** (rules book) zaroori read karna chahiye. **Growth Funds** capital appreciation (reinvestment) dete hain aur **Income Funds** periodic payouts dete hain."
     ]
   },
-  7: {
+  72: {
     title: "Islamic Banking & Finance",
     urduTitle: "اسلامی بینکاری کے اصول",
     content: [
@@ -106,7 +119,7 @@ const studyMaterials: Record<number, StudyGuide> = {
       "**Micro-Finance & Zakat:** **Akhuwat** model behtareen Islamic micro-finance hai jo Qarz-e-Hasna (interest-free loan with zero markup) deta hai. **Zakat** sarmaye par **2.5% saalana wajib tax** hai jo poor log ki welfare aur circulation of wealth ke liye wajib hai. **Riba al-Fadl** same category commodities ke barter exchange mein extra quantity lena hai."
     ]
   },
-  8: {
+  81: {
     title: "Stock Market & Shares",
     urduTitle: "اسٹاک مارکیٹ اور حصص",
     content: [
@@ -120,31 +133,41 @@ const studyMaterials: Record<number, StudyGuide> = {
       "**Prohibitions & Advice:** **Insider Trading** company ki non-public secret information par trade karna hai jo strictly illegal hai. **Short Selling** stocks borrow kar ke pehle bechna aur sasta hone par buy kar ke return karna hai. New users ko advice hai ke direct speculative trade ke bajaye research karein, blue chips ya index funds se start karein aur patience rakhein."
     ]
   },
-  9: {
-    title: "Diversification & Risk",
-    urduTitle: "تنوع اور رسک مینجمنٹ",
+  82: {
+    title: "Gold, Property & Alternatives",
+    urduTitle: "سونا اور رئیل اسٹیٹ",
     content: [
-      "**Diversification Concept:** Sarmayakari ka standard rule hai ke **'Don't put all eggs in one basket'** (apnay saaray anday ek hi tokri mein mat rakhein). Apne capital ko mukhtalif stocks, sectors, aur asset classes mein divide karna taake total risk kam ho.",
-      "**Asset Allocation & Age:** Apni total savings ko age aur goals ke mutabiq classes (jaise stocks, bonds, gold, cash) mein divide karna. Young investors high risk equity le sakte hain kyunke recovery time zyada hota hai, seniors ko principal safety ke liye fixed income debt resources rakhne chahiye.",
-      "**Sectors Diversification:** Direct stock portfolio mein **Sector Diversification** zaroori hai. Ek hi cement sector ke bajaye Tech, Oil, Cement, aur Fertilizer sectors ke mukhtalif companies ke shares lene chahiye.",
-      "**Systematic vs Unsystematic Risk:** **Unsystematic Risk** company specific risk hota hai (jaise strike) jise proper diversification (20-30 different stocks) se khatam kiya ja sakta hai. **Systematic Risk (Market Risk)** mulk ke overall halat, currency devaluation, ya interest rate barhne ka risk hai jo poori market ko girata hai, aur ise simple diversification se khatam nahi kiya ja sakta.",
-      "**Correlation & Gold Safe Haven:** **Correlation** assets ki price movements ka aapas mein relation hai. Negative correlation assets (jaise stocks aur gold) portfolio ko balance rakhte hain. **Gold (Sona)** crisis aur inflation ke waqt **Safe Haven** asset ka role play karta hai, kyunke market girne par gold barhta hai.",
-      "**Rebalancing vs Over-diversification:** **Rebalancing** ratios badalne par assets ko dobara original allocations (jaise 50/50 stock/bond) par lane ke liye adjust karna hai. **Over-diversification** mein itne zyada assets (jaise 100+ stocks) le liye jate hain ke return dilute ho kar market average se bhi kam ho jata hai aur transaction charges barh jate hain.",
-      "**Risk appetite & Beta:** **Risk Appetite** investor ki loss absorb karne ki capacity hai. **Beta ($\beta$)** share price sensitivity ko measure karta hai: Beta > 1 market se zyada volatile hai, Beta < 1 stable share hai. **Capital Preservation** target original investment capital raqam ko loss se har haal mein mehfooz rakhna hai.",
-      "**Index Funds & Real Estate Risks:** **Index Funds** pure market index (jaise KSE-100) ko replicate kar ke passive low-cost auto-diversification provide karte hain. **Real Estate** safe return deta hai par high ticket size, low liquidity, aur management issues hote hain. Interest rates barhne se bond prices girti hain. Risk profile assessment investment shuru karne se pehle zaroori hai."
+      "**Gold as an Inflation Hedge:** Sona (Gold) Pakistan mein inflation (mehngai) aur currency devaluation (rupay ki qadar girna) se bachne ka behtareen aur safe traditional zariya hai, jo purchasing power ko safe rakhta hai.",
+      "**Tola System & Liquidity:** Pakistan mein gold ko **Tolas** (1 Tola = 11.66 grams) mein trade kiya jata hai. Gold highly liquid asset hai, yani zaroorat ke waqt ise sunaray ki market mein foran cash karwaya ja sakta hai.",
+      "**Real Estate (Property):** Zameen, commercial shops ya houses mein investment. Is ke do baray faide hain: **Capital Appreciation** (zameen ki qeemat barhna) aur **Rental Yield** (mahana rent se passive income).",
+      "**REITs (Real Estate Investment Trusts):** SECP se regulated REITs ke zariye aap direct property khareede baghair stock exchange par units khareed kar baray real estate projects mein invest kar sakte hain.",
+      "**Alternative Investments:** Tangible assets jaise agricultural commodities (ghandum, kapas), metals, ya local small businesses (SMEs) mein profit-sharing partnership ke zariye investment karna."
+    ]
+  },
+  9: {
+    title: "Diversification & Rebalancing",
+    urduTitle: "اثاثوں کی تقسیم اور تنوع",
+    content: [
+      "**Diversification Concept:** Spreading your savings across different asset classes (cash, savings, stocks, gold, real estate) so that a poor performance in one asset is offset by a strong performance in another.",
+      "**Correlation Between Assets:** Different assets behave differently. When inflation rises, cash loses purchasing power, but gold and real estate values typically increase. During stock declines, bank savings protect your capital.",
+      "**Asset Allocation & Age:** Apni total savings ko age aur goals ke mutabiq divide karna. Young investors high risk equity le sakte hain, jabke seniors ko principal safety ke liye conservative fixed income debt assets rakhne chahiye.",
+      "**Sectors Diversification:** Stock portfolio mein sector diversification zaroori hai. Ek hi cement sector ke bajaye Tech, Oil, Cement, aur Fertilizer sectors ke mukhtalif companies ke shares lene chahiye.",
+      "**Systematic vs Unsystematic Risk:** **Unsystematic Risk** company specific risk hota hai jise proper diversification se khatam kiya ja sakta hai. **Systematic Risk (Market Risk)** currency devaluation ya interest rates barhne ka risk hai jo overall market ko drop karta hai.",
+      "**Correlation & Gold Safe Haven:** Negative correlation assets portfolio ko balance rakhte hain. **Gold (Sona)** crisis aur inflation ke waqt **Safe Haven** asset ka role play karta hai.",
+      "**Portfolio Rebalancing:** Over time, assets different growth rates se allocation ko change karte hain. Rebalancing target asset mix restore karne ke liye asset transfer process hai jo humesha lock-in profits (sell high, buy low) karta hai.",
+      "**Over-diversification & Risks:** Bohat zyada assets (100+ stocks) khareedne se return dilute ho jata hai aur transaction charges barh jate hain. Interest rates barhne se bond values drop hoti hain."
     ]
   },
   10: {
-    title: "Advanced Planning & Filer System",
-    urduTitle: "ٹیکس فائلنگ اور فائلر بننے کے فائدے",
+    title: "Retirement & Legacy Planning",
+    urduTitle: "ریٹائرمنٹ اور وصیت",
     content: [
-      "**Filer vs Non-Filer & ATL:** **Filer** woh shakhs hai jo FBR mein tax returns file karta hai aur FBR ki ATL (Active Taxpayer List) mein shamil hota hai. ATL list active taxpayers ko dynamic tax discounts deti hai. Non-Filer ATL mein nahi hote aur un par heavy penalty rates lagte hain.",
-      "**Filer Banking Benefits:** **Bank Cash Withdrawal** par Filer ko zero withholding tax dena parta hai, jabke non-filer par Rs. 50,000 daily se zyada withdrawal par **0.6% tax** kaata jata hai. **PLS Bank Profit** par Filer par **15% tax** lagta hai, jabke non-filer par double **30% tax** lagta hai.",
-      "**Assets & Stocks Tax Relief:** Stock market profits (CGT) par active filer par **15% CGT** lagta hai, non-filer par double **30% CGT** lagta hai. Gari purchase ya transfer par non-filer par double-triple tax rates lagte hain, jabke filer par substantial low discount rate lagta hai. Property (zameen/makaan) transfer par Filer par **3% WHT** lagta hai, non-filer par **10% ya zyada** lagta hai.",
-      "**FBR online systems & Deadlines:** **FBR (Federal Board of Revenue)** tax policies aur collection ka zimmadar sarkari idara hai. Online filing ke liye FBR ka **IRIS online portal** use hota hai. Salana individual tax return file karne ki aam deadline **30th September** hoti hai. Late filing par penalty surcharge de kar ATL mein enter hua ja sakta hai.",
-      "**Wealth Statement & Withholding Tax:** **Wealth Statement (FBR Form 116)** assets, liabilities, and expenses declaration aur saalana wealth change reconcile karne ka transparent form hai. **Withholding Tax (WHT)** payment source par auto-kaata jane wala advance tax hai (jaise cellular card load ya electricity bill). Active filer return mein in certificates ko upload kar ke tax liability adjust/refund kara sakta hai.",
-      "**Tax Credit & Tax Planning:** certified mutual funds (jaise Voluntary Pension Scheme) ya health insurance mein invest kar ke FBR se tax relief/liability reduction claim karna **Tax Credit** kehlaata hai. Legal tareeqay se tax liability ko kam karna **Tax Planning** (legal) hai, jabke tax chori karna **Tax Evasion** (illegal/sazaa-yab) hai.",
-      "**Direct vs Indirect Taxes & GST:** **Direct Tax** personal income par lagta hai (jaise Income Tax). **Indirect Tax** products aur service invoice par automatic lagta hai (jaise GST). Pakistan mein GST ka standard rate **18%** chal raha hai. Salaried individuals ke liye agar saalana tankha **Rs. 6,00,000 (Rs. 50k monthly)** tak ho, toh tax absolute zero hota hai."
+      "**Retirement Goal & 4% Rule:** Kam band karne ke baad zindagi guzarne ke liye asset base banana. **4% Rule** ke mutabiq aap saalana apne portfolio ka 4% withdraw kar sakte hain bina capital ko khatam kiye.",
+      "**Target Capital & 25x Rule:** Sukoon se retire hone ke liye aap ke paas aap ke saalana kharchon ka **25 guna (25x)** capital saved hona chahiye, taake withdrawable profit se guzara chal sakay.",
+      "**Voluntary Pension Schemes (VPS):** SECP se registered, bank-managed pension funds (jaise Meezan/NBP VPS) retirement funds banane ke liye hain. VPS contributions par Section 63 ke tehat **20% tak tax credit** milta hai.",
+      "**Shariah-Compliant Pension Funds:** Islamic pension schemes purely interest-free Sukuks, Islamic stocks, aur bank deposit pools mein invest karti hain jo sood se mukammal pak hoti hain.",
+      "**Wasiyat (Islamic Will):** Pakistan mein shariah ke mutabiq koi bhi shakhs apni total wealth ke **ek-tihaai (1/3)** tak ki Wasiyat (Will) non-heirs (charity ya kisi dost) ke naam likh sakta hai.",
+      "**Inheritance Laws (Warausat):** Baki bacha hua do-tihaai (2/3) hissa shariah inheritance laws ke mutabiq legal heirs (waldein, shareek-e-hayat, bachay) mein un ke muqarrar karda shares ke mutabiq auto-distribute hota hai."
     ]
   }
 };
@@ -154,12 +177,14 @@ const conceptToLevel: Record<string, number> = {
   saving: 2,
   emergency_funds: 3,
   inflation: 4,
-  investing: 5,
-  mutual_funds: 6,
-  islamic_banking: 7,
-  stock_market: 8,
+  tax_basics: 5,
+  investing: 6,
+  mutual_funds: 71,
+  islamic_banking: 72,
+  stock_market: 81,
+  gold_real_estate: 82,
   diversification: 9,
-  tax_filer: 10,
+  retirement: 10,
 };
 
 const levelToConcept: Record<number, string> = {
@@ -167,12 +192,14 @@ const levelToConcept: Record<number, string> = {
   2: "saving",
   3: "emergency_funds",
   4: "inflation",
-  5: "investing",
-  6: "mutual_funds",
-  7: "islamic_banking",
-  8: "stock_market",
+  5: "tax_basics",
+  6: "investing",
+  71: "mutual_funds",
+  72: "islamic_banking",
+  81: "stock_market",
+  82: "gold_real_estate",
   9: "diversification",
-  10: "tax_filer",
+  10: "retirement",
 };
 
 export default function StudyPage() {
@@ -204,9 +231,9 @@ export default function StudyPage() {
         setLevel(conceptToLevel[conceptParam]);
       } else if (levelParam) {
         const lvl = parseInt(levelParam);
-        if (lvl >= 1 && lvl <= 10) {
+        if (levelToConcept[lvl] !== undefined) {
           setLevel(lvl);
-          setConcept(levelToConcept[lvl] || "budgeting");
+          setConcept(levelToConcept[lvl]);
         }
       }
       setLoading(false);

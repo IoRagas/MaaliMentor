@@ -19,12 +19,14 @@ LEVEL_TO_CONCEPT = {
     2: "saving",
     3: "emergency_funds",
     4: "inflation",
-    5: "investing",
-    6: "mutual_funds",
-    7: "islamic_banking",
-    8: "stock_market",
+    5: "tax_basics",
+    6: "investing",
+    71: "mutual_funds",
+    72: "islamic_banking",
+    81: "stock_market",
+    82: "gold_real_estate",
     9: "diversification",
-    10: "tax_filer",
+    10: "retirement",
 }
 
 router = APIRouter(prefix="/api/quiz", tags=["quiz"])
@@ -33,7 +35,8 @@ router = APIRouter(prefix="/api/quiz", tags=["quiz"])
 @router.get("/questions/{level}", response_model=list[QuizQuestionResponse])
 def get_quiz_questions(level: int):
     """Retrieve the 20 MCQs for a given level (without correct answers or explanations)."""
-    if level < 1 or level > 10:
+    valid_levels = {1, 2, 3, 4, 5, 6, 71, 72, 81, 82, 9, 10}
+    if level not in valid_levels:
         raise HTTPException(
             status_code=400,
             detail="Invalid level. Level must be between 1 and 10."
@@ -76,8 +79,9 @@ def submit_quiz(
 
     # 2. Filter questions for the specific level
     level = request.level
-    if level < 1 or level > 10:
-        raise HTTPException(status_code=400, detail="Invalid level. Level must be between 1 and 10.")
+    valid_levels = {1, 2, 3, 4, 5, 6, 71, 72, 81, 82, 9, 10}
+    if level not in valid_levels:
+        raise HTTPException(status_code=400, detail="Invalid level. Level must be a valid curriculum node level.")
 
     questions_by_id = {q["id"]: q for q in QUIZ_QUESTIONS if q.get("level") == level}
     if len(questions_by_id) != 20:
@@ -149,7 +153,12 @@ def submit_quiz(
             session.add(mastery)
 
     # 6. Increment user level if they passed the quiz for their CURRENT level
-    if passed and user.current_level == level:
+    is_current_level_match = (
+        user.current_level == level or
+        (user.current_level == 7 and level in (71, 72)) or
+        (user.current_level == 8 and level in (81, 82))
+    )
+    if passed and is_current_level_match:
         if user.current_level < 10:
             user.current_level += 1
             session.add(user)

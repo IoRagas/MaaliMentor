@@ -1,4 +1,4 @@
-# National Savings Certificates (Qaumi Bachat) — Pakistan
+# Saving Accounts & National Savings (بچت کے اصول اور قومی بچت)
 
 Central Directorate of National Savings (CDNS) Pakistan ki hukoomat ka aik muaziz aur qadeem tareen bachat ka idara hai. Isme kiye jane wali har sarmayakari ki guarantee **Government of Pakistan** khud deti hai. Isliye isme risk **Zero** hota hai.
 
@@ -13,7 +13,7 @@ Mukhtalif timelines aur sarmayakaron ki zaroorat ke mutabiq CDNS ke products dar
 * **Muddat**: 10 saal.
 * **Profit Payment**: Monthly (har mahine profit milta hai).
 * **Expected Return**: ~13.5% - 15.5% saalana (Government policies ke tehat change hota rehta hai).
-* **Khaas Baat**: Yeh certificates withholding tax se mustasna (exempt) hain agar investment Rs. 5 million (50 lakh) se kam ho.
+* **Khaas Baat**: Used mainly as welfare investments, these certificates are exempt from withholding tax if total investment is under Rs. 5 million (50 lakh).
 
 ### B. Defence Savings Certificates (DSC)
 * **Target Audience**: Long-term sarmayakar.
@@ -50,7 +50,7 @@ Mukhtalif timelines aur sarmayakaron ki zaroorat ke mutabiq CDNS ke products dar
 
 ---
 
-## 2. Withholding Tax on National Savings Profits (2024-25)
+## 2. Withholding Tax on National Savings Profits
 
 National Savings ke munafa par Filer aur Non-Filer ke mutabiq tax deduct hota hai (Filers enjoy 50% discount on tax rates):
 

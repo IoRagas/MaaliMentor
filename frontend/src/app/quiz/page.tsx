@@ -57,13 +57,30 @@ const levelTitles: Record<number, string> = {
   2: "Saving Habits (بچت کی عادت)",
   3: "Emergency Funds (ایمرجنسی فنڈ)",
   4: "Inflation & Purchasing Power (مہنگائی کا اثر)",
-  5: "Investing Principles (سرمایہ کاری)",
-  6: "Mutual Funds (میوچل فنڈز)",
-  7: "Islamic Banking & Finance (اسلامی بینکاری)",
-  8: "Stock Market & Shares (اسٹاک مارکیٹ)",
+  5: "Tax Basics & Filing (ٹیکس کے اصول)",
+  6: "Investing Principles (سرمایہ کاری)",
+  71: "Mutual Funds (میوچل فنڈز)",
+  72: "Islamic Banking & Finance (اسلامی بینکاری)",
+  81: "Stock Market & Shares (اسٹاک مارکیٹ)",
+  82: "Gold, Property & Alternatives (سونا اور رئیل اسٹیٹ)",
   9: "Diversification & Risk (تنوع)",
-  10: "Advanced Planning & Filer System (ٹیکس فائلنگ)",
+  10: "Retirement & Legacy Planning (ریٹائرمنٹ اور وصیت)",
 };
+
+const flowNodes = [
+  { id: "budgeting", label: "Budgeting Basics", prereqs: [] },
+  { id: "saving", label: "Saving Habits", prereqs: ["budgeting"] },
+  { id: "emergency_funds", label: "Emergency & Debt", prereqs: ["saving"] },
+  { id: "inflation", label: "Inflation & Money", prereqs: ["emergency_funds"] },
+  { id: "tax_basics", label: "Tax Filer Status", prereqs: ["inflation"] },
+  { id: "investing", label: "Investing Principles", prereqs: ["tax_basics"] },
+  { id: "mutual_funds", label: "Mutual Funds (7A)", prereqs: ["investing"] },
+  { id: "islamic_banking", label: "Islamic Banking (7B)", prereqs: ["investing"] },
+  { id: "stock_market", label: "Stock Market (8A)", prereqs: ["mutual_funds"] },
+  { id: "gold_real_estate", label: "Gold & Property (8B)", prereqs: ["islamic_banking"] },
+  { id: "diversification", label: "Diversification", prereqs: ["stock_market", "gold_real_estate"] },
+  { id: "retirement", label: "Retirement & Legacy", prereqs: ["diversification"] },
+];
 
 const studyMaterials: Record<number, { title: string; urduTitle: string; content: string[] }> = {
   1: {
@@ -71,101 +88,108 @@ const studyMaterials: Record<number, { title: string; urduTitle: string; content
     urduTitle: "بجٹ بنانے کے بنیادی اصول",
     content: [
       "**Budget ka maqsad:** Apni amdani (Income) aur kharchon (Expenses) ka mukammal hissa-kitaab rakhna taake paisa zaya na ho.",
-      "**50-30-20 Rule:** Amdani ko teen hisson mein taqseem karein: 50% bunyadi Zarooriyat (Needs - rent, bill, grocery), 30% Khwahishat (Wants - shopping, hoteling, entertainment), aur 20% Bachat (Savings & Investments).",
-      "**Needs vs Wants:** Needs ke baghair zindagi guzarna mushkil hai (jaise ghar, khana, ilaj). Wants sirf shauq poore karne ke liye hoti hain.",
-      "**Fixed vs Variable Expenses:** Fixed expenses har mahine barabar hote hain (jaise rent, school fee). Variable expenses tabdeel hote rehte hain (jaise utility bills, petrol).",
-      "**Tracking:** Rozana ke kharche note karne ke liye diary ya mobile application sab se moassar tareeqa hai."
+      "**50-30-20 Rule:** Amdani ko teen hisson mein taqseem karein: 50% Zarooriyat (Needs), 30% Khwahishat (Wants), aur 20% Bachat (Savings & Investments).",
+      "**Needs vs Wants:** Needs ke baghair zindagi guzarna mushkil hai (rent, utility, food). Wants sirf shauq poore karne ke liye hoti hain.",
+      "**Fixed vs Variable:** Fixed expenses har mahine barabar hote hain (rent, school fee). Variable expenses tabdeel hote rehte hain (utility bills, petrol)."
     ]
   },
   2: {
     title: "Saving Habits",
     urduTitle: "بچت کی عادات اور فائدے",
     content: [
-      "**Sunoori Usool (Golden Rule):** Amdani aate hi pehle bachat alag karein, phir baqi paise kharach karein (Income - Savings = Spending).",
-      "**Cash vs Bank:** Ghar mein cash rakhne se uski value mehengai (inflation) ki wajah se kaafi kam ho jati hai. Bank mein rakhne se paisa mahfooz rehta hai aur profit milta hai.",
-      "**Compound Interest (Merafeh):** Apne munafa par mazeed munafa kamana. Yeh aap ke paise ko waqt ke sath tezi se barhata hai.",
-      "**Savings Account:** Bank account jo aap ki jama-shuda raqam par profit deta hai. Yeh aam current account se behtar hai bachat ke liye."
+      "**Sunoori Usool:** Amdani aate hi pehle bachat alag karein, phir baqi paise kharach karein (Income - Savings = Spending).",
+      "**Cash vs Bank:** Ghar mein cash rakhne se mehengai (inflation) ki wajah se iski value kam ho jati hai. Bank account mein rakhna behtar aur mehfooz hai.",
+      "**Compound Interest:** Apne profit par mazeed profit kamana. Yeh aap ke paise ko waqt ke sath exponentially barhata hai."
     ]
   },
   3: {
     title: "Emergency Funds",
     urduTitle: "ایمرجنسی فنڈ کی اہمیت",
     content: [
-      "**Emergency Fund kya hai:** Ghair-yakeeni halat (medical emergency, job loss, accident) ke liye rakha gaya paisa.",
-      "**Kitna paisa hona chahiye:** Kam az kam 3 se 6 mahine ke gharelu kharchon ke barabar raqam emergency fund mein honi chahiye.",
-      "**Liquidity (Aasani se nikalna):** Emergency fund aisi jagah hona chahiye jahan se furan nikala ja sake (jaise bank account), real estate ya committees mein nahi.",
-      "**Alag Account:** Emergency fund ko apne rozana ke kharchon wale account se alag rakhna chahiye taake yeh ghalti se kharach na ho."
+      "**Emergency Fund:** Ghair-yakeeni halat (medical emergency, job loss, accident) ke liye rakha gaya paisa.",
+      "**Kitna hona chahiye:** Kam az kam 3 se 6 mahine ke essential expenses ke barabar raqam emergency fund mein honi chahiye.",
+      "**Liquidity:** Emergency fund liquid hona chahiye (jaise bank account), real estate ya committees mein nahi."
     ]
   },
   4: {
     title: "Inflation & Purchasing Power",
     urduTitle: "مہنگائی اور خریدنے کی طاقت",
     content: [
-      "**Inflation (Mehengai):** Har saal cheezon ki qeemton mein izafa hona aur paise ki qadar (value) ka kam hona.",
-      "**Purchasing Power:** Agar saalana inflation 15% ho, to aaj ka 1,000 rupya agle saal sirf 850 rupay ke barabar cheezein khareed sakega.",
-      "**Wajah (Causes):** Currency ki de-valuation, money printing, aur market mein cheezon ki talab (demand) barhna.",
-      "**Inflation se bachao:** Apne paise ko aisi assets mein invest karna jo inflation rate se zyada return dein (jaise Stocks, Gold, ya Mutual Funds)."
+      "**Inflation (Mehengai):** Har saal cheezon ki qeemton mein izafa hona aur paise ki purchasing power (quwwat-e-khareed) ka kam hona.",
+      "**Purchasing Power:** Agar inflation 15% ho, to aaj ka 1,000 rupya agle saal nominal value mein wahi rahega par 850 rupay ki cheezein khareed sakega.",
+      "**Inflation se bachao:** Apne paise ko aisi assets mein invest karna jo inflation rate se zyada return dein (Stocks, Gold, Mutual Funds)."
     ]
   },
   5: {
-    title: "Investing Principles",
-    urduTitle: "سرمایہ کاری کے بنیادی اصول",
-    content: [
-      "**Saving vs Investing:** Saving ka matlab paisa bachana hai. Investing ka matlab paise ko kaam par lagana hai taake return mile.",
-      "**Risk vs Return:** Jitna zyada risk (nuqsan ka khatra) hoga, utna hi zyada return (nafa) milne ka imkan hota hai.",
-      "**Liquidity vs Returns:** Jin assets ko bechna asan nahi hota (jaise zameen), un par return aam tor par zyada hota hai lekin zaroorat ke waqt cash nahi milta.",
-      "**Asset Classes:** Sarmayakari ke mukhtalif zariye hain jaise Stocks (shares), Bonds, Gold (sona), aur Real Estate (property)."
-    ]
-  },
-  6: {
-    title: "Mutual Funds",
-    urduTitle: "میوچل فنڈز کی تفصیل",
-    content: [
-      "**Mutual Fund kya hai:** Bohat se investors se paise jama kar ke unhein mukhtalif shares aur bonds mein invest karna.",
-      "**Fund Manager:** Ek professional jo market research ke mutabiq fund ka paisa invest karta hai aur manage karta hai.",
-      "**NAV (Net Asset Value):** Kisi mutual fund ke ek unit ki qeemmat ko NAV kehte hain, jo rozana market ke mutabiq tabdeel hoti hai.",
-      "**Diversification (Tannu):** Choti raqam se bhi sekron companies mein sarmayakari ho jati hai, jis se risk kam ho jata hai."
-    ]
-  },
-  7: {
-    title: "Islamic Banking & Finance",
-    urduTitle: "اسلامی بینکاری کے اصول",
-    content: [
-      "**Riba (Sood):** Har qism ka sood strictly prohibited (Haram) hai. Islami banking sood ke baghair chalti hai.",
-      "**Profit & Loss Sharing (PLS):** Bank aur customer nishist-shuda ratio ke mutabiq nafa share karte hain, aur capital ke mutabiq nuqsan share karte hain.",
-      "**Mudarabah:** Ek sarmayakari ka contract jahan ek partner paisa deta hai (Rab-ul-Maal) aur dusra mehnat aur management karta hai (Mudarib).",
-      "**Murabahah:** Bank koi asset khareedta hai aur customer ko apna profit margin (cost-plus) bata kar udhar par bechta hai."
-    ]
-  },
-  8: {
-    title: "Stock Market & Shares",
-    urduTitle: "اسٹاک مارکیٹ اور حصص",
-    content: [
-      "**Share (Hissa):** Kisi company mein ownership (malkiyat) ka chota sa hissa khareedna.",
-      "**Dividend:** Company apne salana munafa ka jo hissa shareholders mein taqseem karti hai, use dividend kehte hain.",
-      "**Capital Gain:** Sastay daam share khareed kar mehnge daam bechne par jo nafa hota hai, use capital gain kehte hain.",
-      "**PSX (Pakistan Stock Exchange):** Pakistan ka regulated platform jahan companies ke shares ki khareed-o-ferokht hoti hai."
-    ]
-  },
-  9: {
-    title: "Diversification & Risk",
-    urduTitle: "تنوع اور رسک مینجمنٹ",
-    content: [
-      "**Diversification:** Apni saari sarmayakari ek hi jagah na lagana ('Don't put all eggs in one basket').",
-      "**Systemic Risk:** Aise khatray jo poori economy ko affect karte hain (jaise mulki halat, inflation) jin se bachna mushkil hai.",
-      "**Unsystemic Risk:** Aise khatray jo sirf kisi ek company ya sector ko affect karte hain (jaise strike), jinhein diversification se kam kiya ja sakta hai.",
-      "**Asset Allocation:** Apni umer aur risk tolerance ke mutabiq stocks, gold aur cash mein balanced tarike se invest karna."
-    ]
-  },
-  10: {
-    title: "Advanced Planning & Filer System",
+    title: "Tax Basics & Filing",
     urduTitle: "ٹیکس فائلنگ اور فائلر بننے کے فائدے",
     content: [
       "**Active Filer:** Jo shakhs FBR mein income tax return file karta hai aur FBR ki Active Taxpayers List (ATL) mein shamil hota hai.",
-      "**Filer ke Fayde:** Bank transactions, car purchase, aur property transfer par withholding tax (WHT) rates adhay (50% kam) ho jate hain.",
-      "**FBR (Federal Board of Revenue):** Pakistan ka sarkari idara jo tax collect karne aur tax policies banaye rakhne ka zimmadar hai.",
-      "**Tax Saving:** VPS (Voluntary Pension Scheme) aur mutual funds mein invest karne se income tax return mein rebates/tax savings milti hain.",
-      "**Wealth Statement:** Tax return ke sath submit kiya jane wala document jo aap ke kul asase (assets) aur zimmadariyon (liabilities) ko zahir karta hai."
+      "**Filer ke Fayde:** Bank transactions, car purchase, dividends, aur property transfer par withholding tax (WHT) rates adhay (50% kam) ho jate hain.",
+      "**IRIS Online Portal:** NTN registration, Form 114 (Income Tax Return), aur Form 116 (Wealth Statement) submit karne ka online portal."
+    ]
+  },
+  6: {
+    title: "Investing Principles",
+    urduTitle: "سرمایہ کاری کے بنیادی اصول",
+    content: [
+      "**Saving vs Investing:** Saving ka matlab paisa bachana aur safe rakhna hai. Investing ka matlab paise ko assets mein lagana hai taake return mile.",
+      "**Risk vs Return:** Financial rule hai ke jitna zyada risk hoga, utna hi zyada potential return (nafa) milne ka imkan hota hai.",
+      "**Asset Classes:** Sarmayakari ke mukhtalif zariye hain jaise Stocks (shares), Bonds (Sukuks), Gold (sona), aur Real Estate (property)."
+    ]
+  },
+  71: {
+    title: "Mutual Funds",
+    urduTitle: "میوچل فنڈز کی تفصیل",
+    content: [
+      "**Mutual Fund:** Bohat se investors se paise jama kar ke professional Fund Manager ke zariye listed shares aur bonds mein invest karna.",
+      "**NAV (Net Asset Value):** Kisi mutual fund ke ek unit (share) ki price ko NAV kehte hain, jo daily calculate hoti hai.",
+      "**Diversification:** Mutual funds ke zariye choti raqam (jaise Rs. 5000) se bhi sekron companies mein automatic sarmayakari ho jati hai."
+    ]
+  },
+  72: {
+    title: "Islamic Banking & Finance",
+    urduTitle: "اسلامی بینکاری کے اصول",
+    content: [
+      "**Riba & Sood:** Sood Islam mein strictly prohibited hai. Islamic banking Riba-free contracts aur profit-sharing par chalti hai.",
+      "**Mudarabah & Musharakah:** Mudarabah mein ek partner sarmaya (Rab-ul-Maal) aur dusra mehnat (Mudarib) karta hai. Musharakah joint business partnership hai.",
+      "**Murabahah & Ijarah:** Murabahah cost-plus asset purchase trade hai, aur Ijarah lease/rent service agreement hai."
+    ]
+  },
+  81: {
+    title: "Stock Market & Shares",
+    urduTitle: "اسٹاک مارکیٹ اور حصص",
+    content: [
+      "**Share (Hissa):** Kisi public listed company mein fractional ownership (malkiyat) ka chota sa hissa khareedna.",
+      "**Returns:** Shareholders do tarah se kamate hain: **Dividend** (profit payout) aur **Capital Gain** (share price barhne par profit).",
+      "**PSX & Broker:** Pakistan Stock Exchange par trade ke liye SECP licensed broker ke paas Trading Account aur CDC Sub-Account hona zaroori hai."
+    ]
+  },
+  82: {
+    title: "Gold, Property & Alternatives",
+    urduTitle: "سونا اور رئیل اسٹیٹ",
+    content: [
+      "**Gold as Hedge:** Sona (Gold) inflation aur currency devaluation ke doran value preserve karne ka traditional hedge aur safe-haven asset hai.",
+      "**Real Estate:** Land, commercial, aur residential property khareedna, jo capital appreciation aur rental yields (kiraya) faraham karti hai.",
+      "**REITs:** Physical property khareede baghair stock exchange par real estate projects mein invest karne ka regulated share mechanism."
+    ]
+  },
+  9: {
+    title: "Diversification & Rebalancing",
+    urduTitle: "تنوع اور رسک مینجمنٹ",
+    content: [
+      "**Diversification:** Apni saari sarmayakari ek hi asset ya company mein na lagana ('Don't put all eggs in one basket') taake total risk kam ho.",
+      "**Asset Correlation:** Different assets inflation/market crash par different behavior rakhte hain (gold typically rises when stock drops).",
+      "**Rebalancing:** Growth rates badalne par original allocation percentages (e.g. 50/50) ko restore karne ke liye asset transfer karna."
+    ]
+  },
+  10: {
+    title: "Retirement & Legacy Planning",
+    urduTitle: "ریٹائرمنٹ اور وصیت",
+    content: [
+      "**4% Rule & 25x:** Annual expenses ka 25 guna jama karne se withdrawable profit retirement ko support kar sakta hai.",
+      "**Voluntary Pension Schemes (VPS):** SECP se registered pension funds jin mein invest karne par up to 20% tax rebates (Section 63) milte hain.",
+      "**Islamic Will (Wasiyat):** Islamic rules ke tehat koi Muslim apni 1/3 wealth non-heirs ya charity ke liye wasiyat kar sakta hai; baki 2/3 automatic distributed hoti hai."
     ]
   }
 };
@@ -248,12 +272,14 @@ export default function QuizPage() {
             saving: 2,
             emergency_funds: 3,
             inflation: 4,
-            investing: 5,
-            mutual_funds: 6,
-            islamic_banking: 7,
-            stock_market: 8,
+            tax_basics: 5,
+            investing: 6,
+            mutual_funds: 71,
+            islamic_banking: 72,
+            stock_market: 81,
+            gold_real_estate: 82,
             diversification: 9,
-            tax_filer: 10,
+            retirement: 10,
           };
           const fallbackMastery = Object.entries(localConceptToLevel).map(([concept_name, lvl]) => {
             let score = 0;
@@ -393,8 +419,13 @@ export default function QuizPage() {
         if (passed) {
           const storedLevelStr = localStorage.getItem("current_level") || "1";
           const currentStoredLevel = parseInt(storedLevelStr);
-          if (currentStoredLevel === activeLevel) {
-            nextLevel = Math.min(activeLevel + 1, 10);
+          const isCurrentLevelMatch = 
+            currentStoredLevel === activeLevel ||
+            (currentStoredLevel === 7 && (activeLevel === 71 || activeLevel === 72)) ||
+            (currentStoredLevel === 8 && (activeLevel === 81 || activeLevel === 82));
+            
+          if (isCurrentLevelMatch && currentStoredLevel < 10) {
+            nextLevel = currentStoredLevel + 1;
             localStorage.setItem("current_level", nextLevel.toString());
           } else {
             nextLevel = currentStoredLevel;
@@ -515,26 +546,71 @@ export default function QuizPage() {
       saving: 2,
       emergency_funds: 3,
       inflation: 4,
-      investing: 5,
-      mutual_funds: 6,
-      islamic_banking: 7,
-      stock_market: 8,
+      tax_basics: 5,
+      investing: 6,
+      mutual_funds: 71,
+      islamic_banking: 72,
+      stock_market: 81,
+      gold_real_estate: 82,
       diversification: 9,
-      tax_filer: 10,
+      retirement: 10,
     };
 
     const score = scores[conceptId] || 0;
     const nodeLevel = conceptToLevel[conceptId] || 1;
 
-    let status: "mastered" | "unlocked" | "locked" = "locked";
+    const getStatus = () => {
+      const isPast = (
+        (nodeLevel < 70 && currentLevel > nodeLevel) ||
+        (nodeLevel === 71 && currentLevel >= 8) ||
+        (nodeLevel === 72 && currentLevel >= 8) ||
+        (nodeLevel === 81 && currentLevel >= 9) ||
+        (nodeLevel === 82 && currentLevel >= 9)
+      );
+      if (score >= 75 || isPast) {
+        return "mastered";
+      }
 
-    if (score >= 75 || currentLevel > nodeLevel) {
-      status = "mastered";
-    } else if (nodeLevel === currentLevel) {
-      status = "unlocked";
-    } else if (nodeLevel > currentLevel && nodeLevel <= currentLevel + 2 && nodeLevel < 8) {
-      status = "unlocked";
-    }
+      const nodeMeta = flowNodes.find((n) => n.id === conceptId);
+      if (!nodeMeta) return "locked";
+      if (nodeMeta.prereqs.length === 0) return "unlocked";
+
+      const allPrereqsMastered = nodeMeta.prereqs.every((pId) => {
+        const pScore = scores[pId] || 0;
+        const pLvl = conceptToLevel[pId] || 1;
+        const pPast = (
+          (pLvl < 70 && currentLevel > pLvl) ||
+          (pLvl === 71 && currentLevel >= 8) ||
+          (pLvl === 72 && currentLevel >= 8) ||
+          (pLvl === 81 && currentLevel >= 9) ||
+          (pLvl === 82 && currentLevel >= 9)
+        );
+        return pScore >= 75 || pPast;
+      });
+
+      const anyPrereqMastered = nodeMeta.prereqs.some((pId) => {
+        const pScore = scores[pId] || 0;
+        const pLvl = conceptToLevel[pId] || 1;
+        const pPast = (
+          (pLvl < 70 && currentLevel > pLvl) ||
+          (pLvl === 71 && currentLevel >= 8) ||
+          (pLvl === 72 && currentLevel >= 8) ||
+          (pLvl === 81 && currentLevel >= 9) ||
+          (pLvl === 82 && currentLevel >= 9)
+        );
+        return pScore >= 75 || pPast;
+      });
+
+      if (conceptId === "diversification") {
+        if (anyPrereqMastered) return "unlocked";
+      } else {
+        if (allPrereqsMastered) return "unlocked";
+      }
+
+      return "locked";
+    };
+
+    const status = getStatus();
 
     let borderClass = "border-white/5 bg-slate-900/40 text-slate-400 opacity-60";
     let statusBadge = null;
@@ -622,7 +698,15 @@ export default function QuizPage() {
 
         {/* Level 5 */}
         <div className="flex justify-center w-full">
-          {renderQuizNode(5, "investing", "Investing Principles", "سرمایہ کاری", "💹")}
+          {renderQuizNode(5, "tax_basics", "Tax Basics & Filing", "ٹیکس کے اصول", "📄")}
+        </div>
+
+        {/* Line Down */}
+        <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+        {/* Level 6 */}
+        <div className="flex justify-center w-full">
+          {renderQuizNode(6, "investing", "Investing Principles", "سرمایہ کاری", "💹")}
         </div>
 
         {/* Split Lines Down */}
@@ -632,25 +716,34 @@ export default function QuizPage() {
           </svg>
         </div>
 
-        {/* Level 6 & 7 */}
+        {/* Level 7: Mutual Funds (7A) & Islamic Banking (7B) */}
         <div className="grid grid-cols-2 gap-4 w-full max-w-xl">
           <div className="flex justify-center flex-col items-center">
-            {renderQuizNode(6, "mutual_funds", "Mutual Funds", "میوچل فنڈز", "📋")}
+            {renderQuizNode(71, "mutual_funds", "Mutual Funds (7A)", "میوچل فنڈز", "📋")}
             <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
           </div>
           <div className="flex justify-center flex-col items-center">
-            {renderQuizNode(7, "islamic_banking", "Islamic Banking & Finance", "اسلامی بینکاری", "🕌")}
+            {renderQuizNode(72, "islamic_banking", "Islamic Banking (7B)", "اسلامی بینکاری", "🕌")}
             <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
           </div>
         </div>
 
-        {/* Level 8 */}
-        <div className="flex justify-center w-full">
-          {renderQuizNode(8, "stock_market", "Stock Market & Shares", "اسٹاک مارکیٹ", "📈")}
+        {/* Level 8: Stock Market (8A) & Gold / Real Estate (8B) */}
+        <div className="grid grid-cols-2 gap-4 w-full max-w-xl">
+          <div className="flex justify-center flex-col items-center">
+            {renderQuizNode(81, "stock_market", "Stock Market (8A)", "اسٹاک مارکیٹ", "📈")}
+          </div>
+          <div className="flex justify-center flex-col items-center">
+            {renderQuizNode(82, "gold_real_estate", "Gold & Property (8B)", "سونا اور رئیل اسٹیٹ", "🪙")}
+          </div>
         </div>
 
-        {/* Line Down */}
-        <div className="w-[2px] h-6 bg-emerald-500/30" />
+        {/* Convergence Lines Down */}
+        <div className="w-full max-w-md h-8 relative">
+          <svg className="w-full h-full text-emerald-500/30" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M 15,0 L 15,70 L 50,70 L 50,100 M 85,0 L 85,70 L 50,70 L 50,100" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4" />
+          </svg>
+        </div>
 
         {/* Level 9 */}
         <div className="flex justify-center w-full">
@@ -662,7 +755,7 @@ export default function QuizPage() {
 
         {/* Level 10 */}
         <div className="flex justify-center w-full">
-          {renderQuizNode(10, "tax_filer", "Advanced Planning & Filer", "ٹیکس فائلنگ", "📄")}
+          {renderQuizNode(10, "retirement", "Retirement & Legacy", "ریٹائرمنٹ اور وصیت", "👴")}
         </div>
       </div>
     );

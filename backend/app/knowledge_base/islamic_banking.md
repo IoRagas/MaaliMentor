@@ -1,4 +1,4 @@
-# Islamic Banking in Pakistan: Comprehensive Guide
+# Islamic Banking in Pakistan: Comprehensive Guide (اسلامی بینکاری)
 
 Islamic banking Shariah ke usoolon aur Islami qawaneen par mabni hai. Iska sabse bunyadi aur ahem tareen usool yeh hai ke **sood (riba) mukammal tor par haram hai**. 
 

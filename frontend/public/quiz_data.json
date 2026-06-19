@@ -1041,7 +1041,7 @@
   },
   {
     "id": 81,
-    "level": 5,
+    "level": 6,
     "question": "Sarmayakari (Investing) ka asal maqsad kya hota hai?",
     "options": {
       "a": "Apna paisa kharach karna",
@@ -1054,7 +1054,7 @@
   },
   {
     "id": 82,
-    "level": 5,
+    "level": 6,
     "question": "Asset aur Liability mein kya farq hai?",
     "options": {
       "a": "Asset aap ki pocket se paisa nikalta hai, liability dalti hai",
@@ -1067,7 +1067,7 @@
   },
   {
     "id": 83,
-    "level": 5,
+    "level": 6,
     "question": "Risk aur Return ka aapas mein kya talluq hai?",
     "options": {
       "a": "Zyada risk par zyada return ka chance hota hai, aur loss ka chance bhi zyada hota hai",
@@ -1080,7 +1080,7 @@
   },
   {
     "id": 84,
-    "level": 5,
+    "level": 6,
     "question": "Compound Interest/Return (Murakkab Munafa) ko '8th Wonder of the World' kyun kehte hain?",
     "options": {
       "a": "Kyunke yeh asman se girta hai",
@@ -1093,7 +1093,7 @@
   },
   {
     "id": 85,
-    "level": 5,
+    "level": 6,
     "question": "Capital Gain kya hota hai?",
     "options": {
       "a": "Monthly rent milna",
@@ -1106,7 +1106,7 @@
   },
   {
     "id": 86,
-    "level": 5,
+    "level": 6,
     "question": "Dividend kya hota hai?",
     "options": {
       "a": "Asset bechne par penalty",
@@ -1119,7 +1119,7 @@
   },
   {
     "id": 87,
-    "level": 5,
+    "level": 6,
     "question": "Kaunsi investment sab se kam risky (safest) samjhi jati hai?",
     "options": {
       "a": "Direct Stock trading in startup",
@@ -1132,7 +1132,7 @@
   },
   {
     "id": 88,
-    "level": 5,
+    "level": 6,
     "question": "Sarmayakari mein Time Horizon (waqt ki muddat) ka kya matlab hai?",
     "options": {
       "a": "Aap din mein kitna kaam karte hain",
@@ -1145,7 +1145,7 @@
   },
   {
     "id": 89,
-    "level": 5,
+    "level": 6,
     "question": "Inflation-adjusted return kya hota hai?",
     "options": {
       "a": "Nominal returns",
@@ -1158,7 +1158,7 @@
   },
   {
     "id": 90,
-    "level": 5,
+    "level": 6,
     "question": "Passive Income ki misal kaunsi hai?",
     "options": {
       "a": "Office mein overtime lagana",
@@ -1171,7 +1171,7 @@
   },
   {
     "id": 91,
-    "level": 5,
+    "level": 6,
     "question": "Sarmayakari shuru karne ke liye pehli zaroorat kya hai?",
     "options": {
       "a": "Millionaire hona",
@@ -1184,7 +1184,7 @@
   },
   {
     "id": 92,
-    "level": 5,
+    "level": 6,
     "question": "Bulls aur Bears markets kya hoti hain?",
     "options": {
       "a": "Zid aur narazi",
@@ -1197,7 +1197,7 @@
   },
   {
     "id": 93,
-    "level": 5,
+    "level": 6,
     "question": "Paper Loss aur Realized Loss mein kya farq hai?",
     "options": {
       "a": "Paper loss fake hota hai, realized real hota hai",
@@ -1210,7 +1210,7 @@
   },
   {
     "id": 94,
-    "level": 5,
+    "level": 6,
     "question": "Volatility (utarchadhao) se kya murad hai?",
     "options": {
       "a": "Investment block hona",
@@ -1223,7 +1223,7 @@
   },
   {
     "id": 95,
-    "level": 5,
+    "level": 6,
     "question": "Compound Annual Growth Rate (CAGR) kya batata hai?",
     "options": {
       "a": "Monthly expense calculation",
@@ -1236,7 +1236,7 @@
   },
   {
     "id": 96,
-    "level": 5,
+    "level": 6,
     "question": "Rule of 72 kya asan calculation batata hai?",
     "options": {
       "a": "Salary calculate karne ka rule",
@@ -1249,7 +1249,7 @@
   },
   {
     "id": 97,
-    "level": 5,
+    "level": 6,
     "question": "Dollar-Cost Averaging (DCA) kya investment strategy hai?",
     "options": {
       "a": "Sirf dollars mein invest karna",
@@ -1262,7 +1262,7 @@
   },
   {
     "id": 98,
-    "level": 5,
+    "level": 6,
     "question": "Speculation (Satta/Tukkay-bazi) aur Real Investing mein kya farq hai?",
     "options": {
       "a": "Dono same hain",
@@ -1275,7 +1275,7 @@
   },
   {
     "id": 99,
-    "level": 5,
+    "level": 6,
     "question": "Liquidity risk kya hota hai?",
     "options": {
       "a": "Bank account close hona",
@@ -1288,7 +1288,7 @@
   },
   {
     "id": 100,
-    "level": 5,
+    "level": 6,
     "question": "Sarmayakari karte waqt 'Emotional Control' kyun zaroori hai?",
     "options": {
       "a": "Taake aap har roz bank na jayein",
@@ -1301,7 +1301,7 @@
   },
   {
     "id": 101,
-    "level": 6,
+    "level": 71,
     "question": "Mutual Fund kya hota hai?",
     "options": {
       "a": "Sarkari bank account",
@@ -1314,7 +1314,7 @@
   },
   {
     "id": 102,
-    "level": 6,
+    "level": 71,
     "question": "AMC (Asset Management Company) kya hoti hai?",
     "options": {
       "a": "Government tax department",
@@ -1327,7 +1327,7 @@
   },
   {
     "id": 103,
-    "level": 6,
+    "level": 71,
     "question": "NAV (Net Asset Value) kya hoti hai?",
     "options": {
       "a": "Mutual fund ki ek unit (share) ki qeemat",
@@ -1340,7 +1340,7 @@
   },
   {
     "id": 104,
-    "level": 6,
+    "level": 71,
     "question": "Equity Mutual Fund kis cheez mein invest karta hai?",
     "options": {
       "a": "Government savings certificates mein",
@@ -1353,7 +1353,7 @@
   },
   {
     "id": 105,
-    "level": 6,
+    "level": 71,
     "question": "Income/Debt Mutual Funds kahan invest karte hain?",
     "options": {
       "a": "Direct stocks mein",
@@ -1379,7 +1379,7 @@
   },
   {
     "id": 107,
-    "level": 6,
+    "level": 71,
     "question": "Balanced Mutual Fund kya karta hai?",
     "options": {
       "a": "Sirf gold mein invest karta hai",
@@ -1392,7 +1392,7 @@
   },
   {
     "id": 108,
-    "level": 6,
+    "level": 71,
     "question": "Front-End Load kya hota hai?",
     "options": {
       "a": "Direct account opening fee",
@@ -1405,7 +1405,7 @@
   },
   {
     "id": 109,
-    "level": 6,
+    "level": 71,
     "question": "Expense Ratio se kya murad hai?",
     "options": {
       "a": "Sarkari tax calculation ratio",
@@ -1418,7 +1418,7 @@
   },
   {
     "id": 110,
-    "level": 6,
+    "level": 71,
     "question": "Mutual fund mein 'Redemption' ka kya matlab hai?",
     "options": {
       "a": "Guzishta saal ka audit",
@@ -1431,7 +1431,7 @@
   },
   {
     "id": 111,
-    "level": 6,
+    "level": 71,
     "question": "Pakistan mein mutual funds ko kaunsa sarkari idara regulate karta hai?",
     "options": {
       "a": "State Bank of Pakistan (SBP)",
@@ -1444,7 +1444,7 @@
   },
   {
     "id": 112,
-    "level": 6,
+    "level": 71,
     "question": "Mutual Fund mein diversification ka kya faida hai?",
     "options": {
       "a": "Is se returns direct double ho jate hain",
@@ -1457,7 +1457,7 @@
   },
   {
     "id": 113,
-    "level": 6,
+    "level": 71,
     "question": "Mutual fund mein 'Systematic Investment Plan (SIP)' kya hai?",
     "options": {
       "a": "Sarkari pension plan",
@@ -1470,7 +1470,7 @@
   },
   {
     "id": 114,
-    "level": 6,
+    "level": 71,
     "question": "Open-End Mutual Fund kya hota hai?",
     "options": {
       "a": "Jis mein naye units kisi bhi waqt khareede aur beche ja sakein",
@@ -1483,7 +1483,7 @@
   },
   {
     "id": 115,
-    "level": 6,
+    "level": 71,
     "question": "Close-End Mutual Fund kya hota hai?",
     "options": {
       "a": "Jo band ho chuka ho",
@@ -1496,7 +1496,7 @@
   },
   {
     "id": 116,
-    "level": 6,
+    "level": 71,
     "question": "Mutual fund prospectus read karna kyun zaroori hai?",
     "options": {
       "a": "Kyunke is se English seekhne ko milti hai",
@@ -1509,7 +1509,7 @@
   },
   {
     "id": 117,
-    "level": 6,
+    "level": 71,
     "question": "Mutual Fund Trustee (jaise CDC) ka kya kaam hota hai?",
     "options": {
       "a": "Paisa stock market mein trading karna",
@@ -1522,7 +1522,7 @@
   },
   {
     "id": 118,
-    "level": 6,
+    "level": 71,
     "question": "Growth Mutual Fund aur Income Mutual Fund mein kya farq hai?",
     "options": {
       "a": "Dono bilkul same hain",
@@ -1535,7 +1535,7 @@
   },
   {
     "id": 119,
-    "level": 6,
+    "level": 71,
     "question": "ETF (Exchange Traded Fund) mutual fund se kaise mukhtalif hai?",
     "options": {
       "a": "ETF direct stock market par real-time trade hota hai bilkul ek stock ki tarah",
@@ -1548,7 +1548,7 @@
   },
   {
     "id": 120,
-    "level": 6,
+    "level": 71,
     "question": "Direct Stocks trading ke muqable mein Mutual Fund ka kya faida hai?",
     "options": {
       "a": "Professional management aur kam capital se auto-diversification",
@@ -1561,7 +1561,7 @@
   },
   {
     "id": 121,
-    "level": 7,
+    "level": 72,
     "question": "Islamic Banking (Islami Banking) ki bunyadi shart kya hai?",
     "options": {
       "a": "Arabic language ka istemal",
@@ -1574,7 +1574,7 @@
   },
   {
     "id": 122,
-    "level": 7,
+    "level": 72,
     "question": "Riba (Sood) kis cheez ko kehte hain?",
     "options": {
       "a": "Karobar ka halal munafa",
@@ -1587,7 +1587,7 @@
   },
   {
     "id": 123,
-    "level": 7,
+    "level": 72,
     "question": "Mudarabah (مضاربہ) contract mein profit/loss share kaise hota hai?",
     "options": {
       "a": "Aik investor (Rabb-ul-Maal) hota hai aur dusra mehnat (Mudarib) karta hai. Profit share hota hai par loss sirf investor ka hota hai",
@@ -1600,7 +1600,7 @@
   },
   {
     "id": 124,
-    "level": 7,
+    "level": 72,
     "question": "Musharakah (مشارکہ) contract kya hai?",
     "options": {
       "a": "Guaranteed profit sharing scheme",
@@ -1613,7 +1613,7 @@
   },
   {
     "id": 125,
-    "level": 7,
+    "level": 72,
     "question": "Murabahah (مرابحہ) product Islamic bank kaise chalata hai?",
     "options": {
       "a": "Direct cash loan de kar us par profit leta hai",
@@ -1626,7 +1626,7 @@
   },
   {
     "id": 126,
-    "level": 7,
+    "level": 72,
     "question": "Ijara (اجارہ) contract kis conventional contract ke barabar hota hai?",
     "options": {
       "a": "Direct Stock buying",
@@ -1639,7 +1639,7 @@
   },
   {
     "id": 127,
-    "level": 7,
+    "level": 72,
     "question": "Conventional bank deposit aur Islamic bank deposit mein kya farq hai?",
     "options": {
       "a": "Conventional fix interest guaranteed karta hai, Islamic business profit/loss share karta hai",
@@ -1652,7 +1652,7 @@
   },
   {
     "id": 128,
-    "level": 7,
+    "level": 72,
     "question": "Sukuk (صکوک) conventional bonds se kaise mukhtalif hai?",
     "options": {
       "a": "Conventional bonds debt (loan) hain, Sukuk Shariah-compliant asset ownership certificates hain",
@@ -1665,7 +1665,7 @@
   },
   {
     "id": 129,
-    "level": 7,
+    "level": 72,
     "question": "Islamic Mutual Fund kis type ke shares mein invest nahi kar sakta?",
     "options": {
       "a": "Technology companies mein",
@@ -1678,7 +1678,7 @@
   },
   {
     "id": 130,
-    "level": 7,
+    "level": 72,
     "question": "Shariah Board Islamic bank mein kya kaam karta hai?",
     "options": {
       "a": "Tax collection control karta hai",
@@ -1691,7 +1691,7 @@
   },
   {
     "id": 131,
-    "level": 7,
+    "level": 72,
     "question": "Gharar (غرر) se conventions mein kya murad hai?",
     "options": {
       "a": "Haram khana",
@@ -1704,7 +1704,7 @@
   },
   {
     "id": 132,
-    "level": 7,
+    "level": 72,
     "question": "Takaful (تکافل) conventional insurance se kaise mukhtalif hai?",
     "options": {
       "a": "Takaful bilkul free hota hai",
@@ -1717,7 +1717,7 @@
   },
   {
     "id": 133,
-    "level": 7,
+    "level": 72,
     "question": "Halal stock screening mein debt-to-assets ratio ki limit kya hoti hai?",
     "options": {
       "a": "Zero% (no interest debt)",
@@ -1730,7 +1730,7 @@
   },
   {
     "id": 134,
-    "level": 7,
+    "level": 72,
     "question": "Islamic banking savings account par profit rate kya hamesha fix hota hai?",
     "options": {
       "a": "Nahi, yeh floating rate hota hai jo business investment pool ke munafay par depend karta hai",
@@ -1743,7 +1743,7 @@
   },
   {
     "id": 135,
-    "level": 7,
+    "level": 72,
     "question": "Islamic micro-finance (jaise Akhuwat) conventional loans se kaise mukhtalif hai?",
     "options": {
       "a": "Akhuwat Qarz-e-Hasna (bina kisi profit/interest ke) loans deti hai",
@@ -1756,7 +1756,7 @@
   },
   {
     "id": 136,
-    "level": 7,
+    "level": 72,
     "question": "Maysir (میسر) conventional finance mein kis prohibited activity ko kehte hain?",
     "options": {
       "a": "Halal munafa",
@@ -1769,7 +1769,7 @@
   },
   {
     "id": 137,
-    "level": 7,
+    "level": 72,
     "question": "Islamic auto-financing (jaise Meezan Car Ijarah) conventional car lease se kaise mukhtalif hai?",
     "options": {
       "a": "Gari bank gift karta hai",
@@ -1782,7 +1782,7 @@
   },
   {
     "id": 138,
-    "level": 7,
+    "level": 72,
     "question": "Halal stock investment se milne wale non-compliant income ka 'Purification' (طہارت) kaise kiya jata hai?",
     "options": {
       "a": "Use reinvest kar ke",
@@ -1795,7 +1795,7 @@
   },
   {
     "id": 139,
-    "level": 7,
+    "level": 72,
     "question": "Riba al-Fadl (ربا الفضل) conventional definition mein kya hai?",
     "options": {
       "a": "Time delay interest",
@@ -1808,7 +1808,7 @@
   },
   {
     "id": 140,
-    "level": 7,
+    "level": 72,
     "question": "Islamic Wealth Management mein 'Zakat' (زکوۃ) ka kya kirdaar hai?",
     "options": {
       "a": "Investment assets par 2.5% salana wajib tax jo poor logon ki welfare ke liye hota hai",
@@ -1821,7 +1821,7 @@
   },
   {
     "id": 141,
-    "level": 8,
+    "level": 81,
     "question": "Stock Market (Hissas Bazaar) kya hota hai?",
     "options": {
       "a": "Sarkari loans ki jaga",
@@ -1834,7 +1834,7 @@
   },
   {
     "id": 142,
-    "level": 8,
+    "level": 81,
     "question": "Share (حصہ) khareedne ka kya matlab hota hai?",
     "options": {
       "a": "Company ko loan dena",
@@ -1847,7 +1847,7 @@
   },
   {
     "id": 143,
-    "level": 8,
+    "level": 81,
     "question": "PSX (Pakistan Stock Exchange) kahan waqay hai?",
     "options": {
       "a": "Islamabad",
@@ -1860,7 +1860,7 @@
   },
   {
     "id": 144,
-    "level": 8,
+    "level": 81,
     "question": "Stock Exchange Index (jaise KSE-100) kya dikhata hai?",
     "options": {
       "a": "Total listed companies key names",
@@ -1873,7 +1873,7 @@
   },
   {
     "id": 145,
-    "level": 8,
+    "level": 81,
     "question": "IPO (Initial Public Offering) kya hota hai?",
     "options": {
       "a": "Stock swap deal",
@@ -1886,7 +1886,7 @@
   },
   {
     "id": 146,
-    "level": 8,
+    "level": 81,
     "question": "Direct Stock khareedne ke liye kis cheez ki zaroorat hoti hai?",
     "options": {
       "a": "Direct factory manager se milna",
@@ -1899,7 +1899,7 @@
   },
   {
     "id": 147,
-    "level": 8,
+    "level": 81,
     "question": "Market Capitalization (Market Cap) kya hoti hai?",
     "options": {
       "a": "Total bank debt size",
@@ -1912,7 +1912,7 @@
   },
   {
     "id": 148,
-    "level": 8,
+    "level": 81,
     "question": "Stock trading mein 'Ticker Symbol' (jaise ENGRO, LUCK) kya hota hai?",
     "options": {
       "a": "Secret trade pin code",
@@ -1925,7 +1925,7 @@
   },
   {
     "id": 149,
-    "level": 8,
+    "level": 81,
     "question": "Limit Order aur Market Order mein kya farq hai?",
     "options": {
       "a": "Market order check limit check karta hai",
@@ -1938,7 +1938,7 @@
   },
   {
     "id": 150,
-    "level": 8,
+    "level": 81,
     "question": "Blue Chip stocks kaunse hote hain?",
     "options": {
       "a": "Nayi tech startup stocks",
@@ -1951,7 +1951,7 @@
   },
   {
     "id": 151,
-    "level": 8,
+    "level": 81,
     "question": "Direct stock market mein investment ka kya risk hai?",
     "options": {
       "a": "Market crash hone par share ki qeemat girne se capital loss ka risk",
@@ -1964,7 +1964,7 @@
   },
   {
     "id": 152,
-    "level": 8,
+    "level": 81,
     "question": "Penny Stocks kaunse hote hain?",
     "options": {
       "a": "Bohut high price wale shares",
@@ -1977,7 +1977,7 @@
   },
   {
     "id": 153,
-    "level": 8,
+    "level": 81,
     "question": "P/E (Price-to-Earnings) ratio stock analysis mein kya batati hai?",
     "options": {
       "a": "Monthly cost comparison",
@@ -1990,7 +1990,7 @@
   },
   {
     "id": 154,
-    "level": 8,
+    "level": 81,
     "question": "Direct stock market mein loss ko bachane ke liye 'Stop-Loss' order kya hai?",
     "options": {
       "a": "Bank transaction lock kar dena",
@@ -2003,7 +2003,7 @@
   },
   {
     "id": 155,
-    "level": 8,
+    "level": 81,
     "question": "Insider Trading conventional rules ke mutabiq kyun illegal hai?",
     "options": {
       "a": "Kyunke is mein tax nahi hota",
@@ -2016,7 +2016,7 @@
   },
   {
     "id": 156,
-    "level": 8,
+    "level": 81,
     "question": "Short Selling (Shorting) stock trading mein kya hota hai?",
     "options": {
       "a": "Choti muddat ke liye share hold karna",
@@ -2029,7 +2029,7 @@
   },
   {
     "id": 157,
-    "level": 8,
+    "level": 81,
     "question": "Direct stocks bechne par transaction costs mein kya shamil hota hai?",
     "options": {
       "a": "Sarkari tax and interest rates",
@@ -2042,7 +2042,7 @@
   },
   {
     "id": 158,
-    "level": 8,
+    "level": 81,
     "question": "Fundamental Analysis stock market mein kis research ko kehte hain?",
     "options": {
       "a": "Sirf price charts dekhna",
@@ -2055,7 +2055,7 @@
   },
   {
     "id": 159,
-    "level": 8,
+    "level": 81,
     "question": "Technical Analysis kis research ko kehte hain?",
     "options": {
       "a": "Company financial status check",
@@ -2068,7 +2068,7 @@
   },
   {
     "id": 160,
-    "level": 8,
+    "level": 81,
     "question": "PSX me direct investing ke bare me new users ko key advice kya honi chahiye?",
     "options": {
       "a": "Udhaar le kar stocks mein daal dein",
@@ -2341,7 +2341,7 @@
   },
   {
     "id": 181,
-    "level": 10,
+    "level": 5,
     "question": "Filer (فائلر) aur Non-Filer mein conventional farq kya hai?",
     "options": {
       "a": "Filer bank account holder hota hai, non-filer nahi",
@@ -2354,7 +2354,7 @@
   },
   {
     "id": 182,
-    "level": 10,
+    "level": 5,
     "question": "Pakistan Active Taxpayer List (ATL) kya show karti hai?",
     "options": {
       "a": "Bank black-list holders",
@@ -2367,7 +2367,7 @@
   },
   {
     "id": 183,
-    "level": 10,
+    "level": 5,
     "question": "Filer hone ka bank cash withdrawal transaction par kya faida hai?",
     "options": {
       "a": "Withdrawal bilkul unlimited and transaction cost zero ho jati hai",
@@ -2380,7 +2380,7 @@
   },
   {
     "id": 184,
-    "level": 10,
+    "level": 5,
     "question": "Filer hone par bank profit (PLS profit) par tax rates conventional farq kya hai?",
     "options": {
       "a": "Filer par PLS profit par 15% tax hota hai, non-filer par 30% tax kaata jata hai (withholding)",
@@ -2393,7 +2393,7 @@
   },
   {
     "id": 185,
-    "level": 10,
+    "level": 5,
     "question": "FBR (Federal Board of Revenue) Pakistan mein kis cheez ka mukhtas idara hai?",
     "options": {
       "a": "Currency printing audit",
@@ -2406,7 +2406,7 @@
   },
   {
     "id": 186,
-    "level": 10,
+    "level": 5,
     "question": "Income Tax Return file karne ki aam saalana deadline kab hoti hai?",
     "options": {
       "a": "31st December",
@@ -2419,7 +2419,7 @@
   },
   {
     "id": 187,
-    "level": 10,
+    "level": 5,
     "question": "IRIS portal (FBR online portal) kis cheez ke liye istemal hota hai?",
     "options": {
       "a": "Bank balance checks",
@@ -2432,7 +2432,7 @@
   },
   {
     "id": 188,
-    "level": 10,
+    "level": 5,
     "question": "Wealth Statement (FBR Form 116) file karne ka kya maqsad hota hai?",
     "options": {
       "a": "Apni salary conceal karna",
@@ -2445,7 +2445,7 @@
   },
   {
     "id": 189,
-    "level": 10,
+    "level": 5,
     "question": "Withholding Tax (WHT) kya hota hai?",
     "options": {
       "a": "Returns file karne ki penalty",
@@ -2458,7 +2458,7 @@
   },
   {
     "id": 190,
-    "level": 10,
+    "level": 5,
     "question": "Tax Credit kya hota hai?",
     "options": {
       "a": "Bank se tax ka loan milna",
@@ -2471,7 +2471,7 @@
   },
   {
     "id": 191,
-    "level": 10,
+    "level": 5,
     "question": "Filer hone par car registration tax conventional discount rates kya hain?",
     "options": {
       "a": "Car transfer tax half ho jata hai aur parameters par substantial low rate lagta hai compared to non-filer",
@@ -2484,7 +2484,7 @@
   },
   {
     "id": 192,
-    "level": 10,
+    "level": 5,
     "question": "Property (Zameen/Makaan) ki khareed-o-ferokht par active filer ko kya relief milti hai?",
     "options": {
       "a": "Property registeration price zero ho jati hai",
@@ -2497,7 +2497,7 @@
   },
   {
     "id": 193,
-    "level": 10,
+    "level": 5,
     "question": "Direct Capital Gains Tax (CGT) stocks market par active filer vs non-filer conventional margins kya hain?",
     "options": {
       "a": "Filer par profit par 15% CGT lagta hai, non-filer par 30% standard CGT kaata jata hai",
@@ -2510,7 +2510,7 @@
   },
   {
     "id": 194,
-    "level": 10,
+    "level": 5,
     "question": "Sales Tax (GST) general standard rate Pakistan mein conventional kya chal raha hai?",
     "options": {
       "a": "5%",
@@ -2523,7 +2523,7 @@
   },
   {
     "id": 195,
-    "level": 10,
+    "level": 5,
     "question": "Salaried individual (tankha-dar mulazim) ke liye saalana tax slab limits kya hain (lowest slab)?",
     "options": {
       "a": "Rs. 1,00,000 saalana tak zero tax",
@@ -2536,7 +2536,7 @@
   },
   {
     "id": 196,
-    "level": 10,
+    "level": 5,
     "question": "Direct taxes aur Indirect taxes mein kya farq hai?",
     "options": {
       "a": "Direct taxes bank pay karta hai, indirect customer",
@@ -2549,7 +2549,7 @@
   },
   {
     "id": 197,
-    "level": 10,
+    "level": 5,
     "question": "Filer hone par tax returns file karne ke liye kya self e-filing possible hai?",
     "options": {
       "a": "Nahi, sirf lawyers kar sakte hain",
@@ -2562,7 +2562,7 @@
   },
   {
     "id": 198,
-    "level": 10,
+    "level": 5,
     "question": "Non-filer active filer list (ATL) mein kaise enter ho sakta hai?",
     "options": {
       "a": "Bank account balance double kar ke",
@@ -2575,7 +2575,7 @@
   },
   {
     "id": 199,
-    "level": 10,
+    "level": 5,
     "question": "Advance tax adjustments (jaise cellular credit cards, electric utility bills tax) return mein kaise adjust hote hain?",
     "options": {
       "a": "Yeh cash bank wapis koodta hai",
@@ -2588,7 +2588,7 @@
   },
   {
     "id": 200,
-    "level": 10,
+    "level": 5,
     "question": "Salana tax planning ka kya faida hai?",
     "options": {
       "a": "Mulk se paisa bahar chorna",
@@ -2598,5 +2598,525 @@
     },
     "correct_option": "b",
     "explanation": "Tax planning legal hai, is mein aap incentives (like mutual fund retirement plans) ke mutabiq investment kar ke apni tax liability ko kam karte hain."
+  },
+  {
+    "id": 201,
+    "level": 82,
+    "question": "Gold ki pricing unit Pakistan mein aam tor par kya hoti hai?",
+    "options": {
+      "a": "Ounce",
+      "b": "Tola",
+      "c": "Gram",
+      "d": "Pound"
+    },
+    "correct_option": "b",
+    "explanation": "Pakistan mein gold ka rate aam tor par per Tola (11.66 grams) ke hisab se bataya aur trade kiya jata hai."
+  },
+  {
+    "id": 202,
+    "level": 82,
+    "question": "1 Tola gold mein taqreeban kitne grams hote hain?",
+    "options": {
+      "a": "10 grams",
+      "b": "11.66 grams",
+      "c": "12.5 grams",
+      "d": "15 grams"
+    },
+    "correct_option": "b",
+    "explanation": "1 Tola standard measurement ke mutabiq 11.66 grams ke barabar hota hai."
+  },
+  {
+    "id": 203,
+    "level": 82,
+    "question": "Gold ko safe-haven asset kyun samjha jata hai?",
+    "options": {
+      "a": "Kyunke iska rate kabhi change nahi hota",
+      "b": "Kyunke devalue hoti currency aur inflation ke doran ye apni value barkarar rakhta hai",
+      "c": "Kyunke bank ispar monthly fixed profit dete hain",
+      "d": "Kyunke isme koi risk nahi hota"
+    },
+    "correct_option": "b",
+    "explanation": "High inflation aur currency devaluation ke doran gold ki qeemat barh jati hai, jis se sarmayakaron ki purchasing power mehfooz rehti hai."
+  },
+  {
+    "id": 204,
+    "level": 82,
+    "question": "Gold ki purity (khalispan) kis unit mein measure ki jati hai?",
+    "options": {
+      "a": "Karat (K)",
+      "b": "Gram",
+      "c": "Litre",
+      "d": "Percentage"
+    },
+    "correct_option": "a",
+    "explanation": "Gold ki purity Karat (jaise 24K, 22K, 18K) mein check ki jati hai."
+  },
+  {
+    "id": 205,
+    "level": 82,
+    "question": "24 Karat gold ka kya matlab hai?",
+    "options": {
+      "a": "Gold mein 50% milaawat hai",
+      "b": "99.9% خالص (Pure) gold jis mein koi milaawat nahi hoti",
+      "c": "Jewelry banane ke liye behtareen gold",
+      "d": "Sarkari gold"
+    },
+    "correct_option": "b",
+    "explanation": "24 Karat gold sabse khalis gold hota hai (99.9% pure). Ye narm hota hai isliye iski jewelry aam tor par nahi banti."
+  },
+  {
+    "id": 206,
+    "level": 82,
+    "question": "Real Estate (Zameen/Makaan) se monthly passive income haasil karne ka zariya kya hai?",
+    "options": {
+      "a": "Capital gain",
+      "b": "Rental Yield (Kiraya)",
+      "c": "Stock dividends",
+      "d": "Bank interest"
+    },
+    "correct_option": "b",
+    "explanation": "Property ko lease/kiraye par dekar jo monthly rental income milti hai use Rental Yield kehte hain."
+  },
+  {
+    "id": 207,
+    "level": 82,
+    "question": "REITs (Real Estate Investment Trusts) ka kya faida hai?",
+    "options": {
+      "a": "Ye bina physical property khareede real estate market mein sarmayakari ka zariya hain",
+      "b": "Ye property tax khatam kar dete hain",
+      "c": "Ye sirf government employees ke liye hain",
+      "d": "In mein koi risk nahi hota"
+    },
+    "correct_option": "a",
+    "explanation": "REITs shares ki tarah trade hote hain jo commercial/residential real estate projects mein choti investment ki ijazat deta hai."
+  },
+  {
+    "id": 208,
+    "level": 82,
+    "question": "Pakistan mein REITs ko kaun sa idara regulate karta hai?",
+    "options": {
+      "a": "FBR",
+      "b": "SECP (Securities and Exchange Commission of Pakistan)",
+      "c": "State Bank of Pakistan",
+      "d": "LDA / CDA"
+    },
+    "correct_option": "b",
+    "explanation": "SECP Pakistan mein tamam corporate investments, mutual funds aur REITs ko regulate karta hai."
+  },
+  {
+    "id": 209,
+    "level": 82,
+    "question": "Property market mein Capital Appreciation ka kya matlab hai?",
+    "options": {
+      "a": "Property par tax barhna",
+      "b": "Zameen ya ghar ki market value ka waqt ke sath barhna",
+      "c": "Kiraye ka har saal barhna",
+      "d": "Property ki repair ka kharcha"
+    },
+    "correct_option": "b",
+    "explanation": "Waqt ke sath zameen ya building ki market price barhne ko Capital Appreciation kehte hain."
+  },
+  {
+    "id": 210,
+    "level": 82,
+    "question": "Gold coins aur bars khareedna jewelry ke muqable mein kyun behtar sarmayakari hai?",
+    "options": {
+      "a": "Kyunke inka color behtar hota hai",
+      "b": "Kyunke in par making charges (katai/mazdoori) aur tax nihayat kam hote hain",
+      "c": "Kyunke in par zakat nahi hoti",
+      "d": "Kyunke inki chori ka khatra nahi hota"
+    },
+    "correct_option": "b",
+    "explanation": "Jewelry par heavy making charges lagte hain jo bechte waqt zaya ho jate hain. Bullion (coins/bars) sarmayakari ke liye behtar hain."
+  },
+  {
+    "id": 211,
+    "level": 82,
+    "question": "Property ki khareed-o-ferokht mein Filer aur Non-Filer tax rate mein kya farq hai?",
+    "options": {
+      "a": "Dono ka tax barabar hota hai",
+      "b": "Non-Filer par Filer se dugna ya us se bhi zyada withholding/registration tax lagta hai",
+      "c": "Non-Filer par koi tax nahi hota",
+      "d": "Filer ko 100% tax chhoot milti hai"
+    },
+    "correct_option": "b",
+    "explanation": "FBR regulations ke mutabiq non-filers ko property transactions par penalty tax dena hota hai jo ke filers se kain zyada hai."
+  },
+  {
+    "id": 212,
+    "level": 82,
+    "question": "Pakistan mein Unapproved housing schemes mein file system (Plot Files) khareedne ka sab se bora risk kya hai?",
+    "options": {
+      "a": "Tax rate barh jana",
+      "b": "Possession (qabza) na milna aur scheme ka illegal hona",
+      "c": "Gold rate ka gir jana",
+      "d": "Kiraye ka na milna"
+    },
+    "correct_option": "b",
+    "explanation": "Unapproved schemes aam tor par file bech deti hain lekin physical zameen majood nahi hoti, jo sarmayakar ke nuqsaan ka sabab banta hai."
+  },
+  {
+    "id": 213,
+    "level": 82,
+    "question": "Real Estate ki liquidity (kash mein badalne ki salahiyat) stock market se kaisi hoti hai?",
+    "options": {
+      "a": "Bohot fast hoti hai",
+      "b": "Bohot slow aur low liquidity hoti hai (property bechne mein mahino lag sakte hain)",
+      "c": "Dono barabar hain",
+      "d": "Real estate ko cash mein nahi badla ja sakta"
+    },
+    "correct_option": "b",
+    "explanation": "Real estate highly illiquid asset hai kyunke aap plot ya ghar ko fori tor par nahi bech sakte, jabke stocks minutes mein beche ja sakte hain."
+  },
+  {
+    "id": 214,
+    "level": 82,
+    "question": "Pakistan mein local gold rate kis cheez par depend karta hai?",
+    "options": {
+      "a": "Sirf local demand par",
+      "b": "International gold rate (USD per ounce) aur USD-PKR exchange rate par",
+      "c": "KSE-100 index par",
+      "d": "FBR tax policies par"
+    },
+    "correct_option": "b",
+    "explanation": "Gold rate international market aur dollar ki rate tabdeeli ke tehat Pakistan mein har din adjust hota hai."
+  },
+  {
+    "id": 215,
+    "level": 82,
+    "question": "Rental Yield nikalne ka kya formula hai?",
+    "options": {
+      "a": "(Saalana Rent / Property Qeemat) * 100",
+      "b": "Monthly Rent * 12",
+      "c": "Property Qeemat - Total Taxes",
+      "d": "Rent + Capital Appreciation"
+    },
+    "correct_option": "a",
+    "explanation": "Rental yield percentage mein hoti hai jo saalana kiraye ko property ki total value se divide aur 100 se multiply karke nikalti hai."
+  },
+  {
+    "id": 216,
+    "level": 82,
+    "question": "Agar ek plot 50 lakh ka khareed kar 70 lakh ka becha jaye, to is 20 lakh ke profit ko financial terms mein kya kehte hain?",
+    "options": {
+      "a": "Dividend",
+      "b": "Capital Gain (سرمائے ka munafa)",
+      "c": "Yield",
+      "d": "Bonus"
+    },
+    "correct_option": "b",
+    "explanation": "Kisi sarmayakar ko asset value barhne aur use bechne par jo profit milta hai use Capital Gain kehte hain."
+  },
+  {
+    "id": 217,
+    "level": 82,
+    "question": "Pakistan Mercantile Exchange (PMEX) ke zariye gold khareedne ka kya faida hai?",
+    "options": {
+      "a": "Ye physical gold ki chori ke risk ke baghair digital gold trading ki sahulat deta hai",
+      "b": "Ispar koi tax nahi hota",
+      "c": "Ispar monthly interest milta hai",
+      "d": "Ye interest-free loan deta hai"
+    },
+    "correct_option": "a",
+    "explanation": "PMEX SECP regulated exchange hai jahan aap physically gold liye baghair uski digital ownership aur trade kar sakte hain."
+  },
+  {
+    "id": 218,
+    "level": 82,
+    "question": "Commercial real estate (shops, offices) residential (houses, flats) se aam tor par kaise behtar hai?",
+    "options": {
+      "a": "Iski safai asan hoti hai",
+      "b": "Iski rental yield (aam tor par 6% - 9%) residential (3% - 5%) se behtar hoti hai",
+      "c": "Ispar tax nahi lagta",
+      "d": "Iski resale fori ho jati hai"
+    },
+    "correct_option": "b",
+    "explanation": "Commercial properties ki rental demand aur yields residential sector ke muqable mein behtar hoti hain."
+  },
+  {
+    "id": 219,
+    "level": 82,
+    "question": "Gold Bullion (بلین) ka kya matlab hota hai?",
+    "options": {
+      "a": "Gold ki jewelry",
+      "b": "High purity gold bars ya standard gold coins",
+      "c": "Ghair-khalis sona",
+      "d": "White gold"
+    },
+    "correct_option": "b",
+    "explanation": "Bullion ka matlab standard, high purity (99.5%+) gold ya silver bars aur coins hote hain jo trade ke liye use hote hain."
+  },
+  {
+    "id": 220,
+    "level": 82,
+    "question": "Real Estate investment ka sab se bara draw-back ya rukawat kya hai?",
+    "options": {
+      "a": "Ispar zaroorat se zyada profit milta hai",
+      "b": "High initial capital required (bari sarmayakari ki zaroorat hoti hai)",
+      "c": "Ye illegal hota hai",
+      "d": "Iska rate kabhi barhta nahi"
+    },
+    "correct_option": "b",
+    "explanation": "Real estate mein enter hone ke liye bari rakam (capital) chahiye hoti hai jo aam small savers ke paas nahi hoi."
+  },
+  {
+    "id": 221,
+    "level": 10,
+    "question": "Voluntary Pension Scheme (VPS) kis idare se registered aur regulate hoti hai?",
+    "options": {
+      "a": "FBR",
+      "b": "SECP (Securities and Exchange Commission of Pakistan)",
+      "c": "State Bank of Pakistan",
+      "d": "Social Welfare Department"
+    },
+    "correct_option": "b",
+    "explanation": "VPS retirement funds hote hain jo SECP se registered asset management companies manage karti hain."
+  },
+  {
+    "id": 222,
+    "level": 10,
+    "question": "VPS mein investment karne par Income Tax Ordinance ke kis Section ke tehat tax credit milta hai?",
+    "options": {
+      "a": "Section 61",
+      "b": "Section 63 (Pension Funds tax rebate)",
+      "c": "Section 62",
+      "d": "Section 114"
+    },
+    "correct_option": "b",
+    "explanation": "Section 63 ke tehat retirement/pension schemes mein invest karne par up to 20% tax credit haasil kiya ja sakta hai."
+  },
+  {
+    "id": 223,
+    "level": 10,
+    "question": "Retirement portfolio se withdrawals ke liye '4% Rule' ka kya maqsad hai?",
+    "options": {
+      "a": "Ye batata hai ke har saal portfolio ka 4% tax dena hoga",
+      "b": "Ye safe withdrawal rate hai jo ensure karta hai ke retirement ke doran aap ka capital khatam na ho",
+      "c": "Ye batata hai ke monthly return 4% mile ga",
+      "d": "Ipar 4% interest charge hota hai"
+    },
+    "correct_option": "b",
+    "explanation": "4% rule ke mutabiq agar aap retirement portfolio se har saal 4% nikalte hain, toh inflation ke bawajood aap ka fund lambe arsay tak chalta hai."
+  },
+  {
+    "id": 224,
+    "level": 10,
+    "question": "Shariah-compliant pension funds kis kisam ke assets mein invest karte hain?",
+    "options": {
+      "a": "Conventional bank deposits aur corporate bonds",
+      "b": "Sood se paak Government Sukuk, Islamic savings, aur Shariah-compliant equity stocks",
+      "c": "Prize bonds aur gambling platforms",
+      "d": "Foreign currency instruments"
+    },
+    "correct_option": "b",
+    "explanation": "Islamic pension funds strict Shariah guidelines ke tehat sood se pak equity stocks aur Sukuk bonds mein invest karte hain."
+  },
+  {
+    "id": 225,
+    "level": 10,
+    "question": "'Rule of 25' ke mutabiq comfortable retirement ke liye aap ka target fund kitna hona chahiye?",
+    "options": {
+      "a": "Aap ki age ka 25 times",
+      "b": "Aap ke saalana expenses (expenses) ka 25 times",
+      "c": "25 lakh rupees",
+      "d": "Aap ki basic income ka 25%"
+    },
+    "correct_option": "b",
+    "explanation": "Rule of 25 ke mutabiq agar aap ke paas apne saalana kharche ka 25 guna capital mehfooz hai, toh aap retirement le sakte hain."
+  },
+  {
+    "id": 226,
+    "level": 10,
+    "question": "Islamic Will ko Arabic aur Urdu mein kya kaha jata hai?",
+    "options": {
+      "a": "Takaful",
+      "b": "Wasiyat (وصیت)",
+      "c": "Qard",
+      "d": "Zakat"
+    },
+    "correct_option": "b",
+    "explanation": "Apni death ke baad assets ki legacy transition ke liye jo legal/religious document banaya jata hai use Wasiyat kehte hain."
+  },
+  {
+    "id": 227,
+    "level": 10,
+    "question": "Shariah rules ke mutabiq ek shakhs maximum kitna hissa Wasiyat ke zariye ghair-waris ko de sakta hai?",
+    "options": {
+      "a": "Aadhaa (1/2) capital",
+      "b": "Ek tihai (1/3) wealth",
+      "c": "Poora (100%) sarmaya",
+      "d": "Kuch bhi nahi de sakta"
+    },
+    "correct_option": "b",
+    "explanation": "Islami qanoon ke mutabiq aap maximum 1/3 wealth ghair-waris ya charity ko wasiyat kar sakte hain. Baki 2/3 shari'i warisaan mein distribute hota hai."
+  },
+  {
+    "id": 228,
+    "level": 10,
+    "question": "Wasiyat ke 1/3 hisse ke ilawa baqi 2/3 wealth shari'i warison mein kis rule ke tehat taqseem hoti hai?",
+    "options": {
+      "a": "Sarkari tax rules ke mutabiq",
+      "b": "Shariah inheritance laws (وراثت کے اسلامی قوانین) ke tehat",
+      "c": "Complete equal sharing formula par",
+      "d": "Sirf baray bete ko di jati hai"
+    },
+    "correct_option": "b",
+    "explanation": "Wasiyat ke ilawa baqi assets automatically Shariah compliance rules ke mutabiq shari'i warisaan (parents, spouse, children) mein fix ratios ke tehat taqseem hote hain."
+  },
+  {
+    "id": 229,
+    "level": 10,
+    "question": "Voluntary Pension Scheme (VPS) mein kya sarmayakar ko pension manager badalne ki ijazat hoti hai?",
+    "options": {
+      "a": "Nahi, fund manager fix rehta hai",
+      "b": "Haan, sarmayakar jab chahe apna fund balance dusre AMC (Pension Manager) mein baghair kisi penalty ke transfer kar sakta hai",
+      "c": "Sirf retirement age par ijazat hoti hai",
+      "d": "Is transfer par 50% tax deduct hota hai"
+    },
+    "correct_option": "b",
+    "explanation": "SECP rules ke mutabiq VPS accounts flexible hote hain aur aap manager ki performance dekh kar fund switch kar sakta hai."
+  },
+  {
+    "id": 230,
+    "level": 10,
+    "question": "Retirement portfolio mein age barhne ke sath asset allocation mein stocks (equities) ka ratio kaisa hona chahiye?",
+    "options": {
+      "a": "Stocks barhane chahiye",
+      "b": "Stocks ka ratio kam aur low-risk debt/fixed income products barhane chahiye",
+      "c": "Dono barabar rakhne chahiye",
+      "d": "Retirement portfolio mein stocks nahi hone chahiye"
+    },
+    "correct_option": "b",
+    "explanation": "Jaise jaise retirement qareeb ho risk appetite kam hoti hai, isliye safe/fixed-income products barhane chahiye taake capital loss na ho."
+  },
+  {
+    "id": 231,
+    "level": 10,
+    "question": "Islamic Takaful pension plans conventional annuity plans se kaise behtar hain?",
+    "options": {
+      "a": "In mein high interest profit milta hai",
+      "b": "Ye sood aur ghair-shari'i investments se paak aur mutual co-operation par mabni hote hain",
+      "c": "In mein tax nahi dena parta",
+      "d": "In ka profit government guaranteed hota hai"
+    },
+    "correct_option": "b",
+    "explanation": "Takaful plans Shariah compliant hotey hain aur inka pension pool purely halal/Shariah approved assets mein invest kiya jata hai."
+  },
+  {
+    "id": 232,
+    "level": 10,
+    "question": "Retirement key context mein Annuity (اینویٹی) product ka kya matlab hai?",
+    "options": {
+      "a": "Retirement par lump-sum amount withdraw karna",
+      "b": "Retirement fund se regular, periodic monthly payouts (pension) haasil karna",
+      "c": "Bina return ke donation dena",
+      "d": "Life insurance plan"
+    },
+    "correct_option": "b",
+    "explanation": "Annuity ka matlab ek contract hota hai jahan retirement pool ko convert karke monthly salary ya regular pension haasil ki jati hai."
+  },
+  {
+    "id": 233,
+    "level": 10,
+    "question": "Shariah inheritance rule ke mutabiq shohar ki death par bewa (wife) ka share kitna hota hai agar unki aulad (children) ho?",
+    "options": {
+      "a": "Aadhaa (50%) share",
+      "b": "Aathwan hissa (1/8 یا 12.5%)",
+      "c": "Chothai (1/4)",
+      "d": "Wife ko share nahi milta"
+    },
+    "correct_option": "b",
+    "explanation": "Aulad ki majoodgi mein bewa ka share shohar ke baqi chorey huay assets ka 1/8 (12.5%) hota hai."
+  },
+  {
+    "id": 234,
+    "level": 10,
+    "question": "Shohar ki death par bewa (wife) ka share kitna hota hai agar unki koi aulad na ho?",
+    "options": {
+      "a": "Aathwan hissa (1/8)",
+      "b": "Chothai (1/4 یا 25%)",
+      "c": "Aadhaa (1/2)",
+      "d": "Poora 100% share"
+    },
+    "correct_option": "b",
+    "explanation": "Shohar ki death par agar unki aulad na ho toh wife ka share assets ka 1/4 (25%) hota hai."
+  },
+  {
+    "id": 235,
+    "level": 10,
+    "question": "Retirement planning shuru karne ka optimal time kab hota hai?",
+    "options": {
+      "a": "55 saal ki umar mein",
+      "b": "Pehli salary aane ke sath career ke aghaaz mein",
+      "c": "Government job se retirement ke baad",
+      "d": "Bachon ki shadi ke baad"
+    },
+    "correct_option": "b",
+    "explanation": "Retirement portfolio jitna jaldi shuru hoga compounding ko utna zyada time milega, aur monthly investment bojh nahi banegi."
+  },
+  {
+    "id": 236,
+    "level": 10,
+    "question": "Inflation retirement savings ko kis tarah tabah karti hai?",
+    "options": {
+      "a": "Ye savings par tax barha deti hai",
+      "b": "Ye money key purchasing power ko kam karke monthly monthly income ki real value ko ghatati hai",
+      "c": "Ye fund manager ko chori karne ki ijazat deti hai",
+      "d": "Iska savings par koi asar nahi hota"
+    },
+    "correct_option": "b",
+    "explanation": "Agar retirement ke bad aap ko fixed 50,000 monthly mil rahe hain, toh 15% annual inflation se kuch saal baad us 50,000 ki buying power adhi reh jaye gi."
+  },
+  {
+    "id": 237,
+    "level": 10,
+    "question": "Voluntary Pension Scheme (VPS) se retirement age (aam tor par 60) se pehle balance withdraw karne par kya hota hai?",
+    "options": {
+      "a": "Withdrawal mukammal block hoti hai",
+      "b": "Withholding tax deduct hota hai jo tax credits haasil kiye gaye thay unki recovery ke liye",
+      "c": "Zero tax lagta hai",
+      "d": "Double profit diya jata hai"
+    },
+    "correct_option": "b",
+    "explanation": "VPS long-term retirement lock-in ke liye hai, pehle nikalne par tax rebate recover karne ke liye withholding tax lagta hai."
+  },
+  {
+    "id": 238,
+    "level": 10,
+    "question": "Legacy/Estate planning ka primary objective kya hota hai?",
+    "options": {
+      "a": "Zakat se bachna",
+      "b": "Wealth transition ko asan banana aur legal disputes/conflicts se bachana",
+      "c": "FBR tax bachana",
+      "d": "Banks se loan lena"
+    },
+    "correct_option": "b",
+    "explanation": "Wills aur properly structured assets hone se family members ke darmiyan inheritance conflicts nahi hotay aur wealth smooth hand-over hoti hai."
+  },
+  {
+    "id": 239,
+    "level": 10,
+    "question": "Pension Fund Manager ka core role kya hota hai?",
+    "options": {
+      "a": "Borrowers ko loan dena",
+      "b": "Pension pool capital ko equity aur bonds mein safety ke sath invest karna",
+      "c": "Government budget banana",
+      "d": "Banks run karna"
+    },
+    "correct_option": "b",
+    "explanation": "Fund manager sarmayakaron ki equity, debt, aur money market sub-funds mein allocation manage karta hai taake risk balanced rahe."
+  },
+  {
+    "id": 240,
+    "level": 10,
+    "question": "Wealth Preservation in retirement ka kya matlab hai?",
+    "options": {
+      "a": "Aggressive stocks mein invest karna",
+      "b": "Capital loss se bachna aur portfolio yields ko inflation-proof banana",
+      "c": "Ghar in cash jamah karna",
+      "d": "Gold sell kar dena"
+    },
+    "correct_option": "b",
+    "explanation": "Retirement ke doran savings ko risk-exposed assets se bacha kar capital reserve rakhna aur yields se monthly consumption poori karna wealth preservation hai."
   }
 ]

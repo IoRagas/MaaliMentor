@@ -1,4 +1,4 @@
-# Mutual Funds in Pakistan — SECP Regulated Industry
+# Mutual Funds in Pakistan — SECP Regulated Industry (میوچل فنڈز)
 
 Mutual fund ek aisa sarmayakari ka zariya hai jahan sainkron sarmayakar (investors) apna paisa ek jagah jama karte hain. Ek professional **Fund Manager** is poore pool ko stock market, sarkari bonds, sukuk, ya cash instruments mein invest karta hai. Pakistan mein is industry ko **Securities and Exchange Commission of Pakistan (SECP)** regulate karta hai.
 

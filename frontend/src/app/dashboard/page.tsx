@@ -30,27 +30,31 @@ interface DashboardData {
 const conceptMetadata: Record<string, { urdu: string; icon: string }> = {
   budgeting: { urdu: "بجٹ کے اصول", icon: "📊" },
   saving: { urdu: "بچت کی عادت", icon: "🏦" },
-  emergency_funds: { urdu: "ایمرجنسی فنڈ", icon: "🛡️" },
+  emergency_funds: { urdu: "ایمرجنسی فنڈز اور قرض", icon: "🛡️" },
   inflation: { urdu: "مہنگائی کا اثر", icon: "📈" },
+  tax_basics: { urdu: "ٹیکس فائلر بننا", icon: "📄" },
   investing: { urdu: "سرمایہ کاری", icon: "💹" },
-  mutual_funds: { urdu: "میوچل فنڈز", icon: "📋" },
-  islamic_banking: { urdu: "اسلامی بینکاری", icon: "🕌" },
-  stock_market: { urdu: "اسٹاک مارکیٹ", icon: "📈" },
+  mutual_funds: { urdu: "میوچل فنڈز (7A)", icon: "📋" },
+  islamic_banking: { urdu: "اسلامی بینکاری (7B)", icon: "🕌" },
+  stock_market: { urdu: "اسٹاک مارکیٹ (8A)", icon: "📈" },
+  gold_real_estate: { urdu: "سونا اور رئیل اسٹیٹ (8B)", icon: "🪙" },
   diversification: { urdu: "تنوع (Diversification)", icon: "🎯" },
-  tax_filer: { urdu: "ٹیکس فائلنگ اور پلاننگ", icon: "📄" },
+  retirement: { urdu: "ریٹائرمنٹ اور وصیت", icon: "👴" },
 };
 
 const flowNodes = [
   { id: "budgeting", label: "Budgeting Basics", prereqs: [] },
   { id: "saving", label: "Saving Habits", prereqs: ["budgeting"] },
-  { id: "emergency_funds", label: "Emergency Funds", prereqs: ["saving"] },
-  { id: "inflation", label: "Inflation & Money", prereqs: ["saving"] },
-  { id: "investing", label: "Investing Principles", prereqs: ["inflation"] },
-  { id: "mutual_funds", label: "Mutual Funds", prereqs: ["investing"] },
-  { id: "islamic_banking", label: "Islamic Banking", prereqs: ["mutual_funds"] },
-  { id: "stock_market", label: "Stock Market", prereqs: ["mutual_funds"] },
-  { id: "diversification", label: "Diversification", prereqs: ["investing"] },
-  { id: "tax_filer", label: "Tax Planning & Filer", prereqs: ["stock_market"] },
+  { id: "emergency_funds", label: "Emergency & Debt", prereqs: ["saving"] },
+  { id: "inflation", label: "Inflation & Money", prereqs: ["emergency_funds"] },
+  { id: "tax_basics", label: "Tax Filer Status", prereqs: ["inflation"] },
+  { id: "investing", label: "Investing Principles", prereqs: ["tax_basics"] },
+  { id: "mutual_funds", label: "Mutual Funds (7A)", prereqs: ["investing"] },
+  { id: "islamic_banking", label: "Islamic Banking (7B)", prereqs: ["investing"] },
+  { id: "stock_market", label: "Stock Market (8A)", prereqs: ["mutual_funds"] },
+  { id: "gold_real_estate", label: "Gold & Property (8B)", prereqs: ["islamic_banking"] },
+  { id: "diversification", label: "Diversification", prereqs: ["stock_market", "gold_real_estate"] },
+  { id: "retirement", label: "Retirement & Legacy", prereqs: ["diversification"] },
 ];
 
 const recentActivityEn = [
@@ -232,28 +236,28 @@ export default function DashboardPage() {
 
   // Level names
   const levelNamesEn: Record<number, string> = {
-    1: "Bachat Rookie",
-    2: "Saving Sentinel",
-    3: "Emergency Expert",
-    4: "Inflation Fighter",
-    5: "Investing Apprentice",
-    6: "Mutual Fund Navigator",
-    7: "Shariah Finance Scholar",
-    8: "Stock Explorer",
-    9: "Risk Master",
-    10: "Maali Master",
+    1: "Budgeting Novice",
+    2: "Savings Apprentice",
+    3: "Emergency Planner",
+    4: "Inflation Specialist",
+    5: "Tax Strategy Analyst",
+    6: "Investing Foundations Scholar",
+    7: "Pathways Explorer (L7)",
+    8: "Markets Specialist (L8)",
+    9: "Diversified Asset Manager",
+    10: "Retirement & Legacy Planner",
   };
   const levelNamesUr: Record<number, string> = {
-    1: "بچت کے نوآموز",
-    2: "بچت کے محافظ",
-    3: "ایمرجنسی ماہر",
-    4: "مہنگائی کا مقابلہ کرنے والے",
-    5: "سرمایہ کاری کے سیکھنے والے",
-    6: "میوچل فنڈ نیویگیٹر",
-    7: "شرعی فنانس اسکالر",
-    8: "اسٹاک ایکسپلورر",
-    9: "رسک ماسٹر",
-    10: "مالی ماسٹر",
+    1: "بجٹ بنانے والے نوآموز",
+    2: "بچت کے شاگرد",
+    3: "ایمرجنسی پلانر",
+    4: "مہنگائی کے ماہر",
+    5: "ٹیکس حکمت عملی کے تجزیہ کار",
+    6: "سرمایہ کاری کے اسکالر",
+    7: "راستوں کے متلاشی (لیول 7)",
+    8: "مارکیٹس کے ماہر (لیول 8)",
+    9: "متنوع اثاثہ مینیجر",
+    10: "ریٹائرمنٹ اور وصیت پلانر",
   };
 
   const currentLevel = data.current_level || 1;
@@ -270,31 +274,69 @@ export default function DashboardPage() {
     saving: 2,
     emergency_funds: 3,
     inflation: 4,
-    investing: 5,
-    mutual_funds: 6,
-    islamic_banking: 7,
-    stock_market: 8,
+    tax_basics: 5,
+    investing: 6,
+    mutual_funds: 71,
+    islamic_banking: 72,
+    stock_market: 81,
+    gold_real_estate: 82,
     diversification: 9,
-    tax_filer: 10,
+    retirement: 10,
   };
 
   const getConceptStatus = (conceptId: string) => {
     const score = scores[conceptId] || 0;
     const nodeLevel = conceptToLevel[conceptId] || 1;
+    const node = flowNodes.find((n) => n.id === conceptId);
+    if (!node) return "locked";
 
-    // Mastered if score is >= 75 OR the user's current level is past this node's level
-    if (score >= 75 || currentLevel > nodeLevel) {
+    // Mastered if score is >= 75 OR the user's current level has passed the node's level group
+    const isPast = (
+      (nodeLevel < 70 && currentLevel > nodeLevel) ||
+      (nodeLevel === 71 && currentLevel >= 8) ||
+      (nodeLevel === 72 && currentLevel >= 8) ||
+      (nodeLevel === 81 && currentLevel >= 9) ||
+      (nodeLevel === 82 && currentLevel >= 9)
+    );
+    if (score >= 75 || isPast) {
       return "mastered";
     }
 
-    // Unlocked if it is the current active level
-    if (nodeLevel === currentLevel) {
+    // Unlocked if no prerequisites
+    if (node.prereqs.length === 0) {
       return "unlocked";
     }
 
-    // Unlocked if it is a future level within the 3-level buffer AND not part of the last 3 linear levels (8, 9, 10)
-    if (nodeLevel > currentLevel && nodeLevel <= currentLevel + 2 && nodeLevel < 8) {
-      return "unlocked";
+    const allPrereqsMastered = node.prereqs.every((pId) => {
+      const pScore = scores[pId] || 0;
+      const pLvl = conceptToLevel[pId] || 1;
+      const pPast = (
+        (pLvl < 70 && currentLevel > pLvl) ||
+        (pLvl === 71 && currentLevel >= 8) ||
+        (pLvl === 72 && currentLevel >= 8) ||
+        (pLvl === 81 && currentLevel >= 9) ||
+        (pLvl === 82 && currentLevel >= 9)
+      );
+      return pScore >= 75 || pPast;
+    });
+
+    const anyPrereqMastered = node.prereqs.some((pId) => {
+      const pScore = scores[pId] || 0;
+      const pLvl = conceptToLevel[pId] || 1;
+      const pPast = (
+        (pLvl < 70 && currentLevel > pLvl) ||
+        (pLvl === 71 && currentLevel >= 8) ||
+        (pLvl === 72 && currentLevel >= 8) ||
+        (pLvl === 81 && currentLevel >= 9) ||
+        (pLvl === 82 && currentLevel >= 9)
+      );
+      return pScore >= 75 || pPast;
+    });
+
+    if (conceptId === "diversification") {
+      if (anyPrereqMastered) return "unlocked";
+    } else {
+      if (allPrereqsMastered) return "unlocked";
     }
 
     return "locked";
@@ -578,6 +620,12 @@ export default function DashboardPage() {
                 <div className="w-[2px] h-6 bg-emerald-500/30" />
 
                 {/* Level 5 */}
+                <div className="flex justify-center w-full">{renderNode("tax_basics")}</div>
+
+                {/* Line Down */}
+                <div className="w-[2px] h-6 bg-emerald-500/30" />
+
+                {/* Level 6 */}
                 <div className="flex justify-center w-full">{renderNode("investing")}</div>
 
                 {/* Split Lines Down */}
@@ -587,29 +635,43 @@ export default function DashboardPage() {
                   </svg>
                 </div>
 
-                {/* Level 6 & 7 */}
+                {/* Level 7: Mutual Funds (7A) & Islamic Banking (7B) */}
                 <div className="grid grid-cols-2 gap-4 w-full max-w-xl">
                   <div className="flex justify-center flex-col items-center">
                     {renderNode("mutual_funds")}
                     <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
                   </div>
-                  <div className="flex justify-center">{renderNode("islamic_banking")}</div>
+                  <div className="flex justify-center flex-col items-center">
+                    {renderNode("islamic_banking")}
+                    <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
+                  </div>
                 </div>
 
-                {/* Level 8 */}
-                <div className="flex justify-center w-full">{renderNode("stock_market")}</div>
+                {/* Level 8: Stock Market (8A) & Gold / Real Estate (8B) */}
+                <div className="grid grid-cols-2 gap-4 w-full max-w-xl">
+                  <div className="flex justify-center flex-col items-center">
+                    {renderNode("stock_market")}
+                  </div>
+                  <div className="flex justify-center flex-col items-center">
+                    {renderNode("gold_real_estate")}
+                  </div>
+                </div>
 
-                {/* Line Down */}
-                <div className="w-[2px] h-6 bg-emerald-500/30" />
+                {/* Convergence Lines Down */}
+                <div className="w-full max-w-md h-8 relative">
+                  <svg className="w-full h-full text-emerald-500/30" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 15,0 L 15,70 L 50,70 L 50,100 M 85,0 L 85,70 L 50,70 L 50,100" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4" />
+                  </svg>
+                </div>
 
-                {/* Level 9 */}
+                {/* Level 9: Diversification */}
                 <div className="flex justify-center w-full">{renderNode("diversification")}</div>
 
                 {/* Line Down */}
                 <div className="w-[2px] h-6 bg-emerald-500/30" />
 
-                {/* Level 10 */}
-                <div className="flex justify-center w-full">{renderNode("tax_filer")}</div>
+                {/* Level 10: Retirement & Legacy */}
+                <div className="flex justify-center w-full">{renderNode("retirement")}</div>
               </div>
             </GlassCard>
           </div>

@@ -197,13 +197,16 @@ CONCEPT_GRAPH = nx.DiGraph()
 CONCEPT_GRAPH.add_edges_from([
     ("budgeting", "saving"),
     ("saving", "emergency_funds"),
-    ("saving", "inflation"),
-    ("inflation", "investing"),
+    ("emergency_funds", "inflation"),
+    ("inflation", "tax_basics"),
+    ("tax_basics", "investing"),
     ("investing", "mutual_funds"),
-    ("mutual_funds", "islamic_banking"),
+    ("investing", "islamic_banking"),
     ("mutual_funds", "stock_market"),
-    ("investing", "diversification"),
-    ("stock_market", "tax_filer"),
+    ("islamic_banking", "gold_real_estate"),
+    ("stock_market", "diversification"),
+    ("gold_real_estate", "diversification"),
+    ("diversification", "retirement"),
 ])
 
 ALL_CONCEPTS: list[str] = [
@@ -211,12 +214,14 @@ ALL_CONCEPTS: list[str] = [
     "saving",
     "emergency_funds",
     "inflation",
+    "tax_basics",
     "investing",
     "mutual_funds",
     "islamic_banking",
     "stock_market",
+    "gold_real_estate",
     "diversification",
-    "tax_filer",
+    "retirement",
 ]
 MASTERY_THRESHOLD = 75
 
@@ -307,16 +312,18 @@ def get_next_recommended(user_id: int, session: Session) -> str:
 def _load_knowledge_context(concept: str) -> str:
     """Load concepts static content for fallback or supplementary context."""
     concept_kb_map: dict[str, str] = {
-        "islamic_banking": "islamic_banking_pakistan.md",
-        "mutual_funds": "mutual_funds_secp.md",
-        "investing": "mutual_funds_secp.md",
-        "saving": "national_savings_certificates.md",
-        "emergency_funds": "national_savings_certificates.md",
-        "stock_market": "mutual_funds_secp.md",
-        "diversification": "mutual_funds_secp.md",
-        "budgeting": "tax_filer_system.md",
-        "inflation": "national_savings_certificates.md",
-        "tax_filer": "tax_filer_system.md",
+        "islamic_banking": "islamic_banking.md",
+        "mutual_funds": "mutual_funds.md",
+        "investing": "investing.md",
+        "saving": "saving.md",
+        "emergency_funds": "emergency_funds.md",
+        "stock_market": "stock_market.md",
+        "diversification": "diversification.md",
+        "budgeting": "budgeting.md",
+        "inflation": "inflation.md",
+        "tax_basics": "tax_basics.md",
+        "gold_real_estate": "gold_real_estate.md",
+        "retirement": "retirement.md",
     }
     filename = concept_kb_map.get(concept)
     if not filename:

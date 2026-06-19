@@ -133,18 +133,19 @@ def onboard_user(
     session.commit()
     session.refresh(user)
 
-    # Map levels to concepts to initialize mastery scores of completed levels
     local_level_to_concept = {
         1: "budgeting",
         2: "saving",
         3: "emergency_funds",
         4: "inflation",
-        5: "investing",
-        6: "mutual_funds",
-        7: "islamic_banking",
-        8: "stock_market",
+        5: "tax_basics",
+        6: "investing",
+        71: "mutual_funds",
+        72: "islamic_banking",
+        81: "stock_market",
+        82: "gold_real_estate",
         9: "diversification",
-        10: "tax_filer",
+        10: "retirement",
     }
     concept_to_lvl = {v: k for k, v in local_level_to_concept.items()}
 
