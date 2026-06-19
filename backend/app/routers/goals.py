@@ -68,6 +68,12 @@ def save_goal(
         risk_tolerance=request.risk_tolerance,
     )
     session.add(goal)
+    
+    # Award +40 XP for setting a goal
+    if user:
+        user.current_xp += 40
+        session.add(user)
+        
     session.commit()
     session.refresh(goal)
 

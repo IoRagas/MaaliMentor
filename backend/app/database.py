@@ -55,6 +55,7 @@ def create_db_and_tables() -> None:
                     email="demo1@example.com",
                     user_level="Intermediate",
                     current_level=3,
+                    current_xp=400,
                     onboarding_completed=True,
                 )
                 session.add(demo_user)

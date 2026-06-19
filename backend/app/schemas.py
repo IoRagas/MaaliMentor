@@ -294,5 +294,25 @@ class QuizSubmitResponse(BaseModel):
     score: int
     passed: bool
     current_level: int
+    current_xp: int
     details: list[QuestionExplanation]
+
+
+# STUDY / LESSON COMPLETION
+# ═══════════════════════════════════════════════════════════════
+
+class StudyCompleteRequest(BaseModel):
+    """Payload to mark a concept study lesson as completed."""
+    user_id: int
+    concept_name: str
+
+
+class StudyCompleteResponse(BaseModel):
+    """Result of marking a lesson as completed."""
+    success: bool
+    concept_name: str
+    mastery_score: int
+    xp_awarded: int
+    current_xp: int
+
 

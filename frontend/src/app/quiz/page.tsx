@@ -208,31 +208,62 @@ export default function QuizPage() {
         const userId = localStorage.getItem("user_id") || "1";
         try {
           const res = await fetch(`http://localhost:8000/api/auth/dashboard/${userId}`);
-          if (res.ok) {
+        if (res.ok) {
             const data = await res.json();
             setDashboardData(data);
+            localStorage.setItem("dashboard_data", JSON.stringify(data));
+            localStorage.setItem("current_level", data.current_level.toString());
+            localStorage.setItem("current_xp", data.current_xp.toString());
           } else {
             throw new Error("Failed to fetch dashboard data");
           }
         } catch (err) {
-          console.warn("Quiz dashboard fetch failed, using mock fallback data:", err);
+          console.warn("Quiz dashboard fetch failed, attempting local cache lookup:", err);
+          
+          const cachedData = localStorage.getItem("dashboard_data");
+          if (cachedData) {
+            try {
+              const parsed = JSON.parse(cachedData);
+              setDashboardData(parsed);
+              setDashboardLoading(false);
+              return;
+            } catch (e) {
+              console.error("Error parsing cached dashboard data:", e);
+            }
+          }
+
+          const currentLevel = parseInt(localStorage.getItem("current_level") || "1");
+          const currentXp = parseInt(localStorage.getItem("current_xp") || "150");
+          const localConceptToLevel: Record<string, number> = {
+            budgeting: 1,
+            saving: 2,
+            emergency_funds: 3,
+            inflation: 4,
+            investing: 5,
+            mutual_funds: 6,
+            islamic_banking: 7,
+            stock_market: 8,
+            diversification: 9,
+            tax_filer: 10,
+          };
+          const fallbackMastery = Object.entries(localConceptToLevel).map(([concept_name, lvl]) => {
+            let score = 0;
+            if (lvl < currentLevel) {
+              score = 85;
+            } else if (lvl === currentLevel) {
+              score = 30;
+            }
+            return { concept_name, mastery_score: score };
+          });
+
           setDashboardData({
             user_id: parseInt(userId),
             username: localStorage.getItem("username") || "Ahmed",
             user_level: localStorage.getItem("user_level") || "Beginner",
-            current_level: parseInt(localStorage.getItem("current_level") || "1"),
-            concept_mastery: [
-              { concept_name: "budgeting", mastery_score: 75 },
-              { concept_name: "saving", mastery_score: 65 },
-              { concept_name: "emergency_funds", mastery_score: 30 },
-              { concept_name: "inflation", mastery_score: 10 },
-              { concept_name: "investing", mastery_score: 0 },
-              { concept_name: "mutual_funds", mastery_score: 0 },
-              { concept_name: "islamic_banking", mastery_score: 0 },
-              { concept_name: "stock_market", mastery_score: 0 },
-              { concept_name: "diversification", mastery_score: 0 },
-              { concept_name: "tax_filer", mastery_score: 0 },
-            ],
+            current_level: currentLevel,
+            current_xp: currentXp,
+            concept_mastery: fallbackMastery,
+            goals: [],
           });
         } finally {
           setDashboardLoading(false);
@@ -390,6 +421,11 @@ export default function QuizPage() {
           if (!syncRes.ok) {
             const syncText = await syncRes.text();
             console.warn("Offline quiz sync returned an error:", syncRes.status, syncText);
+          } else {
+            const syncData = await syncRes.json();
+            if (syncData.current_xp !== undefined) {
+              localStorage.setItem("current_xp", syncData.current_xp.toString());
+            }
           }
         } catch (bgErr) {
           console.warn("Could not initiate background quiz sync:", bgErr);
@@ -431,6 +467,9 @@ export default function QuizPage() {
 
       if (resData.passed) {
         localStorage.setItem("current_level", resData.current_level.toString());
+      }
+      if (resData.current_xp !== undefined) {
+        localStorage.setItem("current_xp", resData.current_xp.toString());
       }
     } catch (err: any) {
       console.error("Quiz submission error:", err);
@@ -484,8 +523,8 @@ export default function QuizPage() {
 
     let status: "mastered" | "unlocked" | "locked" = "locked";
 
-    // Mastered if score is >= 60 OR the user's current level is past this node's level
-    if (score >= 60 || currentLevel > nodeLevel) {
+    // Mastered if score is >= 75 OR the user's current level is past this node's level
+    if (score >= 75 || currentLevel > nodeLevel) {
       status = "mastered";
     } else if (nodeLevel === currentLevel) {
       status = "unlocked";

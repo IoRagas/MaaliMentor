@@ -39,7 +39,8 @@ def calculate_goal_savings(
     future_target = target_amount * ((1 + inflation_rate) ** years)
 
     # ── Monthly rate of return ───────────────────────────────
-    monthly_rate = expected_annual_return / 12
+    # Compound monthly interest rate: (1 + r)^(1/12) - 1
+    monthly_rate = ((1 + expected_annual_return) ** (1 / 12)) - 1
 
     if monthly_rate == 0:
         # No returns — simple division

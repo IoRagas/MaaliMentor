@@ -118,25 +118,44 @@ def onboard_user(
             start_level = 3
             break
 
-    # Create user
+    # Create user with starting XP matching their level (200 XP per cleared level)
+    start_xp = (start_level - 1) * 200
     user = User(
         username=request.username,
         password=request.password,
         email=request.email,
         user_level=level,
         current_level=start_level,
+        current_xp=start_xp,
         onboarding_completed=True,
     )
     session.add(user)
     session.commit()
     session.refresh(user)
 
-    # Create ConceptMastery rows for every concept (all start at 0)
+    # Map levels to concepts to initialize mastery scores of completed levels
+    local_level_to_concept = {
+        1: "budgeting",
+        2: "saving",
+        3: "emergency_funds",
+        4: "inflation",
+        5: "investing",
+        6: "mutual_funds",
+        7: "islamic_banking",
+        8: "stock_market",
+        9: "diversification",
+        10: "tax_filer",
+    }
+    concept_to_lvl = {v: k for k, v in local_level_to_concept.items()}
+
+    # Create ConceptMastery rows for every concept (prerequisites start at 85%, others at 0%)
     for concept in ALL_CONCEPTS:
+        concept_lvl = concept_to_lvl.get(concept, 1)
+        initial_score = 85 if concept_lvl < start_level else 0
         mastery = ConceptMastery(
             user_id=user.id,  # type: ignore[arg-type]
             concept_name=concept,
-            mastery_score=0,
+            mastery_score=initial_score,
         )
         session.add(mastery)
     session.commit()

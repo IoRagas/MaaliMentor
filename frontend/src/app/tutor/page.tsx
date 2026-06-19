@@ -205,9 +205,54 @@ export default function TutorPage() {
             scores[m.concept_name] = m.mastery_score;
           });
           setMasteryScores(scores);
+          localStorage.setItem("dashboard_data", JSON.stringify(result));
+          localStorage.setItem("current_level", result.current_level.toString());
+          localStorage.setItem("current_xp", result.current_xp.toString());
+        } else {
+          throw new Error("Failed to fetch dashboard data");
         }
       } catch (err) {
-        console.error("Error fetching concept mastery for tutor page:", err);
+        console.warn("Tutor page dashboard fetch failed, attempting local cache lookup:", err);
+        
+        const cachedData = localStorage.getItem("dashboard_data");
+        if (cachedData) {
+          try {
+            const parsed = JSON.parse(cachedData);
+            const scores: Record<string, number> = {};
+            parsed.concept_mastery?.forEach((m: { concept_name: string; mastery_score: number }) => {
+              scores[m.concept_name] = m.mastery_score;
+            });
+            setMasteryScores(scores);
+            return;
+          } catch (e) {
+            console.error("Error parsing cached dashboard data:", e);
+          }
+        }
+
+        const currentLevel = parseInt(localStorage.getItem("current_level") || "1");
+        const localConceptToLevel: Record<string, number> = {
+          budgeting: 1,
+          saving: 2,
+          emergency_funds: 3,
+          inflation: 4,
+          investing: 5,
+          mutual_funds: 6,
+          islamic_banking: 7,
+          stock_market: 8,
+          diversification: 9,
+          tax_filer: 10,
+        };
+        const scores: Record<string, number> = {};
+        Object.entries(localConceptToLevel).forEach(([concept_name, lvl]) => {
+          let score = 0;
+          if (lvl < currentLevel) {
+            score = 85;
+          } else if (lvl === currentLevel) {
+            score = 30;
+          }
+          scores[concept_name] = score;
+        });
+        setMasteryScores(scores);
       }
     };
     fetchMastery();

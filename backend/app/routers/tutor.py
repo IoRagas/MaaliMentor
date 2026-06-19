@@ -227,6 +227,12 @@ def get_dictionary_entry(term: str) -> DictionaryResponse:
     """Look up a financial term and return its Urdu definition."""
     key = term.lower().replace(" ", "_").replace("-", "_")
     entry = FINANCIAL_DICTIONARY.get(key)
+    
+    # Fallback to singular/plural variants if not found
+    if not entry and key.endswith("s"):
+        entry = FINANCIAL_DICTIONARY.get(key[:-1])
+    if not entry and not key.endswith("s"):
+        entry = FINANCIAL_DICTIONARY.get(key + "s")
 
     if not entry:
         raise HTTPException(

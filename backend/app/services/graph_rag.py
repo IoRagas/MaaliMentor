@@ -19,10 +19,11 @@ from typing import Optional, List, Dict, Any
 import networkx as nx
 import chromadb
 from chromadb.api.types import Documents, Embeddings, EmbeddingFunction
+from datetime import datetime
 from sqlmodel import Session, select
 
 from app.config import settings
-from app.models import ConceptMastery, ChatMessage
+from app.models import ConceptMastery, ChatMessage, User
 
 # ═══════════════════════════════════════════════════════════════
 # CHROMA VECTOR STORAGE & GEMINI EMBEDDINGS
@@ -205,8 +206,60 @@ CONCEPT_GRAPH.add_edges_from([
     ("stock_market", "tax_filer"),
 ])
 
-ALL_CONCEPTS: list[str] = list(nx.topological_sort(CONCEPT_GRAPH))
-MASTERY_THRESHOLD = 60
+ALL_CONCEPTS: list[str] = [
+    "budgeting",
+    "saving",
+    "emergency_funds",
+    "inflation",
+    "investing",
+    "mutual_funds",
+    "islamic_banking",
+    "stock_market",
+    "diversification",
+    "tax_filer",
+]
+MASTERY_THRESHOLD = 75
+
+
+def update_mastery_and_xp(user_id: int, detected_concepts: list[str], session: Session) -> None:
+    """Helper to increment mastery score and award XP for detected concepts during tutoring."""
+    try:
+        user = session.get(User, user_id)
+        if not user:
+            return
+            
+        xp_gained = 0
+        for concept in detected_concepts:
+            if concept in ALL_CONCEPTS:
+                mastery_stmt = select(ConceptMastery).where(
+                    ConceptMastery.user_id == user_id,
+                    ConceptMastery.concept_name == concept
+                )
+                mastery = session.exec(mastery_stmt).first()
+                if not mastery:
+                    mastery = ConceptMastery(
+                        user_id=user_id,
+                        concept_name=concept,
+                        mastery_score=5,
+                        updated_at=datetime.utcnow()
+                    )
+                    session.add(mastery)
+                    xp_gained += 10
+                elif mastery.mastery_score < 50:
+                    mastery.mastery_score = min(50, mastery.mastery_score + 5)
+                    mastery.updated_at = datetime.utcnow()
+                    session.add(mastery)
+                    xp_gained += 10
+                    
+        if xp_gained > 0:
+            user.current_xp += xp_gained
+            session.add(user)
+            session.commit()
+            print(f"[graph_rag] Dynamic tutor update: awarded +{xp_gained} XP to user {user_id}")
+    except Exception as db_err:
+        print(f"[tutor] Failed to update mastery/XP during chat: {db_err}")
+
+
 KB_DIR = Path(__file__).resolve().parent.parent / "knowledge_base"
 
 
@@ -575,6 +628,9 @@ async def generate_tutor_response(
                     cache.set(cache_key, json.dumps(result_payload), expire=3600)
                 except Exception:
                     pass
+                
+                # Award XP and update concept mastery
+                update_mastery_and_xp(user_id, all_detected, session)
                     
                 return result_payload
 
@@ -621,10 +677,15 @@ async def generate_tutor_response(
                 "جیسے بینک میں۔ سرمایہ کاری میں آپ اپنا پیسہ حصص یا باہمی فنڈز میں لگاتے ہیں تاکہ وہ بڑھ سکے "
                 "اور مہنگائی کو ہرا سکے۔ پہلے بچت کریں پھر سرمایہ کاری! اپنے مشیر سے ضرور مشورہ کریں۔"
             )
+            all_detected = list(set(detected + _detect_concepts(mock_roman)))
+            
+            # Award XP and update concept mastery
+            update_mastery_and_xp(user_id, all_detected, session)
+            
             return {
                 "roman_urdu": mock_roman,
                 "urdu_script": mock_urdu,
-                "detected_concepts": detected,
+                "detected_concepts": all_detected,
                 "next_lesson": next_lesson,
             }
 
@@ -641,7 +702,7 @@ async def generate_tutor_response(
             for record in mastery_records:
                 total_score += record.mastery_score
                 mastery_details.append(f"- {record.concept_name}: {record.mastery_score}%")
-                if record.mastery_score >= 60:
+                if record.mastery_score >= 75:
                     mastered_count += 1
             
             # Classify user level based on mastery score count
@@ -768,6 +829,9 @@ async def generate_tutor_response(
                     cache.set(cache_key, json.dumps(result_payload), expire=3600)
                 except Exception:
                     pass
+
+                # Award XP and update concept mastery
+                update_mastery_and_xp(user_id, all_detected, session)
 
                 return result_payload
 

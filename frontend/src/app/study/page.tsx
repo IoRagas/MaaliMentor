@@ -200,6 +200,72 @@ export default function StudyPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const markLessonStudied = async () => {
+      if (!concept) return;
+      const userId = localStorage.getItem("user_id") || "1";
+      try {
+        const res = await fetch("http://localhost:8000/api/quiz/study/complete", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: parseInt(userId),
+            concept_name: concept,
+          }),
+        });
+        if (res.ok) {
+          const result = await res.json();
+          if (result.current_xp !== undefined) {
+            localStorage.setItem("current_xp", result.current_xp.toString());
+          }
+          // Update the cached dashboard data
+          const cachedDashboardStr = localStorage.getItem("dashboard_data");
+          if (cachedDashboardStr) {
+            try {
+              const cached = JSON.parse(cachedDashboardStr);
+              const masteryItem = cached.concept_mastery?.find((m: any) => m.concept_name === concept);
+              if (masteryItem) {
+                masteryItem.mastery_score = Math.max(masteryItem.mastery_score, result.mastery_score);
+              }
+              cached.current_xp = result.current_xp;
+              localStorage.setItem("dashboard_data", JSON.stringify(cached));
+            } catch (e) {
+              console.error("Error updating offline cached dashboard data:", e);
+            }
+          }
+          console.log("Lesson marked as studied, updated score:", result.mastery_score);
+          return;
+        }
+      } catch (err) {
+        console.warn("Failed to notify backend about lesson study, executing offline update:", err);
+      }
+
+      // Offline fallback: Update the cached dashboard data inside localStorage
+      const cachedDashboardStr = localStorage.getItem("dashboard_data");
+      if (cachedDashboardStr) {
+        try {
+          const cached = JSON.parse(cachedDashboardStr);
+          const masteryItem = cached.concept_mastery?.find((m: any) => m.concept_name === concept);
+          if (masteryItem && masteryItem.mastery_score < 50) {
+            masteryItem.mastery_score = 50;
+            const currentXp = parseInt(localStorage.getItem("current_xp") || "150") + 50;
+            localStorage.setItem("current_xp", currentXp.toString());
+            cached.current_xp = currentXp;
+            localStorage.setItem("dashboard_data", JSON.stringify(cached));
+          }
+        } catch (e) {
+          console.error("Error performing local offline study update:", e);
+        }
+      }
+    };
+
+    if (concept) {
+      markLessonStudied();
+    }
+  }, [concept]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen">

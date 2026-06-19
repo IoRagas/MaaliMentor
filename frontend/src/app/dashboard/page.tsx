@@ -71,32 +71,61 @@ export default function DashboardPage() {
         if (res.ok) {
           const result = await res.json();
           setData(result);
+          localStorage.setItem("dashboard_data", JSON.stringify(result));
+          localStorage.setItem("current_level", result.current_level.toString());
+          localStorage.setItem("current_xp", result.current_xp.toString());
           setLoading(false);
           return;
         }
       } catch (err) {
-        console.error("Dashboard API error, loading mock data:", err);
+        console.error("Dashboard API error, attempting local cache lookup:", err);
       }
 
-      // Fallback mock data if fetch fails or throws an exception
+      // Check if there is cached data in localStorage
+      const cachedData = localStorage.getItem("dashboard_data");
+      if (cachedData) {
+        try {
+          const parsed = JSON.parse(cachedData);
+          setData(parsed);
+          setLoading(false);
+          return;
+        } catch (e) {
+          console.error("Error parsing cached dashboard data:", e);
+        }
+      }
+
+      // Dynamic fallback mock data if fetch and cache lookup fail
+      const currentLevel = parseInt(localStorage.getItem("current_level") || "1");
+      const currentXp = parseInt(localStorage.getItem("current_xp") || "150");
+      const localConceptToLevel: Record<string, number> = {
+        budgeting: 1,
+        saving: 2,
+        emergency_funds: 3,
+        inflation: 4,
+        investing: 5,
+        mutual_funds: 6,
+        islamic_banking: 7,
+        stock_market: 8,
+        diversification: 9,
+        tax_filer: 10,
+      };
+      const fallbackMastery = Object.entries(localConceptToLevel).map(([concept_name, lvl]) => {
+        let score = 0;
+        if (lvl < currentLevel) {
+          score = 85; // prerequisite concepts are mastered
+        } else if (lvl === currentLevel) {
+          score = 30; // current concept has some study progress
+        }
+        return { concept_name, mastery_score: score };
+      });
+
       setData({
         user_id: parseInt(userId),
         username: localStorage.getItem("username") || "Ahmed",
         user_level: localStorage.getItem("user_level") || "Beginner",
-        current_level: parseInt(localStorage.getItem("current_level") || "1"),
-        current_xp: 150,
-        concept_mastery: [
-          { concept_name: "budgeting", mastery_score: 75 },
-          { concept_name: "saving", mastery_score: 65 },
-          { concept_name: "emergency_funds", mastery_score: 30 },
-          { concept_name: "inflation", mastery_score: 10 },
-          { concept_name: "investing", mastery_score: 0 },
-          { concept_name: "mutual_funds", mastery_score: 0 },
-          { concept_name: "islamic_banking", mastery_score: 0 },
-          { concept_name: "stock_market", mastery_score: 0 },
-          { concept_name: "diversification", mastery_score: 0 },
-          { concept_name: "tax_filer", mastery_score: 0 },
-        ],
+        current_level: currentLevel,
+        current_xp: currentXp,
+        concept_mastery: fallbackMastery,
         goals: [],
       });
       setLoading(false);
@@ -161,8 +190,8 @@ export default function DashboardPage() {
     const score = scores[conceptId] || 0;
     const nodeLevel = conceptToLevel[conceptId] || 1;
 
-    // Mastered if score is >= 60 OR the user's current level is past this node's level
-    if (score >= 60 || currentLevel > nodeLevel) {
+    // Mastered if score is >= 75 OR the user's current level is past this node's level
+    if (score >= 75 || currentLevel > nodeLevel) {
       return "mastered";
     }
 

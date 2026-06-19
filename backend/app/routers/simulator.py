@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models import SimulatorState
+from app.models import SimulatorState, User
 from app.schemas import (
     SimulatorStartRequest,
     SimulatorStateResponse,
@@ -138,6 +138,13 @@ def play_turn(
         db_state.cash_pct = new_state["cash_pct"]
         db_state.full_state_json = json.dumps(new_state)
         session.add(db_state)
+        
+        # Award XP for playing simulator turn
+        user = session.get(User, request.user_id)
+        if user:
+            user.current_xp += 30
+            session.add(user)
+            
         session.commit()
 
     return SimulatorTurnResponse(

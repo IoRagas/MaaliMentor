@@ -9,6 +9,8 @@ from app.schemas import (
     QuizQuestionResponse,
     QuizSubmitRequest,
     QuizSubmitResponse,
+    StudyCompleteRequest,
+    StudyCompleteResponse,
 )
 from app.services.quiz_data import QUIZ_QUESTIONS
 
@@ -162,5 +164,72 @@ def submit_quiz(
         score=score,
         passed=passed,
         current_level=user.current_level,
+        current_xp=user.current_xp,
         details=details,
     )
+
+
+@router.post("/study/complete", response_model=StudyCompleteResponse)
+def complete_study(
+    request: StudyCompleteRequest,
+    session: Session = Depends(get_session),
+) -> StudyCompleteResponse:
+    """Mark a concept study lesson as completed, update mastery score and award XP."""
+    user = session.get(User, request.user_id)
+    if not user:
+        user = session.get(User, 1) or session.exec(select(User)).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        request.user_id = user.id
+
+    # Check if concept_name is valid
+    if request.concept_name not in LEVEL_TO_CONCEPT.values():
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid concept name '{request.concept_name}'."
+        )
+
+    # Fetch or create ConceptMastery record
+    mastery_stmt = select(ConceptMastery).where(
+        ConceptMastery.user_id == request.user_id,
+        ConceptMastery.concept_name == request.concept_name
+    )
+    mastery = session.exec(mastery_stmt).first()
+    
+    # We set a baseline mastery score of 50% for studying the guide.
+    # If the user has already achieved a higher score (e.g. by passing the quiz), we keep it.
+    old_score = mastery.mastery_score if mastery else 0
+    xp_awarded = 0
+    
+    # Award XP only if they haven't completed this lesson's study yet (old score < 50)
+    if old_score < 50:
+        xp_awarded = 50
+        user.current_xp += xp_awarded
+        session.add(user)
+
+    target_score = max(old_score, 50)
+
+    if not mastery:
+        mastery = ConceptMastery(
+            user_id=request.user_id,
+            concept_name=request.concept_name,
+            mastery_score=target_score,
+            updated_at=datetime.utcnow()
+        )
+    else:
+        mastery.mastery_score = target_score
+        mastery.updated_at = datetime.utcnow()
+    
+    session.add(mastery)
+    session.commit()
+    session.refresh(user)
+    session.refresh(mastery)
+
+    return StudyCompleteResponse(
+        success=True,
+        concept_name=request.concept_name,
+        mastery_score=mastery.mastery_score,
+        xp_awarded=xp_awarded,
+        current_xp=user.current_xp
+    )
+
