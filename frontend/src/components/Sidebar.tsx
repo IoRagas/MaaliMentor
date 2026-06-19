@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -29,7 +29,27 @@ interface SidebarProps {
 
 export default function Sidebar({ className = "" }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [isUrdu, setIsUrdu] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      
+      const handleLangChange = () => {
+        setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      };
+      window.addEventListener("languageChange", handleLangChange);
+      return () => window.removeEventListener("languageChange", handleLangChange);
+    }
+  }, []);
+
+  const toggleLanguage = () => {
+    const newUrdu = !isUrdu;
+    setIsUrdu(newUrdu);
+    localStorage.setItem("global_lang", newUrdu ? "ur" : "en");
+    window.dispatchEvent(new Event("languageChange"));
+  };
 
   return (
     <>
@@ -78,14 +98,30 @@ export default function Sidebar({ className = "" }: SidebarProps) {
                 />
                 {!collapsed && (
                   <div className="animate-fade-in">
-                    <span className="text-sm font-medium">{item.label}</span>
-                    <span className="block text-[10px] text-slate-500">{item.urdu}</span>
+                    <span className="text-sm font-medium">{isUrdu ? item.urdu : item.label}</span>
+                    <span className="block text-[10px] text-slate-500">{isUrdu ? item.label : item.urdu}</span>
                   </div>
                 )}
               </Link>
             );
           })}
         </nav>
+
+        {/* Language toggle */}
+        <div className="px-3 py-2 border-t border-white/5">
+          <button
+            onClick={toggleLanguage}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 transition-all duration-200 group relative"
+          >
+            <span className="text-lg font-bold flex-shrink-0 w-5 text-center">ع</span>
+            {!collapsed && (
+              <div className="animate-fade-in text-left">
+                <span className="text-sm font-medium">{isUrdu ? "English" : "اردو (Urdu)"}</span>
+                <span className="block text-[10px] text-cyan-500/70">{isUrdu ? "انگریزی" : "اردو میں بدلیں"}</span>
+              </div>
+            )}
+          </button>
+        </div>
 
         {/* Logout button */}
         <div className="px-3 py-2 border-t border-white/5">
@@ -119,14 +155,14 @@ export default function Sidebar({ className = "" }: SidebarProps) {
       </aside>
 
       {/* Mobile Bottom Navigation Bar (hidden on desktop) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-slate-900/80 backdrop-blur-xl border-t border-white/5 z-40 flex items-center justify-around px-6 pb-2 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-slate-900/80 backdrop-blur-xl border-t border-white/5 z-40 flex items-center justify-around px-2 pb-2 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all duration-200
+              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all duration-200
                 ${
                   isActive
                     ? "text-emerald-400 bg-emerald-500/10"
@@ -134,15 +170,23 @@ export default function Sidebar({ className = "" }: SidebarProps) {
                 }`}
             >
               <item.icon
-                size={20}
+                size={18}
                 className={`transition-colors ${
                   isActive ? "text-emerald-400" : "text-slate-400"
                 }`}
               />
-              <span className="text-[10px] font-semibold mt-1">{item.label}</span>
+              <span className="text-[9px] font-semibold mt-0.5">{isUrdu ? item.urdu : item.label}</span>
             </Link>
           );
         })}
+        {/* Mobile Language Toggle */}
+        <button
+          onClick={toggleLanguage}
+          className="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all duration-200 text-cyan-400 hover:text-cyan-300"
+        >
+          <span className="text-sm font-bold leading-none w-5 text-center">ع</span>
+          <span className="text-[9px] font-semibold mt-0.5">{isUrdu ? "English" : "اردو"}</span>
+        </button>
       </nav>
     </>
   );

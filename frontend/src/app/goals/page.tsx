@@ -50,6 +50,7 @@ export default function GoalsPage() {
   const [timeline, setTimeline] = useState("");
   const [risk, setRisk] = useState("moderate");
   const [loading, setLoading] = useState(false);
+  const [isUrdu, setIsUrdu] = useState(false);
   
   const [result, setResult] = useState<{
     futureCost: number;
@@ -58,6 +59,18 @@ export default function GoalsPage() {
   } | null>(null);
   
   const [goals, setGoals] = useState<Goal[]>([]);
+
+  // Global Language Synchronization
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      const handleLangChange = () => {
+        setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      };
+      window.addEventListener("languageChange", handleLangChange);
+      return () => window.removeEventListener("languageChange", handleLangChange);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -187,24 +200,35 @@ export default function GoalsPage() {
 
   const getGoalType = (id: string) => goalTypes.find((g) => g.id === id);
 
+  const goalTypesUrdu: Record<string, string> = {
+    ghar: "گھر / زمین",
+    gaari: "گاڑی",
+    hajj: "حج / عمرہ",
+    taleem: "بچوں کی تعلیم",
+    retirement: "ریٹائرمنٹ",
+    other: "دیگر مقصد",
+  };
+
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" dir={isUrdu ? "rtl" : "ltr"}>
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Header */}
         <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-8 py-4 border-b border-white/5 bg-slate-900/60 backdrop-blur-xl">
           <div>
             <h1 className="text-lg md:text-xl font-bold text-white">
-              Goals — <span className="text-slate-400">مقاصد</span>
+              {isUrdu ? "مالی مقاصد — Goals" : "Goals — مقاصد"}
             </h1>
-            <p className="text-sm text-slate-400">Apne financial maqasid plan karein</p>
+            <p className="text-sm text-slate-400">
+              {isUrdu ? "اپنے مالی مقاصد کی منصوبہ بندی کریں" : "Apne financial maqasid plan karein"}
+            </p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
             className="glow-btn flex items-center gap-2 text-sm"
           >
             <Plus size={16} />
-            Naya Maqsad
+            {isUrdu ? "نیا مقصد" : "Naya Maqsad"}
           </button>
         </header>
 
@@ -213,12 +237,14 @@ export default function GoalsPage() {
           {showForm && (
             <GlassCard className="mb-8 animate-scale-in" hover={false}>
               <h2 className="text-lg font-bold text-white mb-6">
-                Naya Maqsad — <span className="text-slate-400">نیا مقصد</span>
+                {isUrdu ? "نیا مقصد — Naya Maqsad" : "Naya Maqsad — نیا مقصد"}
               </h2>
 
               {/* Goal Type Selector */}
               <div className="mb-6">
-                <label className="text-sm text-slate-400 mb-3 block">Goal Type — مقصد کی قسم</label>
+                <label className="text-sm text-slate-400 mb-3 block">
+                  {isUrdu ? "مقصد کی قسم — Goal Type" : "Goal Type — مقصد کی قسم"}
+                </label>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {goalTypes.map((type) => {
                     const isSelected = selectedType === type.id;
@@ -237,7 +263,7 @@ export default function GoalsPage() {
                           <type.icon size={18} className="text-white" />
                         </div>
                         <span className={`text-xs font-medium ${isSelected ? "text-emerald-400" : "text-white"}`}>
-                          {type.label}
+                          {isUrdu ? type.urdu : type.label}
                         </span>
                         <span className="text-[10px] text-slate-500" dir="rtl">{type.urdu}</span>
                       </button>
@@ -249,33 +275,51 @@ export default function GoalsPage() {
               {/* Target Amount & Timeline */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="text-sm text-slate-400 mb-2.5 block">Target Amount (PKR) — کل رقم (روپے)</label>
+                  <label className="text-sm text-slate-400 mb-2.5 block">
+                    {isUrdu ? "ٹارگٹ رقم (پاکستانی روپے) — Target Amount" : "Target Amount (PKR) — کل رقم (روپے)"}
+                  </label>
                   <input
                     type="number"
                     value={targetAmount}
                     onChange={(e) => setTargetAmount(e.target.value)}
                     placeholder="e.g. 5000000"
                     className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-base focus:outline-none focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/5 transition-all duration-200"
+                    style={{ textAlign: isUrdu ? "right" : "left", direction: isUrdu ? "rtl" : "ltr" }}
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-slate-400 mb-2.5 block">Timeline (Years) — مدت (سال)</label>
+                  <label className="text-sm text-slate-400 mb-2.5 block">
+                    {isUrdu ? "مدت (سالوں میں) — Timeline (Years)" : "Timeline (Years) — مدت (سال)"}
+                  </label>
                   <input
                     type="number"
                     value={timeline}
                     onChange={(e) => setTimeline(e.target.value)}
                     placeholder="e.g. 5"
                     className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-base focus:outline-none focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/5 transition-all duration-200"
+                    style={{ textAlign: isUrdu ? "right" : "left", direction: isUrdu ? "rtl" : "ltr" }}
                   />
                 </div>
               </div>
 
               {/* Risk Tolerance */}
               <div className="mb-6">
-                <label className="text-sm text-slate-400 mb-3 block">Risk Tolerance — خطرے کی برداشت</label>
+                <label className="text-sm text-slate-400 mb-3 block">
+                  {isUrdu ? "خطرے کی برداشت — Risk Tolerance" : "Risk Tolerance — خطرے کی برداشت"}
+                </label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {riskLevels.map((level) => {
                     const isSelected = risk === level.id;
+                    const urduLabelMap: Record<string, string> = {
+                      low: "کم خطرہ (Low)",
+                      moderate: "درمیانہ خطرہ (Moderate)",
+                      high: "زیادہ خطرہ (High)"
+                    };
+                    const urduDescMap: Record<string, string> = {
+                      low: "بینک ڈیپازٹس، حکومتی بچت کی اسکیمیں",
+                      moderate: "میوچل فنڈز، متوازن پورٹ فولیو",
+                      high: "اسٹاک مارکیٹ، ایکویٹی میوچل فنڈز"
+                    };
                     return (
                       <button
                         key={level.id}
@@ -286,11 +330,14 @@ export default function GoalsPage() {
                               ? "border-emerald-500/50 bg-emerald-500/10"
                               : "border-white/10 bg-white/5 hover:border-white/20"
                           }`}
+                        style={{ textAlign: isUrdu ? "right" : "left" }}
                       >
                         <span className={`text-sm font-semibold ${isSelected ? "text-emerald-400" : "text-white"}`}>
-                          {level.label}
+                          {isUrdu ? urduLabelMap[level.id] : level.label}
                         </span>
-                        <p className="text-xs text-slate-500 mt-1">{level.desc}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {isUrdu ? urduDescMap[level.id] : level.desc}
+                        </p>
                       </button>
                     );
                   })}
@@ -308,35 +355,43 @@ export default function GoalsPage() {
                 }`}
               >
                 <Calculator size={16} />
-                {loading ? "Calculating..." : "Calculate"}
+                {loading ? (isUrdu ? "حساب ہو رہا ہے..." : "Calculating...") : (isUrdu ? "حساب لگائیں" : "Calculate")}
               </button>
 
               {/* Results */}
               {result && (
-                <div className="mt-6 p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 animate-scale-in">
-                  <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <div className="mt-6 p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 animate-scale-in" style={{ textAlign: isUrdu ? "right" : "left" }}>
+                  <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2 justify-start">
                     <TrendingUp size={18} className="text-emerald-400" />
-                    Calculation Results (Inflation @ 15%)
+                    {isUrdu ? "حساب کے نتائج (مہنگائی @ ۱۵٪)" : "Calculation Results (Inflation @ 15%)"}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div className="p-3 rounded-lg bg-white/5">
-                      <p className="text-xs text-slate-400 mb-1">Future Cost (Inflation Adjusted)</p>
+                      <p className="text-xs text-slate-400 mb-1">
+                        {isUrdu ? "مستقبل کی متوقع لاگت (مہنگائی ایڈجسٹڈ)" : "Future Cost (Inflation Adjusted)"}
+                      </p>
                       <p className="text-xl font-bold text-white">
                         PKR {result.futureCost.toLocaleString()}
                       </p>
                     </div>
                     <div className="p-3 rounded-lg bg-white/5">
-                      <p className="text-xs text-slate-400 mb-1">Monthly Savings Needed</p>
+                      <p className="text-xs text-slate-400 mb-1">
+                        {isUrdu ? "ضروری ماہانہ بچت" : "Monthly Savings Needed"}
+                      </p>
                       <p className="text-xl font-bold text-emerald-400">
                         PKR {result.monthlyNeeded.toLocaleString()}
                       </p>
                       <p className="text-[10px] text-slate-500 mt-1">
-                        Calculated at {risk === "low" ? "8%" : risk === "high" ? "16%" : "12%"} expected annual return
+                        {isUrdu 
+                          ? `${risk === "low" ? "8%" : risk === "high" ? "16%" : "12%"} متوقع سالانہ منافع کے مطابق`
+                          : `Calculated at ${risk === "low" ? "8%" : risk === "high" ? "16%" : "12%"} expected annual return`}
                       </p>
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-400 mb-2">Suggested Pakistani Financial Products:</p>
+                    <p className="text-sm text-slate-400 mb-2">
+                      {isUrdu ? "تجویز کردہ پاکستانی مالیاتی پروڈکٹس:" : "Suggested Pakistani Financial Products:"}
+                    </p>
                     <ul className="space-y-1">
                       {result.products.map((p) => (
                         <li key={p} className="text-sm text-white flex items-center gap-2">
@@ -347,7 +402,7 @@ export default function GoalsPage() {
                     </ul>
                   </div>
                   <button onClick={addGoal} className="glow-btn mt-4 text-sm px-5 py-2">
-                    Save Goal
+                    {isUrdu ? "مقصد محفوظ کریں" : "Save Goal"}
                   </button>
                 </div>
               )}
@@ -356,14 +411,14 @@ export default function GoalsPage() {
 
           {/* Existing Goals */}
           <h2 className="text-lg font-bold text-white mb-4">
-            Aapke Maqasid — <span className="text-slate-400">آپ کے مقاصد</span>
+            {isUrdu ? "آپ کے مقاصد — Aapke Maqasid" : "Aapke Maqasid —  آپ کے مقاصد"}
           </h2>
 
           {goals.length === 0 ? (
             <GlassCard className="text-center !py-16" hover={false}>
               <Target size={48} className="text-slate-600 mx-auto mb-4" />
               <p className="text-slate-400">
-                Abhi koi maqsad nahi hai. Naya maqsad banayein!
+                {isUrdu ? "ابھی کوئی مقصد نہیں ہے۔ نیا مقصد بنائیں!" : "Abhi koi maqsad nahi hai. Naya maqsad banayein!"}
               </p>
             </GlassCard>
           ) : (
@@ -371,6 +426,11 @@ export default function GoalsPage() {
               {goals.map((goal) => {
                 const goalType = getGoalType(goal.type);
                 const percentage = Math.min(Math.round((goal.saved / goal.futureCost) * 100), 100);
+                const riskNamesUr: Record<string, string> = {
+                  low: "کم خطرہ (Conservative)",
+                  moderate: "درمیانہ خطرہ (Moderate)",
+                  high: "زیادہ خطرہ (Aggressive)"
+                };
 
                 return (
                   <GlassCard key={goal.id} className="animate-fade-in-up">
@@ -381,9 +441,15 @@ export default function GoalsPage() {
                             <goalType.icon size={22} className="text-white" />
                           </div>
                         )}
-                        <div>
-                          <h3 className="text-base font-bold text-white">{goalType?.label}</h3>
-                          <p className="text-xs text-slate-500">{goal.timeline} years • {goal.risk} risk</p>
+                        <div style={{ textAlign: isUrdu ? "right" : "left" }}>
+                          <h3 className="text-base font-bold text-white">
+                            {isUrdu ? (goalTypesUrdu[goal.type] || goalType?.label) : goalType?.label}
+                          </h3>
+                          <p className="text-xs text-slate-500">
+                            {isUrdu 
+                              ? `${goal.timeline} سال • ${goal.risk === "low" ? "کم خطرہ" : goal.risk === "high" ? "زیادہ خطرہ" : "درمیانہ خطرہ"}`
+                              : `${goal.timeline} years • ${goal.risk} risk`}
+                          </p>
                         </div>
                       </div>
                       <ProgressRing value={percentage} max={100} size={56} strokeWidth={5}>
@@ -393,25 +459,29 @@ export default function GoalsPage() {
 
                     <div className="space-y-2 mb-4">
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Target Today:</span>
+                        <span className="text-slate-400">{isUrdu ? "آج کا ٹارگٹ:" : "Target Today:"}</span>
                         <span className="text-white font-medium">PKR {goal.target.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Future Cost (Adjusted @ 15% Inflation):</span>
+                        <span className="text-slate-400">
+                          {isUrdu ? "مستقبل کی متوقع لاگت (۱۵٪ مہنگائی کے ساتھ):" : "Future Cost (Adjusted @ 15% Inflation):"}
+                        </span>
                         <span className="text-yellow-400 font-medium">PKR {goal.futureCost.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Expected Annual Return:</span>
+                        <span className="text-slate-400">{isUrdu ? "متوقع سالانہ منافع:" : "Expected Annual Return:"}</span>
                         <span className="text-cyan-400 font-medium">
-                          {goal.risk === "low" ? "8% (Conservative)" : goal.risk === "high" ? "16% (Aggressive)" : "12% (Moderate)"}
+                          {isUrdu 
+                            ? (goal.risk === "low" ? "8% (کم خطرہ)" : goal.risk === "high" ? "16% (زیادہ خطرہ)" : "12% (درمیانہ خطرہ)") 
+                            : (goal.risk === "low" ? "8% (Conservative)" : goal.risk === "high" ? "16% (Aggressive)" : "12% (Moderate)")}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Saved:</span>
+                        <span className="text-slate-400">{isUrdu ? "جمع شدہ بچت:" : "Saved:"}</span>
                         <span className="text-emerald-400 font-medium">PKR {goal.saved.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Monthly Needed:</span>
+                        <span className="text-slate-400">{isUrdu ? "ضروری ماہانہ رقم:" : "Monthly Needed:"}</span>
                         <span className="text-cyan-400 font-medium font-bold">PKR {goal.monthlyNeeded.toLocaleString()}</span>
                       </div>
                     </div>

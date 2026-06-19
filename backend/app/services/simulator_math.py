@@ -94,6 +94,7 @@ def process_turn(
     allocation_gold: Optional[float] = None,
     allocation_real_estate: Optional[float] = None,
     decision_saving_method: Optional[str] = None,
+    rebalance: bool = False,
 ) -> dict:
     """
     Simulate one year of financial life.
@@ -178,13 +179,23 @@ def process_turn(
     new_gold = old_gold * (1 + rate_gold)
     new_real_estate = old_real_estate * (1 + rate_real_estate)
 
-    # Allocate new savings
-    new_cash += annual_saving * alloc_cash
-    new_savings += annual_saving * alloc_savings
-    new_mutual += annual_saving * alloc_mutual
-    new_islamic += annual_saving * alloc_islamic
-    new_gold += annual_saving * alloc_gold
-    new_real_estate += annual_saving * alloc_real_estate
+    if rebalance:
+        # Rebalance entire portfolio (existing grown wealth + new savings)
+        total_portfolio = new_cash + new_savings + new_mutual + new_islamic + new_gold + new_real_estate + annual_saving
+        new_cash = total_portfolio * alloc_cash
+        new_savings = total_portfolio * alloc_savings
+        new_mutual = total_portfolio * alloc_mutual
+        new_islamic = total_portfolio * alloc_islamic
+        new_gold = total_portfolio * alloc_gold
+        new_real_estate = total_portfolio * alloc_real_estate
+    else:
+        # Allocate new savings only
+        new_cash += annual_saving * alloc_cash
+        new_savings += annual_saving * alloc_savings
+        new_mutual += annual_saving * alloc_mutual
+        new_islamic += annual_saving * alloc_islamic
+        new_gold += annual_saving * alloc_gold
+        new_real_estate += annual_saving * alloc_real_estate
 
     # ── 4. Random life event ─────────────────────────────────
     event_triggered = None

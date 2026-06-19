@@ -124,6 +124,7 @@ def play_turn(
         allocation_gold=request.allocation_gold,
         allocation_real_estate=request.allocation_real_estate,
         decision_saving_method=request.decision_saving_method,
+        rebalance=request.rebalance or False,
     )
     _state_cache[request.user_id] = new_state
 

@@ -222,6 +222,21 @@ async def text_chat(
         )
 
 
+@router.get("/dictionary", response_model=list[DictionaryResponse])
+def get_all_dictionary_entries() -> list[DictionaryResponse]:
+    """Retrieve all financial terms in the dictionary."""
+    return [
+        DictionaryResponse(
+            term=key.replace("_", " ").title(),
+            urdu_term=entry["urdu_term"],
+            definition=entry["definition"],
+            example=entry["example"],
+            related_concepts=entry["related_concepts"],
+        )
+        for key, entry in FINANCIAL_DICTIONARY.items()
+    ]
+
+
 @router.get("/dictionary/{term}", response_model=DictionaryResponse)
 def get_dictionary_entry(term: str) -> DictionaryResponse:
     """Look up a financial term and return its Urdu definition."""

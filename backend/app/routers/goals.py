@@ -16,6 +16,8 @@ from app.schemas import (
     GoalResponse,
     GoalSaveRequest,
     SuggestedProduct,
+    GoalDepositRequest,
+    GoalDepositResponse,
 )
 from app.services.planner_math import calculate_goal_savings, suggest_products
 
@@ -115,3 +117,47 @@ def get_user_goals(
         )
         for g in goals
     ]
+
+
+@router.post("/deposit", response_model=GoalDepositResponse)
+def deposit_to_goal(
+    request: GoalDepositRequest,
+    session: Session = Depends(get_session),
+) -> GoalDepositResponse:
+    """Add virtual savings to a goal and award XP."""
+    # Verify user exists
+    user = session.get(User, request.user_id)
+    if not user:
+        user = session.get(User, 1) or session.exec(select(User)).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        request.user_id = user.id
+
+    # Verify goal exists
+    goal = session.get(Goal, request.goal_id)
+    if not goal or goal.user_id != request.user_id:
+        raise HTTPException(status_code=404, detail="Goal not found")
+
+    # Update goal savings
+    goal.current_savings += request.amount
+    session.add(goal)
+
+    # Award XP for saving towards a goal (e.g. +20 XP)
+    if user:
+        user.current_xp += 20
+        session.add(user)
+
+    session.commit()
+    session.refresh(goal)
+    session.refresh(user)
+
+    remaining = max(goal.target_amount - goal.current_savings, 0.0)
+
+    return GoalDepositResponse(
+        success=True,
+        goal_id=goal.id,
+        current_savings=goal.current_savings,
+        target_amount=goal.target_amount,
+        remaining_amount=remaining,
+        current_xp=user.current_xp
+    )

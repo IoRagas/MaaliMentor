@@ -24,6 +24,7 @@ interface Message {
   text: string;
   concepts?: { name: string; mastery: number }[];
   timestamp: string;
+  audioBase64?: string;
 }
 
 const suggestedTopics = [
@@ -46,6 +47,32 @@ export default function TutorPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [useWebSocket, setUseWebSocket] = useState(true); // Default to live streaming mode
   
+  // Custom states
+  const [isUrdu, setIsUrdu] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<"topics" | "dictionary">("topics");
+
+  // Audio Player State
+  const [activeAudioMessageId, setActiveAudioMessageId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.15);
+
+  // Dictionary Search State
+  const [dictionaryTerms, setDictionaryTerms] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTerm, setSelectedTerm] = useState<any | null>(null);
+
+  const filteredTerms = dictionaryTerms.filter((term) => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      (term.term && term.term.toLowerCase().includes(query)) ||
+      (term.urdu_term && term.urdu_term.includes(query)) ||
+      (term.definition && term.definition.toLowerCase().includes(query)) ||
+      (term.urdu_definition && term.urdu_definition.includes(query))
+    );
+  });
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -53,13 +80,32 @@ export default function TutorPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
 
-  // Close WebSocket on unmount
+  // Global Language Synchronization
   useEffect(() => {
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
+    if (typeof window !== "undefined") {
+      setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      const handleLangChange = () => {
+        setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      };
+      window.addEventListener("languageChange", handleLangChange);
+      return () => window.removeEventListener("languageChange", handleLangChange);
+    }
+  }, []);
+
+  // Fetch dictionary entries
+  useEffect(() => {
+    const fetchDictionary = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/api/tutor/dictionary");
+        if (res.ok) {
+          const data = await res.json();
+          setDictionaryTerms(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch dictionary terms:", err);
       }
     };
+    fetchDictionary();
   }, []);
 
   // Helper to play base64-encoded audio directly
@@ -89,7 +135,7 @@ export default function TutorPage() {
 
     const audio = new Audio();
     audio.preload = "auto";
-    audio.playbackRate = 1.15; // Slightly faster for natural rhythm
+    audio.playbackRate = playbackSpeed; // Slightly faster for natural rhythm
     audioRef.current = audio;
 
     audio.addEventListener("canplaythrough", () => {
@@ -113,6 +159,103 @@ export default function TutorPage() {
 
     audio.src = url;
     audio.load();
+  };
+
+  // Custom Audio Player Methods
+  const playMessageAudio = (msgId: string, base64Data: string) => {
+    stopAudio();
+    try {
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "audio/mpeg" });
+      const blobUrl = URL.createObjectURL(blob);
+
+      const audio = new Audio();
+      audio.preload = "auto";
+      audio.playbackRate = playbackSpeed;
+      audioRef.current = audio;
+      setActiveAudioMessageId(msgId);
+      setIsPlaying(true);
+      setIsPaused(false);
+
+      audio.addEventListener("loadedmetadata", () => {
+        setDuration(audio.duration);
+      });
+
+      audio.addEventListener("timeupdate", () => {
+        setCurrentTime(audio.currentTime);
+      });
+
+      audio.addEventListener("canplaythrough", () => {
+        audio.play().catch(e => console.error("Audio playback error:", e));
+      }, { once: true });
+
+      audio.addEventListener("ended", () => {
+        setIsPlaying(false);
+        setIsPaused(false);
+        setActiveAudioMessageId(null);
+        setCurrentTime(0);
+        setDuration(0);
+        audioRef.current = null;
+      }, { once: true });
+
+      audio.addEventListener("error", (e) => {
+        console.error("Audio error:", e);
+        setIsPlaying(false);
+        setIsPaused(false);
+        setActiveAudioMessageId(null);
+        setCurrentTime(0);
+        setDuration(0);
+        audioRef.current = null;
+      }, { once: true });
+
+      audio.src = blobUrl;
+      audio.load();
+    } catch (e) {
+      console.error("Error decoding base64 audio:", e);
+    }
+  };
+
+  const togglePauseResumeMessage = () => {
+    if (!audioRef.current) return;
+    if (audioRef.current.paused) {
+      audioRef.current.play();
+      setIsPaused(false);
+    } else {
+      audioRef.current.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const handleSeek = (newTime: number) => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+  const changeSpeed = (speed: number) => {
+    setPlaybackSpeed(speed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+  };
+
+  const stopMessageAudio = () => {
+    stopAudio();
+    setActiveAudioMessageId(null);
+    setCurrentTime(0);
+    setDuration(0);
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   const togglePauseResume = () => {
@@ -170,11 +313,15 @@ export default function TutorPage() {
       }
 
       // Seed default welcome message
+      const lang = localStorage.getItem("global_lang");
+      const welcomeText = lang === "ur"
+        ? "السلام علیکم! 👋 میں مالی مینٹر ہوں — آپ کا اے آئی فنانشل کوچ۔ آپ مجھ سے کوئی بھی مالیاتی سوال اردو یا رومن اردو میں پوچھ سکتے ہیں۔ میں بول کر اور لکھ کر، دونوں طرح مدد کر سکتا ہوں۔ آج آپ کیا سیکھنا چاہیں گے؟"
+        : "Assalam-o-Alaikum! 👋 Main Maali Mentor hoon — aapka AI financial coach. Aap mujhse koi bhi financial sawal Urdu ya Roman Urdu mein pooch sakte hain. Main bol kar aur likh kar, dono tarah madad kar sakta hoon. Aaj aap kya seekhna chahein ge?";
       setMessages([
         {
           id: "1",
           role: "tutor",
-          text: "Assalam-o-Alaikum! 👋 Main Maali Mentor hoon — aapka AI financial coach. Aap mujhse koi bhi financial sawal Urdu ya Roman Urdu mein pooch sakte hain. Main bol kar aur likh kar, dono tarah madad kar sakta hoon. Aaj aap kya seekhna chahein ge?",
+          text: welcomeText,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
@@ -362,11 +509,12 @@ export default function TutorPage() {
 
           else if (data.type === "metadata") {
             setIsTyping(false);
+            const msgId = Date.now().toString();
             setMessages((prev) => {
               // Replace streaming placeholder message with final formatted response
               const filtered = prev.filter(m => m.id !== "streaming-tutor");
               const tutorMsg: Message = {
-                id: Date.now().toString(),
+                id: msgId,
                 role: "tutor",
                 text: data.roman_urdu,
                 concepts: data.detected_concepts?.map((c: string) => ({
@@ -374,12 +522,13 @@ export default function TutorPage() {
                   mastery: masteryScores[c] ?? 0,
                 })),
                 timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                audioBase64: data.audio_base64,
               };
               return [...filtered, tutorMsg];
             });
 
             if (data.audio_base64) {
-              playBase64Audio(data.audio_base64);
+              playMessageAudio(msgId, data.audio_base64);
             }
           }
         } catch (e) {
@@ -416,8 +565,9 @@ export default function TutorPage() {
 
       if (res.ok) {
         const data = await res.json();
+        const msgId = (Date.now() + 1).toString();
         const tutorMsg: Message = {
-          id: (Date.now() + 1).toString(),
+          id: msgId,
           role: "tutor",
           text: data.tutor_response,
           concepts: data.detected_concepts?.map((c: string) => ({
@@ -425,11 +575,12 @@ export default function TutorPage() {
             mastery: masteryScores[c] ?? 0,
           })),
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          audioBase64: data.audio_response_base64,
         };
         setMessages((prev) => [...prev, tutorMsg]);
 
         if (data.audio_response_base64) {
-          playBase64Audio(data.audio_response_base64);
+          playMessageAudio(msgId, data.audio_response_base64);
         }
       } else {
         throw new Error("REST API failure");
@@ -561,8 +712,9 @@ export default function TutorPage() {
                   timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                 };
                 
+                const voiceTutorMsgId = (Date.now() + 1).toString();
                 const voiceTutorMsg: Message = {
-                  id: (Date.now() + 1).toString(),
+                  id: voiceTutorMsgId,
                   role: "tutor",
                   text: data.tutor_text_response,
                   concepts: data.detected_concepts?.map((c: string) => ({
@@ -570,12 +722,13 @@ export default function TutorPage() {
                     mastery: masteryScores[c] ?? 0,
                   })),
                   timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                  audioBase64: data.audio_response_base64,
                 };
                 
                 setMessages((prev) => [...prev, voiceUserMsg, voiceTutorMsg]);
 
                 if (data.audio_response_base64) {
-                  playBase64Audio(data.audio_response_base64);
+                  playMessageAudio(voiceTutorMsgId, data.audio_response_base64);
                 }
               }
             }
@@ -603,7 +756,7 @@ export default function TutorPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" dir={isUrdu ? "rtl" : "ltr"}>
       <Sidebar />
       <div className="flex-1 flex min-h-screen">
         {/* Main Chat Area */}
@@ -614,18 +767,22 @@ export default function TutorPage() {
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
                 <Lightbulb size={18} className="text-white" />
               </div>
-              <div>
-                <h2 className="text-base font-bold text-white">Maali Mentor AI</h2>
+              <div style={{ textAlign: isUrdu ? "right" : "left" }}>
+                <h2 className="text-base font-bold text-white">
+                  {isUrdu ? "مالی مینٹر AI" : "Maali Mentor AI"}
+                </h2>
                 <span className="text-xs text-emerald-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Online — Bol kar seekhein
+                  {isUrdu ? "آن لائن — بول کر سیکھیں" : "Online — Bol kar seekhein"}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-4">
               {/* Glowing WebSocket toggle */}
               <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-xs font-semibold text-slate-400 select-none">Live Streaming</span>
+                <span className="text-xs font-semibold text-slate-400 select-none">
+                  {isUrdu ? "لائیو اسٹریمنگ" : "Live Streaming"}
+                </span>
                 <button
                   onClick={() => {
                     if (socketRef.current) {
@@ -636,7 +793,7 @@ export default function TutorPage() {
                   className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none relative ${
                     useWebSocket ? "bg-emerald-500" : "bg-slate-700"
                   }`}
-                  title={useWebSocket ? "Disable WebSocket Streaming" : "Enable WebSocket Streaming"}
+                  title={useWebSocket ? (isUrdu ? "لائیو اسٹریمنگ بند کریں" : "Disable WebSocket Streaming") : (isUrdu ? "لائیو اسٹریمنگ کھولیں" : "Enable WebSocket Streaming")}
                 >
                   <div
                     className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
@@ -667,6 +824,7 @@ export default function TutorPage() {
                       ? "bg-emerald-600/20 border border-emerald-500/30 rounded-2xl rounded-br-md"
                       : "bg-slate-800/60 border border-white/10 rounded-2xl rounded-bl-md"
                   } px-5 py-4`}
+                  style={{ textAlign: isUrdu && msg.role === "tutor" && msg.text.match(/[\u0600-\u06FF]/) ? "right" : "left" }}
                 >
                   <p className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
                     {msg.text}
@@ -678,6 +836,74 @@ export default function TutorPage() {
                       ))}
                     </div>
                   )}
+
+                  {/* Inline custom voice controls */}
+                  {msg.audioBase64 && (
+                    <div className="mt-3 p-2.5 rounded-xl bg-slate-950/60 border border-white/5 flex flex-col gap-2 w-full max-w-sm text-slate-300 animate-fade-in" dir="ltr">
+                      <div className="flex items-center gap-2">
+                        {activeAudioMessageId === msg.id && isPlaying && !isPaused ? (
+                          <button
+                            onClick={togglePauseResumeMessage}
+                            className="w-7 h-7 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 flex items-center justify-center transition-colors"
+                          >
+                            <Pause size={12} className="fill-current" />
+                          </button>
+                        ) : activeAudioMessageId === msg.id && isPaused ? (
+                          <button
+                            onClick={togglePauseResumeMessage}
+                            className="w-7 h-7 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 flex items-center justify-center transition-colors"
+                          >
+                            <Play size={12} className="fill-current ml-0.5" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => playMessageAudio(msg.id, msg.audioBase64!)}
+                            className="w-7 h-7 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center transition-colors"
+                          >
+                            <Play size={12} className="fill-current ml-0.5" />
+                          </button>
+                        )}
+                        {activeAudioMessageId === msg.id && (isPlaying || isPaused) && (
+                          <button
+                            onClick={stopMessageAudio}
+                            className="w-7 h-7 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 flex items-center justify-center transition-colors"
+                          >
+                            <Square size={10} className="fill-current" />
+                          </button>
+                        )}
+                        <span className="text-[9px] font-mono text-slate-500">
+                          {activeAudioMessageId === msg.id
+                            ? `${formatTime(currentTime)} / ${formatTime(duration)}`
+                            : "0:00 / 0:00"}
+                        </span>
+                        <div className="ml-auto flex gap-1">
+                          {[1.0, 1.25, 1.5].map((speed) => (
+                            <button
+                              key={speed}
+                              onClick={() => changeSpeed(speed)}
+                              className={`px-1 py-0.5 rounded text-[8px] font-bold border transition-colors ${
+                                playbackSpeed === speed
+                                  ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+                                  : "bg-slate-900/50 text-slate-500 border-white/5 hover:text-white"
+                              }`}
+                            >
+                              {speed}x
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={activeAudioMessageId === msg.id ? duration || 100 : 100}
+                        value={activeAudioMessageId === msg.id ? currentTime : 0}
+                        onChange={(e) => handleSeek(parseFloat(e.target.value))}
+                        disabled={activeAudioMessageId !== msg.id}
+                        className="w-full h-1 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                      />
+                    </div>
+                  )}
+
                   <span className="block text-xs text-slate-500 mt-2 text-right">
                     {msg.timestamp}
                   </span>
@@ -701,30 +927,6 @@ export default function TutorPage() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Audio playback controls */}
-          {isPlaying && (
-            <div className="sticky bottom-36 md:bottom-20 z-40 px-4 md:px-6 flex justify-center animate-fade-in">
-              <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-900/70 border border-emerald-500/30 backdrop-blur-xl shadow-lg shadow-emerald-500/10">
-                <Volume2 size={18} className="text-emerald-400 animate-pulse" />
-                <span className="text-sm text-emerald-200 font-medium">AI Awaaz chal rahi hai...</span>
-                <button
-                  onClick={togglePauseResume}
-                  className="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all duration-200"
-                  title={isPaused ? "Resume" : "Pause"}
-                >
-                  {isPaused ? <Play size={16} /> : <Pause size={16} />}
-                </button>
-                <button
-                  onClick={stopAudio}
-                  className="w-9 h-9 rounded-lg bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center text-red-300 hover:text-red-200 transition-all duration-200"
-                  title="Stop"
-                >
-                  <Square size={14} />
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Input area */}
           <div className="sticky bottom-20 md:bottom-0 px-4 md:px-6 py-4 border-t border-white/5 bg-slate-900/80 backdrop-blur-xl">
             <div className="flex items-end gap-3 max-w-4xl mx-auto">
@@ -744,9 +946,10 @@ export default function TutorPage() {
                       sendMessage(input);
                     }
                   }}
-                  placeholder="Apna sawal yahan likhein ya mic daba kar bolein..."
+                  placeholder={isUrdu ? "اپنا سوال یہاں لکھیں یا مائیک دبا کر بولیں..." : "Apna sawal yahan likhein ya mic daba kar bolein..."}
                   rows={1}
                   className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-base resize-none focus:outline-none focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/5 transition-all duration-200 overflow-y-auto min-h-[56px] max-h-[180px] leading-relaxed"
+                  style={{ textAlign: isUrdu ? "right" : "left", direction: isUrdu ? "rtl" : "ltr" }}
                 />
               </div>
               <button
@@ -759,37 +962,135 @@ export default function TutorPage() {
                       : "bg-slate-700 text-slate-500 cursor-not-allowed"
                   }`}
               >
-                <Send size={18} />
+                <Send size={18} className={isUrdu ? "transform rotate-180" : ""} />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Suggested Topics Sidebar */}
+        {/* Sidebar for Topics and Dictionary */}
         <aside
           className={`border-l border-white/5 bg-slate-900/30 backdrop-blur-sm w-72 flex-shrink-0 hidden lg:block overflow-y-auto`}
         >
           <div className="p-5">
-            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
-              Suggested Topics
-            </h3>
-            <div className="space-y-2">
-              {suggestedTopics.map((topic) => (
-                <button
-                  key={topic.label}
-                  onClick={() => sendMessage(topic.query)}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl text-left border border-white/5 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/20 transition-all duration-200 group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-emerald-500/15 transition-colors">
-                    <topic.icon size={16} className="text-slate-400 group-hover:text-emerald-400 transition-colors" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-white block">{topic.label}</span>
-                    <span className="text-xs text-slate-500" dir="rtl">{topic.urdu}</span>
-                  </div>
-                </button>
-              ))}
+            {/* Tab switch buttons */}
+            <div className="flex border-b border-white/5 mb-4">
+              <button
+                onClick={() => setSidebarTab("topics")}
+                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
+                  sidebarTab === "topics"
+                    ? "text-emerald-400 border-emerald-500"
+                    : "text-slate-500 border-transparent hover:text-slate-300"
+                }`}
+              >
+                {isUrdu ? "موضوعات" : "Suggested Topics"}
+              </button>
+              <button
+                onClick={() => setSidebarTab("dictionary")}
+                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
+                  sidebarTab === "dictionary"
+                    ? "text-cyan-400 border-cyan-500"
+                    : "text-slate-500 border-transparent hover:text-slate-300"
+                }`}
+              >
+                {isUrdu ? "لغت (ڈکشنری)" : "Dictionary"}
+              </button>
             </div>
+
+            {sidebarTab === "topics" ? (
+              <div className="space-y-2">
+                {suggestedTopics.map((topic) => (
+                  <button
+                    key={topic.label}
+                    onClick={() => sendMessage(topic.query)}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl text-left border border-white/5 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/20 transition-all duration-200 group"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-emerald-500/15 transition-colors">
+                      <topic.icon size={16} className="text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                    </div>
+                    <div style={{ textAlign: isUrdu ? "right" : "left" }}>
+                      <span className="text-sm font-medium text-white block">{isUrdu ? topic.urdu : topic.label}</span>
+                      <span className="text-xs text-slate-500" dir="rtl">{topic.urdu}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Dictionary Search Input */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={isUrdu ? "لفظ تلاش کریں..." : "Search financial term..."}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                    style={{ textAlign: isUrdu ? "right" : "left", direction: isUrdu ? "rtl" : "ltr" }}
+                  />
+                </div>
+
+                {/* Dictionary List */}
+                <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                  {filteredTerms.length === 0 ? (
+                    <p className="text-xs text-slate-500 text-center py-4">
+                      {isUrdu ? "کوئی لفظ نہیں ملا۔" : "No terms found."}
+                    </p>
+                  ) : (
+                    filteredTerms.map((item) => {
+                      const isExpanded = selectedTerm?.term === item.term;
+                      return (
+                        <div
+                          key={item.term}
+                          className={`p-3 rounded-xl border transition-all duration-200 ${
+                            isExpanded
+                              ? "bg-cyan-500/10 border-cyan-500/30"
+                              : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10"
+                          }`}
+                        >
+                          <div
+                            onClick={() => setSelectedTerm(isExpanded ? null : item)}
+                            className="flex justify-between items-center cursor-pointer select-none"
+                          >
+                            <span className="text-sm font-semibold text-white">{item.term}</span>
+                            <span className="text-xs text-cyan-400 font-urdu" dir="rtl">{item.urdu_term}</span>
+                          </div>
+
+                          {isExpanded && (
+                            <div className="mt-2.5 pt-2.5 border-t border-white/5 space-y-2 text-xs text-slate-300 animate-fade-in" style={{ textAlign: isUrdu ? "right" : "left" }}>
+                              <p className="leading-relaxed font-urdu font-medium" dir="rtl">
+                                {item.definition}
+                              </p>
+                              {item.example && (
+                                <div className="p-2 rounded bg-slate-950/60 border border-white/5 text-right" dir="rtl">
+                                  <span className="font-bold text-cyan-400 block mb-0.5">{isUrdu ? "مثال:" : "Example:"}</span>
+                                  <p className="italic text-slate-400">{item.example}</p>
+                                </div>
+                              )}
+                              {item.related_concepts && item.related_concepts.length > 0 && (
+                                <div className="flex flex-wrap gap-1 items-center pt-1">
+                                  <span className="text-[10px] text-slate-500 mr-1">{isUrdu ? "متعلقہ:" : "Related:"}</span>
+                                  {item.related_concepts.map((rc: string) => (
+                                    <span key={rc} className="px-1.5 py-0.5 rounded bg-white/5 text-[9px] text-slate-400 capitalize">
+                                      {rc.replace("_", " ")}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                              <button
+                                onClick={() => sendMessage(isUrdu ? `${item.term} (${item.urdu_term}) کے بارے میں مزید تفصیل بتائیں۔` : `Mujhe ${item.term} (${item.urdu_term}) ke baare mein mazeed samjhayein`)}
+                                className="w-full mt-2 py-1.5 px-3 rounded-lg bg-cyan-500 text-slate-950 font-bold hover:bg-cyan-400 transition-colors text-[10px] text-center block"
+                              >
+                                {isUrdu ? "ٹیوٹر سے پوچھیں" : "Ask Tutor"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </aside>
       </div>

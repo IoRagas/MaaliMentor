@@ -143,6 +143,7 @@ class SimulatorTurnRequest(BaseModel):
         default=None,
         description="One of: cash, savings_account, mutual_funds, islamic_funds",
     )
+    rebalance: Optional[bool] = Field(default=False, description="Rebalance existing assets according to new allocation split")
 
 
 class SimulatorTurnResponse(BaseModel):
@@ -232,6 +233,23 @@ class GoalResponse(BaseModel):
     target_years: int
     risk_tolerance: str
     created_at: datetime
+
+
+class GoalDepositRequest(BaseModel):
+    """Add virtual savings to a goal."""
+    user_id: int
+    goal_id: int
+    amount: float = Field(..., gt=0, description="Deposit amount must be positive")
+
+
+class GoalDepositResponse(BaseModel):
+    """Result of adding savings to a goal."""
+    success: bool
+    goal_id: int
+    current_savings: float
+    target_amount: float
+    remaining_amount: float
+    current_xp: int
 
 
 # ═══════════════════════════════════════════════════════════════

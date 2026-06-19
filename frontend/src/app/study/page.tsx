@@ -179,6 +179,19 @@ export default function StudyPage() {
   const [level, setLevel] = useState<number>(1);
   const [concept, setConcept] = useState<string>("budgeting");
   const [loading, setLoading] = useState(true);
+  const [isUrdu, setIsUrdu] = useState(false);
+
+  // Global Language Synchronization
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      const handleLangChange = () => {
+        setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      };
+      window.addEventListener("languageChange", handleLangChange);
+      return () => window.removeEventListener("languageChange", handleLangChange);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -268,11 +281,13 @@ export default function StudyPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen" dir={isUrdu ? "rtl" : "ltr"}>
         <Sidebar />
         <div className="flex-1 flex flex-col items-center justify-center bg-slate-950 text-white">
           <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-4" />
-          <p className="text-lg animate-pulse">Sabaq load ho raha hai...</p>
+          <p className="text-lg animate-pulse">
+            {isUrdu ? "سبق لوڈ ہو رہا ہے..." : "Sabaq load ho raha hai..."}
+          </p>
         </div>
       </div>
     );
@@ -281,7 +296,7 @@ export default function StudyPage() {
   const guide = studyMaterials[level];
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-white">
+    <div className="flex min-h-screen bg-slate-950 text-white" dir={isUrdu ? "rtl" : "ltr"}>
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen relative overflow-hidden">
         {/* Ambient background decoration */}
@@ -291,15 +306,18 @@ export default function StudyPage() {
           <div>
             <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
               <BookOpen className="text-emerald-400" size={20} />
-              Level {level} Study Guide
+              {isUrdu ? `لیول ${level} اسٹڈی گائیڈ` : `Level ${level} Study Guide`}
             </h1>
-            <p className="text-xs md:text-sm text-slate-400">{guide?.title || "Financial Literacy"}</p>
+            <p className="text-xs md:text-sm text-slate-400">
+              {isUrdu ? (guide?.urduTitle || "مالیاتی تعلیم") : (guide?.title || "Financial Literacy")}
+            </p>
           </div>
           <a
             href="/dashboard"
             className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors"
           >
-            <ArrowLeft size={14} /> Wapis Dashboard
+            <ArrowLeft size={14} className={isUrdu ? "transform rotate-180" : ""} /> 
+            {isUrdu ? "ڈیش بورڈ پر جائیں" : "Wapis Dashboard"}
           </a>
         </header>
 
@@ -314,9 +332,9 @@ export default function StudyPage() {
                   <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                     <BookOpen size={24} />
                   </div>
-                  <div>
+                  <div style={{ textAlign: isUrdu ? "right" : "left" }}>
                     <h2 className="text-xl md:text-2xl font-extrabold text-white">
-                      {guide.title}
+                      {isUrdu ? guide.urduTitle : guide.title}
                     </h2>
                     <p className="text-sm text-emerald-400 font-urdu mt-1" dir="rtl">
                       {guide.urduTitle}
@@ -326,13 +344,13 @@ export default function StudyPage() {
 
                 <div className="pt-6 border-t border-white/5 space-y-6">
                   <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
-                    Sabaq ke Ahem Nukaat (سبق کے اہم نکات)
+                    {isUrdu ? "سبق کے اہم نکات (Sabaq ke Ahem Nukaat)" : "Sabaq ke Ahem Nukaat (سبق کے اہم نکات)"}
                   </p>
                   <ul className="space-y-4">
                     {guide.content.map((point, index) => {
                       const parts = point.split("**");
                       return (
-                        <li key={index} className="text-sm sm:text-base text-slate-200 flex items-start gap-3.5 leading-relaxed">
+                        <li key={index} className="text-sm sm:text-base text-slate-200 flex items-start gap-3.5 leading-relaxed" style={{ textAlign: isUrdu ? "right" : "left" }}>
                           <span className="w-2 h-2 rounded-full bg-emerald-400 mt-2 flex-shrink-0" />
                           <span className="flex-1">
                             {parts.map((part, i) => (
@@ -343,8 +361,10 @@ export default function StudyPage() {
                       );
                     })}
                   </ul>
-                  <div className="p-4 rounded-xl bg-slate-950/80 border border-white/5 mt-6 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    💡 <strong>Tip:</strong> Is sabaq ko dhyan se parhein aur zehen-nasheen karlein. Agar aap in nukaat ko samajh lete hain, to aap Level {level} ke quiz mein aasaani se 16/20 ya is se zyada score kar sakte hain!
+                  <div className="p-4 rounded-xl bg-slate-950/80 border border-white/5 mt-6 text-xs sm:text-sm text-slate-300 leading-relaxed" style={{ textAlign: isUrdu ? "right" : "left" }}>
+                    💡 <strong>{isUrdu ? "مشورہ:" : "Tip:"}</strong> {isUrdu 
+                      ? `اس سبق کو دھیان سے پڑھیں اور ذہن نشین کر لیں۔ اگر آپ ان نکات کو سمجھ لیتے ہیں، تو آپ لیول ${level} کے کوئز میں آسانی سے ۱۵/۲۰ یا اس سے زیادہ سکور کر سکتے ہیں!`
+                      : `Is sabaq ko dhyan se parhein aur zehen-nasheen karlein. Agar aap in nukaat ko samajh lete hain, to aap Level ${level} ke quiz mein aasaani se 15/20 ya is se zyada score kar sakte hain!`}
                   </div>
                 </div>
               </GlassCard>
@@ -352,41 +372,51 @@ export default function StudyPage() {
               {/* Next Actions */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                 {/* Voice Tutor Action */}
-                <GlassCard className="p-6 border border-white/5 hover:border-emerald-500/20 transition-all flex flex-col justify-between" onClick={() => window.location.href = `/tutor?concept=${concept}`}>
-                  <div className="space-y-3">
+                <GlassCard className="p-6 border border-white/5 hover:border-emerald-500/20 transition-all flex flex-col justify-between cursor-pointer" onClick={() => window.location.href = `/tutor?concept=${concept}`}>
+                  <div className="space-y-3" style={{ textAlign: isUrdu ? "right" : "left" }}>
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                       <Mic size={20} />
                     </div>
-                    <h3 className="text-base font-bold text-white">Ask AI Tutor (Urdu Voice)</h3>
+                    <h3 className="text-base font-bold text-white">
+                      {isUrdu ? "اے آئی ٹیوٹر سے پوچھیں (اردو آواز)" : "Ask AI Tutor (Urdu Voice)"}
+                    </h3>
                     <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                      Agar koi concept samajh nahi aaya, to AI voice coach se Urdu mein baat karein aur sawal poochein.
+                      {isUrdu 
+                        ? "اگر کوئی اصول سمجھ نہیں آیا، تو اے آئی وائس کوچ سے اردو میں بات کریں اور سوال پوچھیں۔"
+                        : "Agar koi concept samajh nahi aaya, to AI voice coach se Urdu mein baat karein aur sawal poochein."}
                     </p>
                   </div>
-                  <div className="mt-6 text-xs font-semibold text-emerald-400">
-                    AI Tutor Launch Karein &rarr;
+                  <div className="mt-6 text-xs font-semibold text-emerald-400" style={{ textAlign: isUrdu ? "left" : "right" }}>
+                    {isUrdu ? "← اے آئی ٹیوٹر شروع کریں" : "AI Tutor Launch Karein &rarr;"}
                   </div>
                 </GlassCard>
 
                 {/* Take Quiz Action */}
-                <GlassCard className="p-6 border border-white/5 hover:border-yellow-500/20 transition-all flex flex-col justify-between" onClick={() => window.location.href = `/quiz?level=${level}`}>
-                  <div className="space-y-3">
+                <GlassCard className="p-6 border border-white/5 hover:border-yellow-500/20 transition-all flex flex-col justify-between cursor-pointer" onClick={() => window.location.href = `/quiz?level=${level}`}>
+                  <div className="space-y-3" style={{ textAlign: isUrdu ? "right" : "left" }}>
                     <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400">
                       <Award size={20} />
                     </div>
-                    <h3 className="text-base font-bold text-white">Take Level {level} Quiz</h3>
+                    <h3 className="text-base font-bold text-white">
+                      {isUrdu ? `لیول ${level} کا کوئز لیں` : `Take Level ${level} Quiz`}
+                    </h3>
                     <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                      Kya aap tayyar hain? 20 MCQs ka test dein, 75% score kar ke rank ascend karein.
+                      {isUrdu 
+                        ? "کیا آپ تیار ہیں؟ ۲۰ سوالات کا ٹیسٹ دیں، ۷۵٪ سکور کر کے رینک بڑھائیں۔"
+                        : "Kya aap tayyar hain? 20 MCQs ka test dein, 75% score kar ke rank ascend karein."}
                     </p>
                   </div>
-                  <div className="mt-6 text-xs font-semibold text-yellow-400">
-                    Level Quiz Shuru Karein &rarr;
+                  <div className="mt-6 text-xs font-semibold text-yellow-400" style={{ textAlign: isUrdu ? "left" : "right" }}>
+                    {isUrdu ? "← کوئز شروع کریں" : "Level Quiz Shuru Karein &rarr;"}
                   </div>
                 </GlassCard>
               </div>
             </>
           ) : (
             <div className="text-center py-12">
-              <p className="text-slate-400 text-lg">Sabaq ka data dastiyab nahi hai.</p>
+              <p className="text-slate-400 text-lg">
+                {isUrdu ? "سبق کا ڈیٹا دستیاب نہیں ہے۔" : "Sabaq ka data dastiyab nahi hai."}
+              </p>
             </div>
           )}
         </main>

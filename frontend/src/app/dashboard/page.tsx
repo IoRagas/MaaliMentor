@@ -53,15 +53,39 @@ const flowNodes = [
   { id: "tax_filer", label: "Tax Planning & Filer", prereqs: ["stock_market"] },
 ];
 
-const recentActivity = [
-  { text: "Maali Mentor onboarding mukammal ki", time: "Abhi", icon: Award },
-  { text: "Concept check: Budgeting Basics", time: "10 mins pehle", icon: BookOpen },
-  { text: "Simulator: Starting cash allocated", time: "30 mins pehle", icon: Play },
+const recentActivityEn = [
+  { text: "Maali Mentor onboarding completed", time: "Just now", icon: Award },
+  { text: "Concept check: Budgeting Basics", time: "10 mins ago", icon: BookOpen },
+  { text: "Simulator: Starting cash allocated", time: "30 mins ago", icon: Play },
+];
+
+const recentActivityUr = [
+  { text: "مالی مینٹر آن بورڈنگ مکمل کی", time: "ابھی", icon: Award },
+  { text: "کانسیپٹ چیک: بجٹ کے اصول", time: "۱۰ منٹ پہلے", icon: BookOpen },
+  { text: "سمیولیٹر: ابتدائی رقم مختص کی گئی", time: "۳۰ منٹ پہلے", icon: Play },
 ];
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isUrdu, setIsUrdu] = useState(false);
+
+  // Deposit Goal Modal State
+  const [selectedGoal, setSelectedGoal] = useState<any | null>(null);
+  const [depositAmount, setDepositAmount] = useState<string>("");
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [depositMessage, setDepositMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      const handleLangChange = () => {
+        setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      };
+      window.addEventListener("languageChange", handleLangChange);
+      return () => window.removeEventListener("languageChange", handleLangChange);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -134,12 +158,68 @@ export default function DashboardPage() {
     fetchDashboard();
   }, []);
 
+  const handleDeposit = async () => {
+    if (!selectedGoal || !depositAmount) return;
+    const amountFloat = parseFloat(depositAmount);
+    if (isNaN(amountFloat) || amountFloat <= 0) {
+      setDepositMessage(isUrdu ? "براہ کرم درست رقم درج کریں۔" : "Please enter a valid positive number.");
+      return;
+    }
+    setDepositLoading(true);
+    setDepositMessage(null);
+    try {
+      const res = await fetch("http://localhost:8000/api/goals/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: data?.user_id || 1,
+          goal_id: selectedGoal.id,
+          amount: amountFloat,
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setDepositMessage(isUrdu ? "بچت کامیابی سے جمع ہو گئی! +20 XP" : "Savings deposited successfully! +20 XP");
+        
+        // Update local state and cache
+        if (data) {
+          const updatedGoals = data.goals.map((g) =>
+            g.id === selectedGoal.id ? { ...g, current_savings: result.current_savings } : g
+          );
+          const updatedData = {
+            ...data,
+            current_xp: result.current_xp,
+            goals: updatedGoals,
+          };
+          setData(updatedData);
+          localStorage.setItem("dashboard_data", JSON.stringify(updatedData));
+          localStorage.setItem("current_xp", result.current_xp.toString());
+        }
+        
+        setTimeout(() => {
+          setSelectedGoal(null);
+          setDepositAmount("");
+          setDepositMessage(null);
+        }, 1200);
+      } else {
+        const err = await res.json();
+        setDepositMessage(err.detail || (isUrdu ? "ٹرانزیکشن ناکام ہو گئی۔" : "Transaction failed."));
+      }
+    } catch (e) {
+      setDepositMessage(isUrdu ? "سرور سے رابطہ نہ ہو سکا۔" : "Error connecting to server.");
+    } finally {
+      setDepositLoading(false);
+    }
+  };
+
   if (loading || !data) {
     return (
       <div className="flex min-h-screen">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center bg-slate-950">
-          <div className="text-white text-lg animate-pulse">Loading dashboard...</div>
+          <div className="text-white text-lg animate-pulse">
+            {isUrdu ? "ڈیش بورڈ لوڈ ہو رہا ہے..." : "Loading dashboard..."}
+          </div>
         </div>
       </div>
     );
@@ -151,7 +231,7 @@ export default function DashboardPage() {
   const financialIQ = Math.round((totalMastery / maxPossibleMastery) * 1000) || 100;
 
   // Level names
-  const levelNames: Record<number, string> = {
+  const levelNamesEn: Record<number, string> = {
     1: "Bachat Rookie",
     2: "Saving Sentinel",
     3: "Emergency Expert",
@@ -163,9 +243,21 @@ export default function DashboardPage() {
     9: "Risk Master",
     10: "Maali Master",
   };
+  const levelNamesUr: Record<number, string> = {
+    1: "بچت کے نوآموز",
+    2: "بچت کے محافظ",
+    3: "ایمرجنسی ماہر",
+    4: "مہنگائی کا مقابلہ کرنے والے",
+    5: "سرمایہ کاری کے سیکھنے والے",
+    6: "میوچل فنڈ نیویگیٹر",
+    7: "شرعی فنانس اسکالر",
+    8: "اسٹاک ایکسپلورر",
+    9: "رسک ماسٹر",
+    10: "مالی ماسٹر",
+  };
 
   const currentLevel = data.current_level || 1;
-  const levelName = levelNames[currentLevel] || "Finance Learner";
+  const levelName = isUrdu ? (levelNamesUr[currentLevel] || "مالیاتی سیکھنے والے") : (levelNamesEn[currentLevel] || "Finance Learner");
 
   // Graph state lookup
   const scores = data.concept_mastery.reduce((acc, curr) => {
@@ -223,7 +315,7 @@ export default function DashboardPage() {
       borderClass = "border-emerald-500/40 bg-emerald-500/5 text-slate-200 shadow-md shadow-emerald-500/5 hover:border-emerald-500/60";
       statusBadge = (
         <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-bold">
-          Mastered
+          {isUrdu ? "مکمل" : "Mastered"}
         </span>
       );
       cursorClass = "cursor-pointer";
@@ -231,14 +323,14 @@ export default function DashboardPage() {
       borderClass = "border-cyan-500/40 bg-cyan-500/5 text-slate-200 shadow-lg shadow-cyan-500/5 hover:border-cyan-500/60 ring-2 ring-cyan-500/10 animate-pulse-glow";
       statusBadge = (
         <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-bold">
-          Study
+          {isUrdu ? "مطالعہ" : "Study"}
         </span>
       );
       cursorClass = "cursor-pointer";
     } else {
       statusBadge = (
         <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-slate-800 text-slate-500 text-[10px] font-bold flex items-center gap-1 border border-white/5">
-          <Lock size={8} /> Locked
+          <Lock size={8} /> {isUrdu ? "مقفل" : "Locked"}
         </span>
       );
     }
@@ -256,31 +348,43 @@ export default function DashboardPage() {
       >
         {statusBadge}
         <div className="text-xl mb-1">{meta.icon}</div>
-        <h4 className="text-xs sm:text-sm font-bold truncate">{node.label}</h4>
+        <h4 className="text-xs sm:text-sm font-bold truncate">{isUrdu ? (conceptMetadata[conceptId]?.urdu || node.label) : node.label}</h4>
         <p className="text-[10px] sm:text-xs text-slate-400 font-urdu mt-0.5" dir="rtl">
           {meta.urdu}
         </p>
         {status !== "locked" && (
           <div className="mt-2 text-[10px] font-semibold text-slate-500">
-            Mastery: <span className={status === "mastered" ? "text-emerald-400" : "text-cyan-400"}>{score}%</span>
+            {isUrdu ? "مہارت" : "Mastery"}: <span className={status === "mastered" ? "text-emerald-400" : "text-cyan-400"}>{score}%</span>
           </div>
         )}
       </div>
     );
   };
 
+  const activities = isUrdu ? recentActivityUr : recentActivityEn;
+
+  const goalTypesUrdu: Record<string, string> = {
+    education: "تعلیم",
+    home: "گھر / زمین",
+    car: "گاڑی",
+    emergency: "ہنگامی فنڈ",
+    investment: "سرمایہ کاری",
+    other: "دیگر مقصد",
+  };
+
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" dir={isUrdu ? "rtl" : "ltr"}>
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-8 py-4 border-b border-white/5 bg-slate-900/60 backdrop-blur-xl">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-white">
-              Assalam-o-Alaikum, <span className="gradient-text">{data.username}</span>!
+              {isUrdu ? "السلام علیکم، " : "Assalam-o-Alaikum, "}
+              <span className="gradient-text">{data.username}</span>!
             </h1>
             <p className="text-sm text-slate-400">
-              Aaj apni financial journey continue karein
+              {isUrdu ? "آج اپنی مالی ترقی کا سفر جاری رکھیں" : "Aaj apni financial journey continue karein"}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -302,56 +406,70 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Financial IQ Score */}
             <GlassCard className="flex flex-col items-center justify-center" glow>
-              <h3 className="text-sm font-medium text-slate-400 mb-4">Financial IQ Score</h3>
+              <h3 className="text-sm font-medium text-slate-400 mb-4">
+                {isUrdu ? "مالیاتی آئی کیو سکور" : "Financial IQ Score"}
+              </h3>
               <ProgressRing value={financialIQ} max={1000} size={180} strokeWidth={12}>
                 <span className="text-4xl font-extrabold gradient-text">{financialIQ}</span>
                 <span className="text-sm text-slate-400 mt-1">/ 1000</span>
               </ProgressRing>
               <div className="flex items-center gap-2 mt-4">
                 <TrendingUp size={14} className="text-emerald-400" />
-                <span className="text-sm text-emerald-400 font-medium">Bachat aur mehengai seekhein</span>
+                <span className="text-sm text-emerald-400 font-medium">
+                  {isUrdu ? "بچت اور مہنگائی کی مہارت بڑھائیں" : "Bachat aur mehengai seekhein"}
+                </span>
               </div>
             </GlassCard>
 
             {/* XP Progress */}
             <GlassCard>
-              <h3 className="text-sm font-medium text-slate-400 mb-3">Level Progress</h3>
+              <h3 className="text-sm font-medium text-slate-400 mb-3">
+                {isUrdu ? "لیول کی ترقی" : "Level Progress"}
+              </h3>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-white font-bold text-lg">
                   {currentLevel}
                 </div>
                 <div>
                   <p className="text-lg font-bold text-white">{levelName}</p>
-                  <p className="text-sm text-slate-400">Level {currentLevel} of 10</p>
+                  <p className="text-sm text-slate-400">
+                    {isUrdu ? `۱۰ میں سے لیول ${currentLevel}` : `Level ${currentLevel} of 10`}
+                  </p>
                 </div>
               </div>
               <div className="mb-2">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-slate-400">{data.current_xp} XP</span>
-                  <span className="text-emerald-400 font-medium">Rank {currentLevel}</span>
+                  <span className="text-emerald-400 font-medium">
+                    {isUrdu ? `رینک ${currentLevel}` : `Rank ${currentLevel}`}
+                  </span>
                 </div>
                 <div className="progress-bar">
                   <div className="progress-fill" style={{ width: `${(currentLevel / 10) * 100}%` }} />
                 </div>
               </div>
               <p className="text-xs text-slate-500 mt-3">
-                Agla rank barhane ke liye Level {currentLevel} ka quiz pass karein
+                {isUrdu
+                  ? `اگلا رینک بڑھانے کے لیے لیول ${currentLevel} کا کوئز پاس کریں`
+                  : `Agla rank barhane ke liye Level ${currentLevel} ka quiz pass karein`}
               </p>
 
               {/* Mini badges */}
               <div className="flex flex-wrap gap-2 mt-4">
                 <span className="px-2 py-1 rounded-md bg-yellow-500/10 text-yellow-400 text-xs border border-yellow-500/20">
-                  🏆 Level {currentLevel}
+                  🏆 {isUrdu ? `لیول ${currentLevel}` : `Level ${currentLevel}`}
                 </span>
                 <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-xs border border-emerald-500/20">
-                  ✅ Active Coach
+                  ✅ {isUrdu ? "فعال کوچ" : "Active Coach"}
                 </span>
               </div>
             </GlassCard>
 
             {/* Quick Actions */}
             <GlassCard>
-              <h3 className="text-sm font-medium text-slate-400 mb-4">Quick Actions</h3>
+              <h3 className="text-sm font-medium text-slate-400 mb-4">
+                {isUrdu ? "فوری اقدامات" : "Quick Actions"}
+              </h3>
               <div className="space-y-3">
                 {currentLevel <= 10 && (
                   <a
@@ -362,8 +480,12 @@ export default function DashboardPage() {
                       <Award size={18} className="text-yellow-400 animate-pulse" />
                     </div>
                     <div className="flex-1">
-                      <span className="text-sm font-medium text-white">Take Level {currentLevel} Quiz</span>
-                      <p className="text-xs text-slate-400">Level up karne ke liye pass karein</p>
+                      <span className="text-sm font-medium text-white">
+                        {isUrdu ? `لیول ${currentLevel} کا کوئز لیں` : `Take Level ${currentLevel} Quiz`}
+                      </span>
+                      <p className="text-xs text-slate-400">
+                        {isUrdu ? "اگلے لیول پر جانے کے لیے پاس کریں" : "Level up karne ke liye pass karein"}
+                      </p>
                     </div>
                     <ChevronRight size={16} className="text-slate-500 group-hover:text-yellow-400 transition-colors" />
                   </a>
@@ -377,8 +499,12 @@ export default function DashboardPage() {
                     <BookOpen size={18} className="text-emerald-400" />
                   </div>
                   <div className="flex-1">
-                    <span className="text-sm font-medium text-white">Start Lesson</span>
-                    <p className="text-xs text-slate-500">Naya lesson shuru karein</p>
+                    <span className="text-sm font-medium text-white">
+                      {isUrdu ? "سبق شروع کریں" : "Start Lesson"}
+                    </span>
+                    <p className="text-xs text-slate-500">
+                      {isUrdu ? "کوچ کے ساتھ نیا سبق سیکھیں" : "Naya lesson shuru karein"}
+                    </p>
                   </div>
                   <ChevronRight size={16} className="text-slate-500 group-hover:text-emerald-400 transition-colors" />
                 </a>
@@ -390,8 +516,12 @@ export default function DashboardPage() {
                     <Play size={18} className="text-cyan-400" />
                   </div>
                   <div className="flex-1">
-                    <span className="text-sm font-medium text-white">Run Simulator</span>
-                    <p className="text-xs text-slate-500">Life simulator chalayein</p>
+                    <span className="text-sm font-medium text-white">
+                      {isUrdu ? "سمیولیٹر چلائیں" : "Run Simulator"}
+                    </span>
+                    <p className="text-xs text-slate-500">
+                      {isUrdu ? "سرمایہ کاری اور فنانس سمیولیٹر" : "Life simulator chalayein"}
+                    </p>
                   </div>
                   <ChevronRight size={16} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
                 </a>
@@ -403,8 +533,12 @@ export default function DashboardPage() {
                     <Target size={18} className="text-purple-400" />
                   </div>
                   <div className="flex-1">
-                    <span className="text-sm font-medium text-white">Set Goal</span>
-                    <p className="text-xs text-slate-500">Naya maqsad set karein</p>
+                    <span className="text-sm font-medium text-white">
+                      {isUrdu ? "مقصد سیٹ کریں" : "Set Goal"}
+                    </span>
+                    <p className="text-xs text-slate-500">
+                      {isUrdu ? "نیا بچت کا مقصد مقرر کریں" : "Naya maqsad set karein"}
+                    </p>
                   </div>
                   <ChevronRight size={16} className="text-slate-500 group-hover:text-purple-400 transition-colors" />
                 </a>
@@ -415,7 +549,7 @@ export default function DashboardPage() {
           {/* Learning Flow Graph */}
           <div className="mb-8">
             <h2 className="text-lg font-bold text-white mb-4">
-              Learning Flow Graph — <span className="text-slate-400">سیکھنے کا خاکہ</span>
+              {isUrdu ? "سیکھنے کا خاکہ — Learning Flow Graph" : "Learning Flow Graph — سیکھنے کا خاکہ"}
             </h2>
             <GlassCard hover={false} className="p-6 md:p-8 bg-slate-900/30 backdrop-blur-md border border-white/5">
               <div className="flex flex-col items-center gap-4 max-w-4xl mx-auto">
@@ -483,7 +617,7 @@ export default function DashboardPage() {
           {/* Row 2: Concept Mastery Grid */}
           <div className="mb-8">
             <h2 className="text-lg font-bold text-white mb-4">
-              Concept Mastery Details — <span className="text-slate-400">موضوعات کی تفصیلات</span>
+              {isUrdu ? "موضوعات کی تفصیلات — Concept Mastery Details" : "Concept Mastery Details — موضوعات کی تفصیلات"}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {data.concept_mastery.map((item) => {
@@ -521,11 +655,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <h2 className="text-lg font-bold text-white mb-4">
-                Recent Activity — <span className="text-slate-400">حالیہ سرگرمی</span>
+                {isUrdu ? "حالیہ سرگرمی — Recent Activity" : "Recent Activity — حالیہ سرگرمی"}
               </h2>
               <GlassCard hover={false} className="!p-0 overflow-hidden">
                 <div className="divide-y divide-white/5">
-                  {recentActivity.map((activity, i) => (
+                  {activities.map((activity, i) => (
                     <div
                       key={i}
                       className="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors duration-200"
@@ -548,28 +682,48 @@ export default function DashboardPage() {
 
             <div>
               <h2 className="text-lg font-bold text-white mb-4">
-                Active Goals — <span className="text-slate-400">سرگرم مقاصد</span>
+                {isUrdu ? "سرگرم مقاصد — Active Goals" : "Active Goals — سرگرم مقاصد"}
               </h2>
               <GlassCard hover={false} className="flex flex-col justify-center min-h-[220px]">
                 {data.goals.length === 0 ? (
                   <div className="text-center p-6">
                     <Target size={32} className="text-slate-600 mx-auto mb-2" />
-                    <p className="text-slate-400 text-sm mb-4">Koi saved goal nahi mila.</p>
+                    <p className="text-slate-400 text-sm mb-4">
+                      {isUrdu ? "کوئی بچت کا مقصد مقرر نہیں ہے۔" : "Koi saved goal nahi mila."}
+                    </p>
                     <a href="/goals" className="glow-btn text-xs px-4 py-2 inline-block">
-                      Naya Goal Banayein
+                      {isUrdu ? "نیا مقصد بنائیں" : "Naya Goal Banayein"}
                     </a>
                   </div>
                 ) : (
-                  <div className="space-y-4 w-full px-6">
-                    {data.goals.slice(0, 2).map((g) => (
-                      <div key={g.id} className="p-3 rounded-lg bg-white/5 border border-white/5">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm font-semibold text-white capitalize">{g.goal_type}</span>
-                          <span className="text-xs text-emerald-400">Target: PKR {g.target_amount.toLocaleString()}</span>
+                  <div className="space-y-4 w-full px-6 py-4">
+                    {data.goals.slice(0, 3).map((g) => (
+                      <div key={g.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div className="flex-1 w-full">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-semibold text-white capitalize">
+                              {isUrdu ? (goalTypesUrdu[g.goal_type] || g.goal_type) : g.goal_type}
+                            </span>
+                            <span className="text-xs text-emerald-400">
+                              {isUrdu ? `ٹارگٹ: PKR ${g.target_amount.toLocaleString()}` : `Target: PKR ${g.target_amount.toLocaleString()}`}
+                            </span>
+                          </div>
+                          <div className="progress-bar my-2">
+                            <div className="progress-fill" style={{ width: `${Math.min(Math.round((g.current_savings / g.target_amount) * 100), 100)}%` }} />
+                          </div>
+                          <div className="flex justify-between text-xs text-slate-400">
+                            <span>
+                              {isUrdu ? `موجودہ بچت: PKR ${g.current_savings.toLocaleString()}` : `Savings: PKR ${g.current_savings.toLocaleString()}`}
+                            </span>
+                            <span>{Math.min(Math.round((g.current_savings / g.target_amount) * 100), 100)}%</span>
+                          </div>
                         </div>
-                        <div className="progress-bar">
-                          <div className="progress-fill" style={{ width: `${Math.round((g.current_savings / g.target_amount) * 100)}%` }} />
-                        </div>
+                        <button
+                          onClick={() => setSelectedGoal(g)}
+                          className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/40 text-xs font-semibold transition-all duration-200 w-full md:w-auto text-center"
+                        >
+                          {isUrdu ? "جمع کریں" : "Deposit"}
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -579,6 +733,64 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
+
+      {/* Deposit Savings Modal */}
+      {selectedGoal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="relative w-full max-w-md p-6 rounded-2xl bg-slate-900 border border-white/10 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-2">
+              {isUrdu ? "مقصد میں بچت جمع کریں" : "Deposit Savings to Goal"}
+            </h3>
+            <p className="text-sm text-slate-400 mb-4">
+              {isUrdu 
+                ? `مقصد: ${goalTypesUrdu[selectedGoal.goal_type] || selectedGoal.goal_type} کے لیے ورچوئل رقم جمع کریں`
+                : `Adding savings to: ${selectedGoal.goal_type}`}
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  {isUrdu ? "جمع کرنے کی رقم (PKR)" : "Deposit Amount (PKR)"}
+                </label>
+                <input
+                  type="number"
+                  placeholder="e.g. 5000"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/10 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
+                />
+              </div>
+
+              {depositMessage && (
+                <p className={`text-xs font-medium ${depositMessage.includes("success") || depositMessage.includes("کامیابی") ? "text-emerald-400" : "text-rose-400"}`}>
+                  {depositMessage}
+                </p>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleDeposit}
+                  disabled={depositLoading}
+                  className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 text-sm font-bold transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:scale-100"
+                >
+                  {depositLoading ? (isUrdu ? "جمع ہو رہا ہے..." : "Depositing...") : (isUrdu ? "جمع کریں" : "Deposit")}
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedGoal(null);
+                    setDepositAmount("");
+                    setDepositMessage(null);
+                  }}
+                  disabled={depositLoading}
+                  className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-white text-sm font-semibold transition-all duration-200"
+                >
+                  {isUrdu ? "منسوخ" : "Cancel"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

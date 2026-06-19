@@ -186,10 +186,17 @@ export default function QuizPage() {
 
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [isUrdu, setIsUrdu] = useState(false);
 
-  // Parse level parameter from window.location
+  // Parse level parameter from window.location and handle global language toggle
   useEffect(() => {
     if (typeof window !== "undefined") {
+      setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      const handleLangChange = () => {
+        setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      };
+      window.addEventListener("languageChange", handleLangChange);
+
       const params = new URLSearchParams(window.location.search);
       const levelParam = params.get("level");
       if (levelParam) {
@@ -197,6 +204,8 @@ export default function QuizPage() {
       } else {
         setLevel(null);
       }
+
+      return () => window.removeEventListener("languageChange", handleLangChange);
     }
   }, []);
 
@@ -208,7 +217,7 @@ export default function QuizPage() {
         const userId = localStorage.getItem("user_id") || "1";
         try {
           const res = await fetch(`http://localhost:8000/api/auth/dashboard/${userId}`);
-        if (res.ok) {
+          if (res.ok) {
             const data = await res.json();
             setDashboardData(data);
             localStorage.setItem("dashboard_data", JSON.stringify(data));
@@ -346,9 +355,10 @@ export default function QuizPage() {
   const handleSubmit = async () => {
     const answeredCount = Object.keys(selectedAnswers).length;
     if (answeredCount < questions.length) {
-      const confirmSubmit = confirm(
-        `Aap ne 20 mein se sirf ${answeredCount} sawalat ke jawab diye hain. Kya aap phir bhi submit karna chahte hain?`
-      );
+      const confirmText = isUrdu 
+        ? `آپ نے ۲۰ میں سے صرف ${answeredCount} سوالات کے جواب دیے ہیں۔ کیا آپ پھر بھی کوئز جمع کروانا چاہتے ہیں؟`
+        : `Aap ne 20 mein se sirf ${answeredCount} sawalat ke jawab diye hain. Kya aap phir bhi submit karna chahte hain?`;
+      const confirmSubmit = confirm(confirmText);
       if (!confirmSubmit) return;
     }
 
@@ -357,7 +367,6 @@ export default function QuizPage() {
 
     if (isOfflineMode) {
       try {
-        // Wait a small delay to simulate processing and give a high-quality feel
         await new Promise((resolve) => setTimeout(resolve, 800));
 
         let score = 0;
@@ -401,8 +410,6 @@ export default function QuizPage() {
 
         setResults(localResult);
 
-        // Background sync: persist the offline result to the backend so
-        // ConceptMastery and QuizAttempt records are updated in the database.
         try {
           const userId = localStorage.getItem("user_id") || "1";
           const answersPayload = offlineQuestions.map((q) => ({
@@ -496,10 +503,8 @@ export default function QuizPage() {
   const renderQuizNode = (levelNum: number, conceptId: string, title: string, urduTitle: string, icon: string) => {
     if (!dashboardData) return null;
 
-    // Unlocking status
     const currentLevel = dashboardData.current_level || 1;
 
-    // Build a map of concept mastery scores
     const scores = dashboardData.concept_mastery.reduce((acc: any, curr: any) => {
       acc[curr.concept_name] = curr.mastery_score;
       return acc;
@@ -523,7 +528,6 @@ export default function QuizPage() {
 
     let status: "mastered" | "unlocked" | "locked" = "locked";
 
-    // Mastered if score is >= 75 OR the user's current level is past this node's level
     if (score >= 75 || currentLevel > nodeLevel) {
       status = "mastered";
     } else if (nodeLevel === currentLevel) {
@@ -540,7 +544,7 @@ export default function QuizPage() {
       borderClass = "border-emerald-500/40 bg-emerald-500/5 text-slate-200 shadow-md shadow-emerald-500/5 hover:border-emerald-500/60";
       statusBadge = (
         <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-bold animate-fade-in">
-          Passed ✅
+          {isUrdu ? "پاس ✅" : "Passed ✅"}
         </span>
       );
       cursorClass = "cursor-pointer";
@@ -548,14 +552,14 @@ export default function QuizPage() {
       borderClass = "border-cyan-500/40 bg-cyan-500/5 text-slate-200 shadow-lg shadow-cyan-500/5 hover:border-cyan-500/60 ring-2 ring-cyan-500/10 animate-pulse-glow";
       statusBadge = (
         <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-bold animate-fade-in">
-          Start Quiz
+          {isUrdu ? "شروع کریں" : "Start Quiz"}
         </span>
       );
       cursorClass = "cursor-pointer";
     } else {
       statusBadge = (
         <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-slate-800 text-slate-500 text-[10px] font-bold flex items-center gap-1 border border-white/5 animate-fade-in">
-          <Lock size={8} /> Locked
+          <Lock size={8} /> {isUrdu ? "مقفل" : "Locked"}
         </span>
       );
     }
@@ -573,7 +577,7 @@ export default function QuizPage() {
       >
         {statusBadge}
         <div className="text-xl mb-1">{icon}</div>
-        <h4 className="text-xs sm:text-sm font-bold truncate">Level {levelNum}: {title}</h4>
+        <h4 className="text-xs sm:text-sm font-bold truncate">Level {levelNum}: {isUrdu ? urduTitle : title}</h4>
         <p className="text-[10px] sm:text-xs text-slate-400 font-urdu mt-0.5" dir="rtl">
           {urduTitle}
         </p>
@@ -586,7 +590,7 @@ export default function QuizPage() {
       <div className="flex flex-col items-center gap-4 w-full">
         {/* Level 1 */}
         <div className="flex justify-center w-full">
-          {renderQuizNode(1, "budgeting", "Budgeting", "بجٹ کے اصول", "📊")}
+          {renderQuizNode(1, "budgeting", "Budgeting Basics", "بجٹ کے اصول", "📊")}
         </div>
 
         {/* Line Down */}
@@ -610,7 +614,7 @@ export default function QuizPage() {
 
         {/* Level 4 */}
         <div className="flex justify-center w-full">
-          {renderQuizNode(4, "inflation", "Inflation", "مہنگائی کا اثر", "📈")}
+          {renderQuizNode(4, "inflation", "Inflation & Purchasing Power", "مہنگائی کا اثر", "📈")}
         </div>
 
         {/* Line Down */}
@@ -635,14 +639,14 @@ export default function QuizPage() {
             <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
           </div>
           <div className="flex justify-center flex-col items-center">
-            {renderQuizNode(7, "islamic_banking", "Islamic Banking", "اسلامی بینکاری", "🕌")}
+            {renderQuizNode(7, "islamic_banking", "Islamic Banking & Finance", "اسلامی بینکاری", "🕌")}
             <div className="w-[2px] h-6 bg-emerald-500/30 mt-4" />
           </div>
         </div>
 
         {/* Level 8 */}
         <div className="flex justify-center w-full">
-          {renderQuizNode(8, "stock_market", "Stock Market", "اسٹاک مارکیٹ", "📈")}
+          {renderQuizNode(8, "stock_market", "Stock Market & Shares", "اسٹاک مارکیٹ", "📈")}
         </div>
 
         {/* Line Down */}
@@ -650,7 +654,7 @@ export default function QuizPage() {
 
         {/* Level 9 */}
         <div className="flex justify-center w-full">
-          {renderQuizNode(9, "diversification", "Diversification", "تنوع (Diversification)", "🎯")}
+          {renderQuizNode(9, "diversification", "Diversification & Risk", "تنوع", "🎯")}
         </div>
 
         {/* Line Down */}
@@ -658,7 +662,7 @@ export default function QuizPage() {
 
         {/* Level 10 */}
         <div className="flex justify-center w-full">
-          {renderQuizNode(10, "tax_filer", "Tax Planning & Filer", "ٹیکس فائلنگ اور پلاننگ", "📄")}
+          {renderQuizNode(10, "tax_filer", "Advanced Planning & Filer", "ٹیکس فائلنگ", "📄")}
         </div>
       </div>
     );
@@ -666,7 +670,7 @@ export default function QuizPage() {
 
   if (level === null) {
     return (
-      <div className="flex min-h-screen bg-slate-950 text-white animate-fade-in">
+      <div className="flex min-h-screen bg-slate-950 text-white animate-fade-in" dir={isUrdu ? "rtl" : "ltr"}>
         <Sidebar />
         <div className="flex-1 flex flex-col min-h-screen relative overflow-hidden">
           {/* Decorative glow */}
@@ -676,15 +680,17 @@ export default function QuizPage() {
             <div>
               <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
                 <Award className="text-emerald-400 animate-pulse" size={20} />
-                Financial Concept Quizzes
+                {isUrdu ? "مالیاتی کوئز گراف" : "Financial Concept Quizzes"}
               </h1>
-              <p className="text-xs md:text-sm text-slate-400">کوئز گراف — Select a level to start</p>
+              <p className="text-xs md:text-sm text-slate-400">
+                {isUrdu ? "کوئز گراف — شروع کرنے کے لیے لیول منتخب کریں" : "Quiz Graph — Select a level to start"}
+              </p>
             </div>
             <a
               href="/dashboard"
               className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors"
             >
-              Wapis Dashboard
+              {isUrdu ? "ڈیش بورڈ پر جائیں" : "Go to Dashboard"}
             </a>
           </header>
 
@@ -692,14 +698,20 @@ export default function QuizPage() {
             {dashboardLoading ? (
               <div className="flex flex-col items-center justify-center h-64">
                 <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mb-4" />
-                <p className="text-slate-400 animate-pulse">Quiz graph load ho raha hai...</p>
+                <p className="text-slate-400 animate-pulse">
+                  {isUrdu ? "کوئز گراف لوڈ ہو رہا ہے..." : "Quiz graph loading..."}
+                </p>
               </div>
             ) : (
               <div className="max-w-4xl mx-auto space-y-6">
                 <div className="text-center mb-8">
-                  <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Quiz Level Selection</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
+                    {isUrdu ? "کوئز کے لیول کا انتخاب" : "Quiz Level Selection"}
+                  </h2>
                   <p className="text-sm text-slate-400">
-                    Sikhnay ke khakay (Learning Flow Graph) ke mutabiq unlocked levels ke quizzes shuru karein.
+                    {isUrdu 
+                      ? "سیکھنے کے خاکے (Learning Flow Graph) کے مطابق کھلے ہوئے لیولز کے کوئزز شروع کریں۔" 
+                      : "Start quizzes for unlocked levels according to your learning flow graph."}
                   </p>
                 </div>
                 
@@ -718,11 +730,13 @@ export default function QuizPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen" dir={isUrdu ? "rtl" : "ltr"}>
         <Sidebar />
         <div className="flex-1 flex flex-col items-center justify-center bg-slate-950 text-white">
           <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-4" />
-          <p className="text-lg animate-pulse">Quiz questions load ho rahe hain...</p>
+          <p className="text-lg animate-pulse">
+            {isUrdu ? "کوئز سوالات لوڈ ہو رہے ہیں..." : "Loading quiz questions..."}
+          </p>
         </div>
       </div>
     );
@@ -730,17 +744,17 @@ export default function QuizPage() {
 
   if (error && !results) {
     return (
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen" dir={isUrdu ? "rtl" : "ltr"}>
         <Sidebar />
         <div className="flex-1 flex flex-col items-center justify-center bg-slate-950 p-6 text-white">
           <AlertCircle className="w-12 h-12 text-rose-500 mb-4 animate-bounce" />
-          <p className="text-xl font-bold mb-2">Error Occurred</p>
+          <p className="text-xl font-bold mb-2">{isUrdu ? "خرابی پیش آئی" : "Error Occurred"}</p>
           <p className="text-slate-400 text-center max-w-md mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-sm font-semibold"
           >
-            <RefreshCw size={16} /> Dobara load karein
+            <RefreshCw size={16} /> {isUrdu ? "دوبارہ لوڈ کریں" : "Reload"}
           </button>
         </div>
       </div>
@@ -753,7 +767,7 @@ export default function QuizPage() {
   const quizTitle = levelTitles[level] || "Financial Concept Quiz";
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-white">
+    <div className="flex min-h-screen bg-slate-950 text-white" dir={isUrdu ? "rtl" : "ltr"}>
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen relative overflow-hidden">
         {/* Decorative glow */}
@@ -763,7 +777,7 @@ export default function QuizPage() {
           <div>
             <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
               <Award className="text-yellow-500 animate-pulse" size={20} />
-              Level {level} Quiz
+              {isUrdu ? `لیول ${level} کوئز` : `Level ${level} Quiz`}
             </h1>
             <p className="text-xs md:text-sm text-slate-400">{quizTitle}</p>
           </div>
@@ -771,14 +785,14 @@ export default function QuizPage() {
             href="/quiz"
             className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors"
           >
-            ← Back to Graph
+            {isUrdu ? "← گراف پر واپس جائیں" : "← Back to Graph"}
           </Link>
         </header>
 
         {isOfflineMode && (
           <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 md:px-8 py-2.5 flex items-center gap-2 text-emerald-400 text-xs font-semibold animate-fade-in relative z-20">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Offline Mode: Quiz locally run ho raha hai.
+            {isUrdu ? "آف لائن موڈ: کوئز مقامی طور پر چل رہا ہے۔" : "Offline Mode: Quiz locally run ho raha hai."}
           </div>
         )}
 
@@ -788,9 +802,13 @@ export default function QuizPage() {
               {/* Question Navigation Map */}
               <GlassCard className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold text-slate-400">Quiz Progress</span>
+                  <span className="text-xs font-semibold text-slate-400">
+                    {isUrdu ? "کوئز کی پیشرفت" : "Quiz Progress"}
+                  </span>
                   <span className="text-xs font-bold text-emerald-400">
-                    {answeredCount} / {questions.length} Answered
+                    {isUrdu 
+                      ? `${answeredCount} / ${questions.length} حل شدہ`
+                      : `${answeredCount} / ${questions.length} Answered`}
                   </span>
                 </div>
                 <div className="progress-bar mb-4">
@@ -824,7 +842,9 @@ export default function QuizPage() {
                 <GlassCard key={currentQuestion.id} className="p-6 md:p-8 animate-fade-in-up" glow>
                   <div className="flex items-center justify-between mb-6">
                     <span className="px-3 py-1 rounded-full bg-slate-950 text-slate-400 text-xs border border-white/5">
-                      Question {currentIndex + 1} of {questions.length}
+                      {isUrdu 
+                        ? `سوال ${currentIndex + 1} از ${questions.length}`
+                        : `Question ${currentIndex + 1} of ${questions.length}`}
                     </span>
                     <span className="text-xs text-slate-500">ID: #{currentQuestion.id}</span>
                   </div>
@@ -846,10 +866,11 @@ export default function QuizPage() {
                               ? "border-emerald-500 bg-emerald-500/10 text-white shadow-md shadow-emerald-500/5"
                               : "border-white/10 bg-slate-900/40 text-slate-300 hover:border-white/20 hover:bg-slate-900/60"
                           }`}
+                          style={{ textAlign: isUrdu ? "right" : "left" }}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 w-full">
                             <span
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${
                                 isSelected ? "bg-emerald-500 text-slate-950" : "bg-white/5 text-slate-400"
                               }`}
                             >
@@ -876,7 +897,7 @@ export default function QuizPage() {
                       disabled={currentIndex === 0}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/5"
                     >
-                      <ArrowLeft size={16} /> Pichla Sawal
+                      {isUrdu ? "← پچھلا سوال" : "← Previous Question"}
                     </button>
 
                     {currentIndex < questions.length - 1 ? (
@@ -884,7 +905,7 @@ export default function QuizPage() {
                         onClick={handleNext}
                         className="flex items-center gap-2 px-5 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm font-semibold"
                       >
-                        Agla Sawal <ArrowRight size={16} />
+                        {isUrdu ? "اگلا سوال →" : "Next Question →"}
                       </button>
                     ) : (
                       <button
@@ -894,11 +915,11 @@ export default function QuizPage() {
                       >
                         {submitting ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin" /> Submission...
+                            <Loader2 className="w-4 h-4 animate-spin" /> {isUrdu ? "سبمٹ ہو رہا ہے..." : "Submitting..."}
                           </>
                         ) : (
                           <>
-                            Submit Quiz <Award size={16} />
+                            {isUrdu ? "کوئز جمع کروائیں" : "Submit Quiz"} <Award size={16} />
                           </>
                         )}
                       </button>
@@ -933,19 +954,27 @@ export default function QuizPage() {
                 )}
 
                 <h2 className="text-2xl md:text-3xl font-extrabold mb-2 text-white">
-                  {results.passed ? "Mubarak Ho! Aap Pass Hogaye 🎉" : "Koshish Naa Chhodein! 🥺"}
+                  {results.passed 
+                    ? (isUrdu ? "مبارک ہو! آپ پاس ہوگئے 🎉" : "Mubarak Ho! Aap Pass Hogaye 🎉") 
+                    : (isUrdu ? "کوشش جاری رکھیں! 🥺" : "Koshish Naa Chhodein! 🥺")}
                 </h2>
 
                 <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">
                   {results.passed
-                    ? `Aap ne Level ${level} ka quiz pass kar liya hai aur naya rank hasil kar liya hai! Ab aap Level ${results.current_level} par hain.`
-                    : "Quiz pass karne ke liye 20 mein se kam az kam 15 sahi jawab (75%) hona lazmi hai. Jawabon ki tafseelat niche mulahiza karein aur dobara koshish karein."}
+                    ? (isUrdu 
+                      ? `آپ نے لیول ${level} کا کوئز پاس کر لیا ہے اور نیا رینک حاصل کر لیا ہے! اب آپ لیول ${results.current_level} پر ہیں۔`
+                      : `Aap ne Level ${level} ka quiz pass kar liya hai aur naya rank hasil kar liya hai! Ab aap Level ${results.current_level} par hain.`)
+                    : (isUrdu 
+                      ? "کوئز پاس کرنے کے لیے ۲۰ میں سے کم از کم ۱۵ صحیح جواب (۷۵٪) ہونا لازمی ہے۔ جوابوں کی تفصیلات نیچے ملاحظہ کریں اور دوبارہ کوشش کریں۔"
+                      : "Quiz pass karne ke liye 20 mein se kam az kam 15 sahi jawab (75%) hona lazmi hai. Jawabon ki tafseelat niche mulahiza karein aur dobara koshish karein.")}
                 </p>
 
                 {/* Score Indicator */}
                 <div className="inline-flex flex-col items-center justify-center p-6 rounded-2xl bg-slate-950/80 border border-white/5 mb-6 min-w-[150px]">
                   <span className="text-4xl font-extrabold text-white">{results.score}</span>
-                  <span className="text-xs text-slate-500 mt-1">out of 20 ({(results.score / 20) * 100}%)</span>
+                  <span className="text-xs text-slate-500 mt-1">
+                    {isUrdu ? `۲۰ میں سے (${(results.score / 20) * 100}٪)` : `out of 20 (${(results.score / 20) * 100}%)`}
+                  </span>
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-4">
@@ -953,14 +982,14 @@ export default function QuizPage() {
                     href="/dashboard"
                     className="px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm font-semibold"
                   >
-                    Dashboard par jayein
+                    {isUrdu ? "ڈیش بورڈ پر جائیں" : "Go to Dashboard"}
                   </a>
                   {!results.passed ? (
                     <button
                       onClick={handleRetry}
                       className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold hover:brightness-110 active:scale-95 transition-all text-sm"
                     >
-                      <RefreshCw size={16} /> Dobara Koshish
+                      <RefreshCw size={16} /> {isUrdu ? "دوبارہ کوشش کریں" : "Try Again"}
                     </button>
                   ) : (
                     results.current_level <= 10 && (
@@ -974,7 +1003,7 @@ export default function QuizPage() {
                         }}
                         className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold hover:brightness-110 active:scale-95 transition-all text-sm"
                       >
-                        Next Level Quiz <ChevronRight size={16} />
+                        {isUrdu ? "اگلا کوئز لیں" : "Next Level Quiz"} <ChevronRight size={16} />
                       </button>
                     )
                   )}
@@ -983,12 +1012,13 @@ export default function QuizPage() {
 
               {/* Detailed Breakdown */}
               <div className="space-y-4">
-                <h3 className="text-lg font-bold text-white">Quiz Explanation & Review</h3>
+                <h3 className="text-lg font-bold text-white">
+                  {isUrdu ? "کوئز کی وضاحت اور جائزہ" : "Quiz Explanation & Review"}
+                </h3>
                 {results.details.map((detail, idx) => {
                   const isExpanded = expandedDetails[detail.question_id] || false;
-                  // Look up original question text
                   const origQ = questions.find((q) => q.id === detail.question_id);
-                  const questionText = origQ ? origQ.question : `Sawalat #${detail.question_id}`;
+                  const questionText = origQ ? origQ.question : `Sawal #${detail.question_id}`;
                   const userChoice = selectedAnswers[detail.question_id];
                   const userChoiceText = origQ && userChoice ? origQ.options[userChoice] : "N/A";
                   const correctChoiceText = origQ ? origQ.options[detail.correct_option] : "N/A";
@@ -1007,14 +1037,15 @@ export default function QuizPage() {
                               <XCircle className="text-rose-400 flex-shrink-0" size={18} />
                             )}
                           </div>
-                          <div>
+                          <div style={{ textAlign: isUrdu ? "right" : "left" }}>
                             <p className="text-sm font-bold text-slate-200">
-                              Sawal {idx + 1}: <span className="font-normal text-slate-300">{questionText}</span>
+                              {isUrdu ? `سوال ${idx + 1}:` : `Question ${idx + 1}:`}{" "}
+                              <span className="font-normal text-slate-300">{questionText}</span>
                             </p>
                             <p className="text-xs text-slate-500 mt-1">
-                              Aap ka jawab:{" "}
+                              {isUrdu ? "آپ کا انتخاب: " : "Your Choice: "}{" "}
                               <span className={detail.is_correct ? "text-emerald-400" : "text-rose-400"}>
-                                {userChoice ? `(${userChoice.toUpperCase()}) ${userChoiceText}` : "Kuch nahi"}
+                                {userChoice ? `(${userChoice.toUpperCase()}) ${userChoiceText}` : (isUrdu ? "کچھ نہیں" : "None")}
                               </span>
                             </p>
                           </div>
@@ -1026,16 +1057,18 @@ export default function QuizPage() {
 
                       {/* Expandable Explanation Block */}
                       {isExpanded && (
-                        <div className="mt-3 pl-8 pt-3 border-t border-white/5 space-y-2 animate-fade-in">
+                        <div className="mt-3 pl-8 pr-8 pt-3 border-t border-white/5 space-y-2 animate-fade-in">
                           <p className="text-xs text-slate-400">
-                            Sahi jawab:{" "}
+                            {isUrdu ? "درست جواب: " : "Correct Answer: "}{" "}
                             <span className="text-emerald-400 font-semibold">
                               ({detail.correct_option.toUpperCase()}) {correctChoiceText}
                             </span>
                           </p>
                           <div className="p-3 rounded-lg bg-slate-950/80 border border-white/5">
-                            <p className="text-xs text-slate-400 font-semibold mb-1">Tashreeh (Explanation):</p>
-                            <p className="text-xs text-slate-300 leading-relaxed font-urdu" dir="rtl">
+                            <p className="text-xs text-slate-400 font-semibold mb-1">
+                              {isUrdu ? "توضیح (Explanation):" : "Explanation:"}
+                            </p>
+                            <p className="text-xs text-slate-300 leading-relaxed font-urdu text-right" dir="rtl">
                               {detail.explanation}
                             </p>
                           </div>
