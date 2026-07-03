@@ -133,6 +133,8 @@ def submit_quiz(
     # 5b. Update ConceptMastery for the user
     mastery_percentage = int((score / 20.0) * 100)
     concept_name = LEVEL_TO_CONCEPT.get(level)
+    is_first_pass = False
+
     if concept_name:
         mastery_stmt = select(ConceptMastery).where(
             ConceptMastery.user_id == request.user_id,
@@ -140,6 +142,7 @@ def submit_quiz(
         )
         mastery = session.exec(mastery_stmt).first()
         if not mastery:
+            is_first_pass = (mastery_percentage >= 75)
             mastery = ConceptMastery(
                 user_id=request.user_id,
                 concept_name=concept_name,
@@ -148,9 +151,18 @@ def submit_quiz(
             )
             session.add(mastery)
         else:
+            is_first_pass = (mastery.mastery_score < 75 and mastery_percentage >= 75)
             mastery.mastery_score = max(mastery.mastery_score, mastery_percentage)
             mastery.updated_at = datetime.utcnow()
             session.add(mastery)
+
+    # Award XP systematically:
+    # 1. Effort XP for attempting the quiz
+    user.current_xp += 20
+
+    # 2. Achievement XP for passing the concept for the first time
+    if is_first_pass:
+        user.current_xp += 100
 
     # 6. Increment user level if they passed the quiz for their CURRENT level
     is_current_level_match = (
@@ -161,13 +173,28 @@ def submit_quiz(
     if passed and is_current_level_match:
         if user.current_level < 10:
             user.current_level += 1
-            session.add(user)
             # Award XP bonus on levelling up
             user.current_xp += 200
-            session.add(user)
 
+    session.add(user)
     session.commit()
     session.refresh(user)
+
+    # Update user level dynamically based on mastery count
+    mastery_records = session.exec(select(ConceptMastery).where(ConceptMastery.user_id == user.id)).all()
+    mastered_count = sum(1 for m in mastery_records if m.mastery_score >= 75)
+    if mastered_count <= 2:
+        new_user_level = "Beginner"
+    elif mastered_count <= 6:
+        new_user_level = "Intermediate"
+    else:
+        new_user_level = "Advanced"
+
+    if user.user_level != new_user_level:
+        user.user_level = new_user_level
+        session.add(user)
+        session.commit()
+        session.refresh(user)
 
     return QuizSubmitResponse(
         score=score,
@@ -207,11 +234,14 @@ def complete_study(
     
     # We set a baseline mastery score of 50% for studying the guide.
     # If the user has already achieved a higher score (e.g. by passing the quiz), we keep it.
-    old_score = mastery.mastery_score if mastery else 0
+    old_score = 0
+    study_completed = False
+    if mastery:
+        old_score = mastery.mastery_score
+        study_completed = mastery.study_completed
+
     xp_awarded = 0
-    
-    # Award XP only if they haven't completed this lesson's study yet (old score < 50)
-    if old_score < 50:
+    if not study_completed:
         xp_awarded = 50
         user.current_xp += xp_awarded
         session.add(user)
@@ -223,10 +253,12 @@ def complete_study(
             user_id=request.user_id,
             concept_name=request.concept_name,
             mastery_score=target_score,
+            study_completed=True,
             updated_at=datetime.utcnow()
         )
     else:
         mastery.mastery_score = target_score
+        mastery.study_completed = True
         mastery.updated_at = datetime.utcnow()
     
     session.add(mastery)

@@ -153,10 +153,12 @@ def onboard_user(
     for concept in ALL_CONCEPTS:
         concept_lvl = concept_to_lvl.get(concept, 1)
         initial_score = 85 if concept_lvl < start_level else 0
+        study_completed = True if concept_lvl < start_level else False
         mastery = ConceptMastery(
             user_id=user.id,  # type: ignore[arg-type]
             concept_name=concept,
             mastery_score=initial_score,
+            study_completed=study_completed,
         )
         session.add(mastery)
     session.commit()
@@ -211,8 +213,28 @@ def get_dashboard(
     # Concept mastery
     mastery_stmt = select(ConceptMastery).where(ConceptMastery.user_id == user_id)
     mastery_records = session.exec(mastery_stmt).all()
+    
+    # Dynamically evaluate and update user_level based on mastery count
+    mastered_count = sum(1 for m in mastery_records if m.mastery_score >= 75)
+    if mastered_count <= 2:
+        new_level = "Beginner"
+    elif mastered_count <= 6:
+        new_level = "Intermediate"
+    else:
+        new_level = "Advanced"
+
+    if user.user_level != new_level:
+        user.user_level = new_level
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+
     mastery_items = [
-        ConceptMasteryItem(concept_name=m.concept_name, mastery_score=m.mastery_score)
+        ConceptMasteryItem(
+            concept_name=m.concept_name,
+            mastery_score=m.mastery_score,
+            study_completed=m.study_completed
+        )
         for m in mastery_records
     ]
 

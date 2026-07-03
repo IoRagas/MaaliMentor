@@ -23,7 +23,7 @@ interface DashboardData {
   user_level: string;
   current_level: number;
   current_xp: number;
-  concept_mastery: { concept_name: string; mastery_score: number }[];
+  concept_mastery: { concept_name: string; mastery_score: number; study_completed: boolean }[];
   goals: any[];
 }
 
@@ -139,12 +139,15 @@ export default function DashboardPage() {
       };
       const fallbackMastery = Object.entries(localConceptToLevel).map(([concept_name, lvl]) => {
         let score = 0;
+        let study = false;
         if (lvl < currentLevel) {
-          score = 85; // prerequisite concepts are mastered
+          score = 85;
+          study = true;
         } else if (lvl === currentLevel) {
-          score = 30; // current concept has some study progress
+          score = 30;
+          study = false;
         }
-        return { concept_name, mastery_score: score };
+        return { concept_name, mastery_score: score, study_completed: study };
       });
 
       setData({
@@ -243,7 +246,11 @@ export default function DashboardPage() {
     5: "Tax Strategy Analyst",
     6: "Investing Foundations Scholar",
     7: "Pathways Explorer (L7)",
+    71: "Mutual Funds Specialist",
+    72: "Shariah Compliance Specialist",
     8: "Markets Specialist (L8)",
+    81: "Stock Market Analyst",
+    82: "Real Estate & Gold Strategist",
     9: "Diversified Asset Manager",
     10: "Retirement & Legacy Planner",
   };
@@ -255,7 +262,11 @@ export default function DashboardPage() {
     5: "ٹیکس حکمت عملی کے تجزیہ کار",
     6: "سرمایہ کاری کے اسکالر",
     7: "راستوں کے متلاشی (لیول 7)",
+    71: "میوچل فنڈز کے ماہر",
+    72: "شریعہ کمپلائنس کے ماہر",
     8: "مارکیٹس کے ماہر (لیول 8)",
+    81: "اسٹاک مارکیٹ کے تجزیہ کار",
+    82: "رئیل اسٹیٹ اور سونا سٹرٹیجسٹ",
     9: "متنوع اثاثہ مینیجر",
     10: "ریٹائرمنٹ اور وصیت پلانر",
   };
@@ -286,57 +297,38 @@ export default function DashboardPage() {
 
   const getConceptStatus = (conceptId: string) => {
     const score = scores[conceptId] || 0;
-    const nodeLevel = conceptToLevel[conceptId] || 1;
     const node = flowNodes.find((n) => n.id === conceptId);
     if (!node) return "locked";
 
-    // Mastered if score is >= 75 OR the user's current level has passed the node's level group
-    const isPast = (
-      (nodeLevel < 70 && currentLevel > nodeLevel) ||
-      (nodeLevel === 71 && currentLevel >= 8) ||
-      (nodeLevel === 72 && currentLevel >= 8) ||
-      (nodeLevel === 81 && currentLevel >= 9) ||
-      (nodeLevel === 82 && currentLevel >= 9)
-    );
-    if (score >= 75 || isPast) {
+    // Decoupled mastery check (mastered if actual score is >= 75)
+    if (score >= 75) {
       return "mastered";
     }
 
-    // Unlocked if no prerequisites
+    // Unlocked if all prerequisites are mastered (or any for diversification)
     if (node.prereqs.length === 0) {
       return "unlocked";
     }
 
     const allPrereqsMastered = node.prereqs.every((pId) => {
       const pScore = scores[pId] || 0;
-      const pLvl = conceptToLevel[pId] || 1;
-      const pPast = (
-        (pLvl < 70 && currentLevel > pLvl) ||
-        (pLvl === 71 && currentLevel >= 8) ||
-        (pLvl === 72 && currentLevel >= 8) ||
-        (pLvl === 81 && currentLevel >= 9) ||
-        (pLvl === 82 && currentLevel >= 9)
-      );
-      return pScore >= 75 || pPast;
+      return pScore >= 75;
     });
 
     const anyPrereqMastered = node.prereqs.some((pId) => {
       const pScore = scores[pId] || 0;
-      const pLvl = conceptToLevel[pId] || 1;
-      const pPast = (
-        (pLvl < 70 && currentLevel > pLvl) ||
-        (pLvl === 71 && currentLevel >= 8) ||
-        (pLvl === 72 && currentLevel >= 8) ||
-        (pLvl === 81 && currentLevel >= 9) ||
-        (pLvl === 82 && currentLevel >= 9)
-      );
-      return pScore >= 75 || pPast;
+      return pScore >= 75;
     });
 
-    if (conceptId === "diversification") {
-      if (anyPrereqMastered) return "unlocked";
-    } else {
-      if (allPrereqsMastered) return "unlocked";
+    const isUnlocked = conceptId === "diversification" ? anyPrereqMastered : allPrereqsMastered;
+
+    if (isUnlocked) {
+      // Find if user studied it
+      const cmItem = data.concept_mastery.find((m) => m.concept_name === conceptId);
+      if (cmItem && cmItem.study_completed) {
+        return "study_completed";
+      }
+      return "unlocked";
     }
 
     return "locked";
@@ -358,6 +350,14 @@ export default function DashboardPage() {
       statusBadge = (
         <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-bold">
           {isUrdu ? "مکمل" : "Mastered"}
+        </span>
+      );
+      cursorClass = "cursor-pointer";
+    } else if (status === "study_completed") {
+      borderClass = "border-yellow-500/40 bg-yellow-500/5 text-slate-200 shadow-lg shadow-yellow-500/5 hover:border-yellow-500/60 ring-2 ring-yellow-500/10 animate-pulse-glow";
+      statusBadge = (
+        <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 text-[10px] font-extrabold shadow-sm">
+          {isUrdu ? "کوئز لیں" : "Take Quiz"}
         </span>
       );
       cursorClass = "cursor-pointer";
@@ -707,6 +707,43 @@ export default function DashboardPage() {
                         style={{ width: `${item.mastery_score}%` }}
                       />
                     </div>
+                  </GlassCard>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Achievement Badges Showcase */}
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-white mb-4">
+              {isUrdu ? "حاصل کردہ بیجز — Achievement Badges" : "Achievement Badges — حاصل کردہ بیجز"}
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[
+                { id: "budgeting", name: "Budget Rookie", nameUr: "بجٹ نوآموز", desc: "Master Level 1", descUr: "لیول ۱ مکمل کریں", icon: "🏆" },
+                { id: "saving", name: "Savings Prodigy", nameUr: "بچت کے ماہر", desc: "Master Level 2", descUr: "لیول ۲ مکمل کریں", icon: "🏦" },
+                { id: "tax_basics", name: "Tax Specialist", nameUr: "ٹیکس کے ماہر", desc: "Master Level 5", descUr: "لیول ۵ مکمل کریں", icon: "📄" },
+                { id: "islamic_banking", name: "Shariah Scholar", nameUr: "شریعہ کے اسکالر", desc: "Master Level 7B", descUr: "لیول ۷ بی مکمل کریں", icon: "🕌" },
+                { id: "stock_market", name: "Equity Trader", nameUr: "حصص کے تاجر", desc: "Master Level 8A", descUr: "لیول ۸ اے مکمل کریں", icon: "📈" },
+                { id: "diversification", name: "Wealth Architect", nameUr: "سرمایہ کار آرکیٹیکٹ", desc: "Master Level 9", descUr: "لیول ۹ مکمل کریں", icon: "🎯" },
+              ].map((badge) => {
+                const isMastered = (scores[badge.id] || 0) >= 75;
+                return (
+                  <GlassCard
+                    key={badge.id}
+                    className={`!p-4 text-center border flex flex-col items-center justify-center transition-all duration-300 ${
+                      isMastered
+                        ? "border-yellow-500/40 bg-yellow-500/5 text-slate-100 shadow-md shadow-yellow-500/10 scale-[1.03]"
+                        : "border-white/5 bg-slate-900/30 text-slate-500 opacity-55"
+                    }`}
+                  >
+                    <div className={`text-3xl mb-2 ${isMastered ? "animate-pulse" : "grayscale"}`}>{badge.icon}</div>
+                    <h4 className={`text-xs font-bold ${isMastered ? "text-yellow-400" : "text-slate-400"}`}>
+                      {isUrdu ? badge.nameUr : badge.name}
+                    </h4>
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      {isUrdu ? badge.descUr : badge.desc}
+                    </p>
                   </GlassCard>
                 );
               })}

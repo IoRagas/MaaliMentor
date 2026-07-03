@@ -38,6 +38,13 @@ def create_db_and_tables() -> None:
             if "password" not in columns:
                 connection.execute(text("ALTER TABLE users ADD COLUMN password VARCHAR DEFAULT ''"))
                 print("[database] Migrated users table: added password column.")
+            
+            # Check concept_mastery table info
+            result_cm = connection.execute(text("PRAGMA table_info(concept_mastery)")).fetchall()
+            columns_cm = [row[1] for row in result_cm]
+            if "study_completed" not in columns_cm:
+                connection.execute(text("ALTER TABLE concept_mastery ADD COLUMN study_completed BOOLEAN DEFAULT 0"))
+                print("[database] Migrated concept_mastery table: added study_completed column.")
         except Exception as e:
             print(f"[database] Migration warning: {e}")
 

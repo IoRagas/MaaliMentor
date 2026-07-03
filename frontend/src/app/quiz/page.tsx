@@ -531,6 +531,30 @@ export default function QuizPage() {
     }));
   };
 
+  const handleAskTutorReview = () => {
+    if (!results || !results.details) return;
+    
+    // Filter incorrect details
+    const wrongDetails = results.details.filter(d => !d.is_correct);
+    const serializedQuestions = wrongDetails.map((detail) => {
+      const origQ = questions.find((q) => q.id === detail.question_id);
+      const questionText = origQ ? origQ.question : `Sawal #${detail.question_id}`;
+      const userChoice = selectedAnswers[detail.question_id];
+      const userChoiceText = origQ && userChoice ? origQ.options[userChoice] : "N/A";
+      const correctChoiceText = origQ ? origQ.options[detail.correct_option] : "N/A";
+      
+      return {
+        question: questionText,
+        userAnswer: `(${userChoice ? userChoice.toUpperCase() : "N/A"}) ${userChoiceText}`,
+        correctAnswer: `(${detail.correct_option.toUpperCase()}) ${correctChoiceText}`,
+        explanation: detail.explanation
+      };
+    });
+
+    localStorage.setItem("quiz_review_questions", JSON.stringify(serializedQuestions));
+    window.location.href = "/tutor";
+  };
+
   const renderQuizNode = (levelNum: number, conceptId: string, title: string, urduTitle: string, icon: string) => {
     if (!dashboardData) return null;
 
@@ -560,14 +584,7 @@ export default function QuizPage() {
     const nodeLevel = conceptToLevel[conceptId] || 1;
 
     const getStatus = () => {
-      const isPast = (
-        (nodeLevel < 70 && currentLevel > nodeLevel) ||
-        (nodeLevel === 71 && currentLevel >= 8) ||
-        (nodeLevel === 72 && currentLevel >= 8) ||
-        (nodeLevel === 81 && currentLevel >= 9) ||
-        (nodeLevel === 82 && currentLevel >= 9)
-      );
-      if (score >= 75 || isPast) {
+      if (score >= 75) {
         return "mastered";
       }
 
@@ -577,35 +594,16 @@ export default function QuizPage() {
 
       const allPrereqsMastered = nodeMeta.prereqs.every((pId) => {
         const pScore = scores[pId] || 0;
-        const pLvl = conceptToLevel[pId] || 1;
-        const pPast = (
-          (pLvl < 70 && currentLevel > pLvl) ||
-          (pLvl === 71 && currentLevel >= 8) ||
-          (pLvl === 72 && currentLevel >= 8) ||
-          (pLvl === 81 && currentLevel >= 9) ||
-          (pLvl === 82 && currentLevel >= 9)
-        );
-        return pScore >= 75 || pPast;
+        return pScore >= 75;
       });
 
       const anyPrereqMastered = nodeMeta.prereqs.some((pId) => {
         const pScore = scores[pId] || 0;
-        const pLvl = conceptToLevel[pId] || 1;
-        const pPast = (
-          (pLvl < 70 && currentLevel > pLvl) ||
-          (pLvl === 71 && currentLevel >= 8) ||
-          (pLvl === 72 && currentLevel >= 8) ||
-          (pLvl === 81 && currentLevel >= 9) ||
-          (pLvl === 82 && currentLevel >= 9)
-        );
-        return pScore >= 75 || pPast;
+        return pScore >= 75;
       });
 
-      if (conceptId === "diversification") {
-        if (anyPrereqMastered) return "unlocked";
-      } else {
-        if (allPrereqsMastered) return "unlocked";
-      }
+      const isUnlocked = conceptId === "diversification" ? anyPrereqMastered : allPrereqsMastered;
+      if (isUnlocked) return "unlocked";
 
       return "locked";
     };
@@ -1105,9 +1103,19 @@ export default function QuizPage() {
 
               {/* Detailed Breakdown */}
               <div className="space-y-4">
-                <h3 className="text-lg font-bold text-white">
-                  {isUrdu ? "کوئز کی وضاحت اور جائزہ" : "Quiz Explanation & Review"}
-                </h3>
+                <div className="flex items-center justify-between gap-4">
+                  <h3 className="text-lg font-bold text-white">
+                    {isUrdu ? "کوئز کی وضاحت اور جائزہ" : "Quiz Explanation & Review"}
+                  </h3>
+                  {results.details.some(d => !d.is_correct) && (
+                    <button
+                      onClick={handleAskTutorReview}
+                      className="px-3 py-1.5 rounded-lg border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 text-xs font-semibold hover:bg-yellow-500/20 hover:border-yellow-500/50 transition-all duration-200 flex items-center gap-1.5"
+                    >
+                      💡 {isUrdu ? "غلط جوابات پر ٹیوٹر سے پوچھیں" : "Ask Tutor to Explain Wrong Answers"}
+                    </button>
+                  )}
+                </div>
                 {results.details.map((detail, idx) => {
                   const isExpanded = expandedDetails[detail.question_id] || false;
                   const origQ = questions.find((q) => q.id === detail.question_id);

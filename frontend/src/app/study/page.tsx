@@ -268,6 +268,7 @@ export default function StudyPage() {
               const masteryItem = cached.concept_mastery?.find((m: any) => m.concept_name === concept);
               if (masteryItem) {
                 masteryItem.mastery_score = Math.max(masteryItem.mastery_score, result.mastery_score);
+                masteryItem.study_completed = true;
               }
               cached.current_xp = result.current_xp;
               localStorage.setItem("dashboard_data", JSON.stringify(cached));
@@ -288,8 +289,9 @@ export default function StudyPage() {
         try {
           const cached = JSON.parse(cachedDashboardStr);
           const masteryItem = cached.concept_mastery?.find((m: any) => m.concept_name === concept);
-          if (masteryItem && masteryItem.mastery_score < 50) {
-            masteryItem.mastery_score = 50;
+          if (masteryItem && !masteryItem.study_completed) {
+            masteryItem.study_completed = true;
+            masteryItem.mastery_score = Math.max(masteryItem.mastery_score, 50);
             const currentXp = parseInt(localStorage.getItem("current_xp") || "150") + 50;
             localStorage.setItem("current_xp", currentXp.toString());
             cached.current_xp = currentXp;

@@ -37,6 +37,7 @@ class ConceptMastery(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.id", index=True)
     concept_name: str = Field(index=True)
     mastery_score: int = Field(default=0, ge=0, le=100)
+    study_completed: bool = Field(default=False)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 

@@ -260,6 +260,7 @@ class ConceptMasteryItem(BaseModel):
     """Single concept mastery entry for the dashboard."""
     concept_name: str
     mastery_score: int
+    study_completed: bool = False
 
 
 class DashboardResponse(BaseModel):

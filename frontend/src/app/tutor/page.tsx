@@ -329,6 +329,45 @@ export default function TutorPage() {
     }
   }, []);
 
+  // Intercept and load quiz review questions if user requested help on incorrect answers
+  useEffect(() => {
+    if (typeof window !== "undefined" && hasLoaded) {
+      const reviewQuestionsStr = localStorage.getItem("quiz_review_questions");
+      if (reviewQuestionsStr) {
+        try {
+          localStorage.removeItem("quiz_review_questions");
+          const questionsList = JSON.parse(reviewQuestionsStr);
+          if (questionsList && questionsList.length > 0) {
+            const lang = localStorage.getItem("global_lang");
+            const isUr = lang === "ur";
+            const reviewPrompt = isUr
+              ? `میں نے ابھی ابھی کوئز دیا اور ان سوالات میں غلطی کی۔ براہ کرم ان تصورات کی وضاحت کریں:\n\n${questionsList.map((q: any, i: number) => `سوال ${i + 1}: "${q.question}"\nمیرا جواب: "${q.userAnswer}"\nدرست جواب: "${q.correctAnswer}"\nوضاحت: "${q.explanation}"`).join("\n\n")}`
+              : `Maine abhi abhi quiz diya aur in sawalat mein ghalti ki. Please in concepts ko wazeh karein:\n\n${questionsList.map((q: any, i: number) => `Sawal ${i + 1}: "${q.question}"\nMera Jawab: "${q.userAnswer}"\nSahi Jawab: "${q.correctAnswer}"\nWazahat: "${q.explanation}"`).join("\n\n")}`;
+            
+            const welcomeMsg = isUr
+              ? "چلو آپ کے کوئز کی غلطیوں کا جائزہ لیتے ہیں اور ان تصورات کو گہرائی سے سمجھتے ہیں! 💡"
+              : "Chalo aapke quiz ki ghaltiyon ka jaiza lete hain aur in concepts ko gehrai se samajhte hain! 💡";
+            
+            setMessages([
+              {
+                id: "1",
+                role: "tutor",
+                text: welcomeMsg,
+                timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              }
+            ]);
+            
+            setTimeout(() => {
+              sendMessage(reviewPrompt);
+            }, 600);
+          }
+        } catch (e) {
+          console.error("Failed to trigger quiz review chat seed:", e);
+        }
+      }
+    }
+  }, [hasLoaded]);
+
   // Save chat history to localStorage on messages update
   useEffect(() => {
     if (typeof window !== "undefined" && hasLoaded && messages.length > 0) {
