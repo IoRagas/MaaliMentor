@@ -60,6 +60,12 @@ export default function GoalsPage() {
   
   const [goals, setGoals] = useState<Goal[]>([]);
 
+  // Deposit Savings State
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  const [depositAmount, setDepositAmount] = useState("");
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [depositMessage, setDepositMessage] = useState<string | null>(null);
+
   // Global Language Synchronization
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -195,6 +201,71 @@ export default function GoalsPage() {
       }
     } catch (err) {
       console.error("Failed to save goal:", err);
+    }
+  };
+
+  const handleDeposit = async () => {
+    if (!selectedGoal || !depositAmount) return;
+    const amountFloat = parseFloat(depositAmount);
+    if (isNaN(amountFloat) || amountFloat <= 0) {
+      setDepositMessage(isUrdu ? "براہ کرم درست رقم درج کریں۔" : "Please enter a valid positive number.");
+      return;
+    }
+    setDepositLoading(true);
+    setDepositMessage(null);
+    try {
+      const res = await fetch("http://localhost:8000/api/goals/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          goal_id: parseInt(selectedGoal.id),
+          amount: amountFloat,
+        }),
+      });
+      if (res.ok) {
+        const resultData = await res.json();
+        setDepositMessage(isUrdu ? "بچت کامیابی سے جمع ہو گئی! +20 XP" : "Savings deposited successfully! +20 XP");
+        
+        // Update goals local state
+        setGoals((prevGoals) =>
+          prevGoals.map((g) =>
+            g.id === selectedGoal.id ? { ...g, saved: resultData.current_savings } : g
+          )
+        );
+
+        // Update local storage XP if dashboard cache exists
+        const storedDashboard = localStorage.getItem("dashboard_data");
+        if (storedDashboard) {
+          try {
+            const dbData = JSON.parse(storedDashboard);
+            dbData.current_xp = resultData.current_xp;
+            dbData.goals = dbData.goals.map((g: any) =>
+              g.id.toString() === selectedGoal.id ? { ...g, current_savings: resultData.current_savings } : g
+            );
+            localStorage.setItem("dashboard_data", JSON.stringify(dbData));
+          } catch (e) {
+            console.error("Error updating local dashboard cache:", e);
+          }
+        }
+        localStorage.setItem("current_xp", resultData.current_xp.toString());
+        
+        // Trigger sidebar language/XP update event
+        window.dispatchEvent(new Event("dashboardUpdate"));
+        
+        setTimeout(() => {
+          setSelectedGoal(null);
+          setDepositAmount("");
+          setDepositMessage(null);
+        }, 1200);
+      } else {
+        const err = await res.json();
+        setDepositMessage(err.detail || (isUrdu ? "ٹرانزیکشن ناکام ہو گئی۔" : "Transaction failed."));
+      }
+    } catch (e) {
+      setDepositMessage(isUrdu ? "سرور سے رابطہ نہ ہو سکا۔" : "Error connecting to server.");
+    } finally {
+      setDepositLoading(false);
     }
   };
 
@@ -490,12 +561,20 @@ export default function GoalsPage() {
                       <div className="progress-fill" style={{ width: `${percentage}%` }} />
                     </div>
 
-                    <div className="flex flex-wrap gap-1">
-                      {goal.products.map((p) => (
-                        <span key={p} className="px-2 py-0.5 rounded-md bg-white/5 text-xs text-slate-400 border border-white/5">
-                          {p}
-                        </span>
-                      ))}
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
+                      <div className="flex flex-wrap gap-1 max-w-[70%]">
+                        {goal.products.map((p) => (
+                          <span key={p} className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] text-slate-400 border border-white/5">
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setSelectedGoal(goal)}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/40 text-xs font-semibold transition-all duration-200"
+                      >
+                        {isUrdu ? "جمع کریں" : "Deposit"}
+                      </button>
                     </div>
                   </GlassCard>
                 );
@@ -504,6 +583,65 @@ export default function GoalsPage() {
           )}
         </main>
       </div>
+
+      {/* Deposit Savings Modal */}
+      {selectedGoal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fade-in" style={{ direction: isUrdu ? "rtl" : "ltr" }}>
+          <div className="relative w-full max-w-md p-6 rounded-2xl bg-slate-900 border border-white/10 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-2" style={{ textAlign: isUrdu ? "right" : "left" }}>
+              {isUrdu ? "مقصد میں بچت جمع کریں" : "Deposit Savings to Goal"}
+            </h3>
+            <p className="text-sm text-slate-400 mb-4" style={{ textAlign: isUrdu ? "right" : "left" }}>
+              {isUrdu 
+                ? `مقصد: ${goalTypesUrdu[selectedGoal.type] || selectedGoal.type} کے لیے ورچوئل رقم جمع کریں`
+                : `Adding savings to: ${selectedGoal.type}`}
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1" style={{ textAlign: isUrdu ? "right" : "left" }}>
+                  {isUrdu ? "جمع کرنے کی رقم (PKR)" : "Deposit Amount (PKR)"}
+                </label>
+                <input
+                  type="number"
+                  placeholder="e.g. 5000"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-white/10 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
+                  style={{ textAlign: isUrdu ? "right" : "left" }}
+                />
+              </div>
+
+              {depositMessage && (
+                <p className={`text-xs font-medium ${depositMessage.includes("success") || depositMessage.includes("کامیابی") ? "text-emerald-400" : "text-rose-400"}`} style={{ textAlign: isUrdu ? "right" : "left" }}>
+                  {depositMessage}
+                </p>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleDeposit}
+                  disabled={depositLoading}
+                  className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 text-sm font-bold transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:scale-100"
+                >
+                  {depositLoading ? (isUrdu ? "جمع ہو رہا ہے..." : "Depositing...") : (isUrdu ? "جمع کریں" : "Deposit")}
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedGoal(null);
+                    setDepositAmount("");
+                    setDepositMessage(null);
+                  }}
+                  disabled={depositLoading}
+                  className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-white text-sm font-semibold transition-all duration-200"
+                >
+                  {isUrdu ? "منسوخ" : "Cancel"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
