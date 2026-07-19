@@ -362,3 +362,119 @@ body {
   font-family: "Noto Nastaliq Urdu", "Jameel Noori Nastaliq", "Urdu Typesetting", "Segoe UI", Tahoma, serif;
   line-height: 1.8;
 }
+
+/* ─── Premium Cubic-Bezier Smooth Transitions & Timing Functions ─── */
+:root {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-back: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+}
+
+/* Page Transition Wrapper */
+.page-transition-wrap {
+  animation: pageFadeIn 0.6s var(--ease-out-expo) forwards;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Smooth Floating Elements */
+.hover-lift {
+  transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s var(--ease-out-expo), border-color 0.3s var(--ease-out-expo);
+}
+.hover-lift:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+/* Custom Interactive Scale In */
+.animate-scale-up-fade {
+  animation: scaleUpFade 0.4s var(--ease-out-expo) forwards;
+}
+
+@keyframes scaleUpFade {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Pulse Glow Color Variants */
+@keyframes pulse-glow-cyan {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(6, 182, 212, 0.5);
+  }
+}
+
+.animate-pulse-glow-cyan {
+  animation: pulse-glow-cyan 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-gold {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(245, 158, 11, 0.45);
+  }
+}
+
+.animate-pulse-glow-gold {
+  animation: pulse-glow-gold 2.5s ease-in-out infinite;
+}
+
+/* Shimmer Loading Wave */
+.shimmer-bg {
+  background: linear-gradient(90deg, rgba(30,41,59,0.7) 25%, rgba(51,65,85,0.7) 50%, rgba(30,41,59,0.7) 75%);
+  background-size: 200% 100%;
+  animation: shimmerWave 1.8s infinite linear;
+}
+
+@keyframes shimmerWave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Micro-interaction on Sidebar Link Hover */
+.sidebar-link-glow {
+  position: relative;
+}
+.sidebar-link-glow::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-emerald);
+  opacity: 0;
+  transition: all 0.3s var(--ease-out-expo);
+}
+.sidebar-link-glow:hover::after {
+  opacity: 0.8;
+  transform: translateY(-50%) scale(1.5);
+}
+

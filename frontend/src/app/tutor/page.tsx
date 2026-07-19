@@ -799,7 +799,7 @@ export default function TutorPage() {
   return (
     <div className="flex min-h-screen" dir={isUrdu ? "rtl" : "ltr"}>
       <Sidebar />
-      <div className="flex-1 flex min-h-screen">
+      <div className="flex-1 flex min-h-screen page-transition-wrap">
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
           {/* Chat header */}

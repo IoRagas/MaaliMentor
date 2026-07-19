@@ -92,7 +92,7 @@ export default function Sidebar({ className = "" }: SidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative
+                className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative sidebar-link-glow
                   ${
                     isActive
                       ? "bg-emerald-500/15 text-emerald-400"

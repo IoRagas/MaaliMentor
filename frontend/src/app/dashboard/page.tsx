@@ -428,7 +428,7 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen" dir={isUrdu ? "rtl" : "ltr"}>
       <Sidebar />
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen page-transition-wrap">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-8 py-4 border-b border-white/5 bg-slate-900/60 backdrop-blur-xl">
           <div>
