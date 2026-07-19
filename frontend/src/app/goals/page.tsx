@@ -15,6 +15,7 @@ import {
 import Sidebar from "@/components/Sidebar";
 import GlassCard from "@/components/GlassCard";
 import ProgressRing from "@/components/ProgressRing";
+import { apiUrl, fetchWithAuth } from "@/lib/api";
 
 const goalTypes = [
   { id: "ghar", label: "Ghar (House)", urdu: "گھر", icon: Home, color: "from-emerald-500 to-emerald-600" },
@@ -94,7 +95,7 @@ export default function GoalsPage() {
 
   const fetchGoals = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/goals/${userId}`);
+      const res = await fetchWithAuth(`/api/goals/${userId}`);
       if (res.ok) {
         const data = await res.json();
         
@@ -144,7 +145,7 @@ export default function GoalsPage() {
     setLoading(true);
     try {
       const expectedReturn = risk === "low" ? 0.08 : risk === "high" ? 0.16 : 0.12;
-      const res = await fetch("http://localhost:8000/api/goals/calculate", {
+      const res = await fetch(apiUrl("/api/goals/calculate"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -177,7 +178,7 @@ export default function GoalsPage() {
     if (!result || !selectedType) return;
 
     try {
-      const res = await fetch("http://localhost:8000/api/goals/save", {
+      const res = await fetchWithAuth("/api/goals/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -214,7 +215,7 @@ export default function GoalsPage() {
     setDepositLoading(true);
     setDepositMessage(null);
     try {
-      const res = await fetch("http://localhost:8000/api/goals/deposit", {
+      const res = await fetchWithAuth("/api/goals/deposit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -266,6 +267,33 @@ export default function GoalsPage() {
       setDepositMessage(isUrdu ? "سرور سے رابطہ نہ ہو سکا۔" : "Error connecting to server.");
     } finally {
       setDepositLoading(false);
+    }
+  };
+
+  const deleteGoal = async (goalId: string) => {
+    if (!confirm(isUrdu ? "کیا آپ واقعی یہ مقصد حذف کرنا چاہتے ہیں؟" : "Are you sure you want to delete this goal?")) {
+      return;
+    }
+    try {
+      const res = await fetchWithAuth(`/api/goals/${goalId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setGoals((prev) => prev.filter((g) => g.id !== goalId));
+        // Update local dashboard cache
+        const storedDashboard = localStorage.getItem("dashboard_data");
+        if (storedDashboard) {
+          try {
+            const dbData = JSON.parse(storedDashboard);
+            dbData.goals = dbData.goals.filter((g: any) => g.id.toString() !== goalId);
+            localStorage.setItem("dashboard_data", JSON.stringify(dbData));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Failed to delete goal:", err);
     }
   };
 
@@ -562,19 +590,27 @@ export default function GoalsPage() {
                     </div>
 
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                      <div className="flex flex-wrap gap-1 max-w-[70%]">
+                      <div className="flex flex-wrap gap-1 max-w-[50%]">
                         {goal.products.map((p) => (
                           <span key={p} className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] text-slate-400 border border-white/5">
                             {p}
                           </span>
                         ))}
                       </div>
-                      <button
-                        onClick={() => setSelectedGoal(goal)}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/40 text-xs font-semibold transition-all duration-200"
-                      >
-                        {isUrdu ? "جمع کریں" : "Deposit"}
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => deleteGoal(goal.id)}
+                          className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 hover:border-rose-500/40 text-xs font-semibold transition-all duration-200"
+                        >
+                          🗑️
+                        </button>
+                        <button
+                          onClick={() => setSelectedGoal(goal)}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/40 text-xs font-semibold transition-all duration-200"
+                        >
+                          {isUrdu ? "جمع کریں" : "Deposit"}
+                        </button>
+                      </div>
                     </div>
                   </GlassCard>
                 );

@@ -1,13 +1,41 @@
-fastapi
-uvicorn[standard]
-sqlmodel
-pydantic-settings
-networkx
-chromadb
-python-multipart
-aiofiles
-python-dotenv
-google-generativeai
-gTTS
-redis
-edge-tts
+# Maali Mentor — Backend Python dependencies
+# Pinned versions for reproducible installs.
+# Update versions intentionally; don't let pip float them.
+
+# ── Web framework ─────────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# ── Database / ORM ────────────────────────────────────────────
+sqlmodel==0.0.21
+pydantic-settings==2.6.1
+
+# ── Auth / Security ───────────────────────────────────────────
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+
+# ── AI / Embeddings ───────────────────────────────────────────
+google-generativeai==0.8.3
+chromadb==0.5.23
+networkx==3.4.2
+
+# ── Speech (STT — local Whisper) ─────────────────────────────
+# NOTE: torch download is large (~2GB for CPU). Comment out if
+# using USE_MOCK_SPEECH=true or cloud-only STT.
+transformers==4.46.3
+torch==2.5.1
+
+# ── Speech (TTS) ──────────────────────────────────────────────
+gTTS==2.5.3
+edge-tts==6.1.12
+
+# ── ElevenLabs (optional premium TTS) ────────────────────────
+elevenlabs==1.9.0
+
+# ── File handling / utils ─────────────────────────────────────
+python-multipart==0.0.12
+aiofiles==24.1.0
+python-dotenv==1.0.1
+
+# ── Caching (optional Redis — falls back to in-memory) ────────
+redis==5.2.1

@@ -31,6 +31,18 @@ import asyncio
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Create DB tables, initialize vector search index, and warm up model on startup."""
+    # Warn if Gemini API key has not been configured
+    placeholder = "your-gemini-api-key-here"
+    placeholder2 = "your-actual-gemini-api-key-here"
+    if settings.GEMINI_API_KEY in (placeholder, placeholder2, ""):
+        print(
+            "\n"
+            "⚠️  WARNING: GEMINI_API_KEY is not configured!\n"
+            "   The AI tutor will fall back to mock responses.\n"
+            "   Set GEMINI_API_KEY in your .env file.\n"
+            "   Get a free key at https://aistudio.google.com/app/apikey\n"
+        )
+
     create_db_and_tables()
     initialize_vector_db()
     
@@ -51,10 +63,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── CORS (allow all origins for hackathon) ───────────────────
+# ── CORS ─────────────────────────────────────────────────────
+# Parse comma-separated origins from config; strip whitespace
+_allowed_origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

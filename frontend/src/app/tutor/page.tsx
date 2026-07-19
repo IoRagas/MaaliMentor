@@ -17,6 +17,7 @@ import Sidebar from "@/components/Sidebar";
 import GlassCard from "@/components/GlassCard";
 import VoiceButton from "@/components/VoiceButton";
 import ConceptBadge from "@/components/ConceptBadge";
+import { apiUrl, wsUrl } from "@/lib/api";
 
 interface Message {
   id: string;
@@ -96,7 +97,7 @@ export default function TutorPage() {
   useEffect(() => {
     const fetchDictionary = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/tutor/dictionary");
+        const res = await fetchWithAuth("/api/tutor/dictionary");
         if (res.ok) {
           const data = await res.json();
           setDictionaryTerms(data);
@@ -383,7 +384,7 @@ export default function TutorPage() {
     const fetchMastery = async () => {
       if (!userId) return;
       try {
-        const res = await fetch(`http://localhost:8000/api/auth/dashboard/${userId}`);
+        const res = await fetchWithAuth(`/api/auth/dashboard/${userId}`);
         if (res.ok) {
           const result = await res.json();
           const scores: Record<string, number> = {};
@@ -485,8 +486,9 @@ export default function TutorPage() {
         return;
       }
 
-      const wsUrl = `ws://localhost:8000/api/tutor/ws?user_id=${userId}`;
-      const ws = new WebSocket(wsUrl);
+      const token = getAuthToken() || "";
+      const wsUrlStr = wsUrl(`/api/tutor/ws?user_id=${userId}&token=${token}`);
+      const ws = new WebSocket(wsUrlStr);
       socketRef.current = ws;
 
       ws.onopen = () => {
@@ -591,7 +593,7 @@ export default function TutorPage() {
     setIsTyping(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/tutor/chat", {
+      const res = await fetchWithAuth("/api/tutor/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -735,7 +737,7 @@ export default function TutorPage() {
             formData.append("audio", audioBlob, `recording.${extension}`);
             formData.append("user_id", userId.toString());
 
-            const res = await fetch("http://localhost:8000/api/tutor/voice", {
+            const res = await fetchWithAuth("/api/tutor/voice", {
               method: "POST",
               body: formData,
             });

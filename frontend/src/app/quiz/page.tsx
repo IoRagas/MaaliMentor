@@ -21,6 +21,7 @@ import {
   Trophy,
   Lock,
 } from "lucide-react";
+import { apiUrl, fetchWithAuth } from "@/lib/api";
 
 interface Question {
   id: number;
@@ -240,7 +241,7 @@ export default function QuizPage() {
         setDashboardLoading(true);
         const userId = localStorage.getItem("user_id") || "1";
         try {
-          const res = await fetch(`http://localhost:8000/api/auth/dashboard/${userId}`);
+          const res = await fetchWithAuth(`/api/auth/dashboard/${userId}`);
           if (res.ok) {
             const data = await res.json();
             setDashboardData(data);
@@ -315,7 +316,7 @@ export default function QuizPage() {
       setError(null);
       setIsOfflineMode(false);
       try {
-        const res = await fetch(`http://localhost:8000/api/quiz/questions/${level}`);
+        const res = await fetchWithAuth(`/api/quiz/questions/${level}`);
         if (!res.ok) {
           throw new Error(`Failed to load questions for Level ${level}.`);
         }
@@ -447,7 +448,7 @@ export default function QuizPage() {
             question_id: q.id,
             selected_option: selectedAnswers[q.id] || "",
           }));
-          const syncRes = await fetch("http://localhost:8000/api/quiz/submit", {
+          const syncRes = await fetchWithAuth("/api/quiz/submit", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -484,7 +485,7 @@ export default function QuizPage() {
         selected_option: selectedAnswers[q.id] || "",
       }));
 
-      const res = await fetch("http://localhost:8000/api/quiz/submit", {
+      const res = await fetchWithAuth("/api/quiz/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1061,11 +1062,43 @@ export default function QuizPage() {
                 </p>
 
                 {/* Score Indicator */}
-                <div className="inline-flex flex-col items-center justify-center p-6 rounded-2xl bg-slate-950/80 border border-white/5 mb-6 min-w-[150px]">
-                  <span className="text-4xl font-extrabold text-white">{results.score}</span>
-                  <span className="text-xs text-slate-500 mt-1">
-                    {isUrdu ? `۲۰ میں سے (${(results.score / 20) * 100}٪)` : `out of 20 (${(results.score / 20) * 100}%)`}
-                  </span>
+                <div className="flex flex-col sm:flex-row justify-center items-stretch gap-4 mb-6 max-w-lg mx-auto w-full">
+                  <div className="flex-1 inline-flex flex-col items-center justify-center p-5 rounded-2xl bg-slate-950/80 border border-white/5 min-w-[150px]">
+                    <span className="text-4xl font-extrabold text-white">{results.score}</span>
+                    <span className="text-xs text-slate-500 mt-1">
+                      {isUrdu ? `۲۰ میں سے (${(results.score / 20) * 100}٪)` : `out of 20 (${(results.score / 20) * 100}%)`}
+                    </span>
+                  </div>
+
+                  {results.xp_awarded !== undefined && results.xp_awarded > 0 && (
+                    <div className="flex-1 inline-flex flex-col p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-left font-sans text-xs">
+                      <h4 className="text-emerald-400 font-bold text-sm mb-2 text-center">
+                        {isUrdu ? "ایکس پی کے انعامات" : "XP Rewards"}
+                      </h4>
+                      <div className="space-y-1 text-slate-300">
+                        <div className="flex justify-between">
+                          <span>{isUrdu ? "کوشش / Quiz Attempt" : "Quiz Attempt"}</span>
+                          <span className="text-emerald-400 font-bold">+20 XP</span>
+                        </div>
+                        {results.xp_breakdown?.first_pass && (
+                          <div className="flex justify-between">
+                            <span>{isUrdu ? "پہلی بار پاس / First Pass" : "First Pass Bonus"}</span>
+                            <span className="text-emerald-400 font-bold">+100 XP</span>
+                          </div>
+                        )}
+                        {results.xp_breakdown?.level_up && (
+                          <div className="flex justify-between text-yellow-400">
+                            <span>{isUrdu ? "رینک اپ / Level Up Bonus" : "Level Up Bonus"}</span>
+                            <span className="font-bold">+200 XP</span>
+                          </div>
+                        )}
+                        <div className="border-t border-white/10 pt-1 mt-1 flex justify-between font-bold text-white text-sm">
+                          <span>{isUrdu ? "کل حاصل شدہ:" : "Total XP Earned:"}</span>
+                          <span className="text-emerald-400">+{results.xp_awarded} XP</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-4">

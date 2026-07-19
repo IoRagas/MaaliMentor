@@ -8,8 +8,9 @@ Pakistani economic realities (inflation, life events, returns).
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
+from app.auth_utils import get_current_user
 from app.database import get_session
-from app.models import SimulatorState, User
+from app.models import SimulatorState, User, ActivityLog
 from app.schemas import (
     SimulatorStartRequest,
     SimulatorStateResponse,
@@ -17,28 +18,27 @@ from app.schemas import (
     SimulatorTurnResponse,
 )
 from app.services.simulator_math import initialize_simulator, process_turn
+from app.services.streak import update_streak
 
 router = APIRouter(prefix="/api/simulator", tags=["Simulator"])
 
-
-# In-memory cache for full state dicts (keyed by user_id).
-# In production this would use Redis; SQLite only stores the summary.
-_state_cache: dict[int, dict] = {}
 
 
 @router.post("/start", response_model=SimulatorStateResponse)
 def start_simulator(
     request: SimulatorStartRequest,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> SimulatorStateResponse:
     """
     Initialise a new simulator session for the user.
 
     If the user already has a simulator state, it is reset.
     """
+    request.user_id = current_user.id
     # Remove any existing state
     existing = session.exec(
-        select(SimulatorState).where(SimulatorState.user_id == request.user_id)
+        select(SimulatorState).where(SimulatorState.user_id == current_user.id)
     ).first()
     if existing:
         session.delete(existing)
@@ -46,11 +46,10 @@ def start_simulator(
 
     # Create fresh state
     state = initialize_simulator(request.starting_age, request.starting_income)
-    _state_cache[request.user_id] = state
 
     import json
     db_state = SimulatorState(
-        user_id=request.user_id,
+        user_id=current_user.id,
         current_turn=state["current_turn"],
         nominal_wealth=state["nominal_wealth"],
         real_purchasing_power=state["real_purchasing_power"],
@@ -58,11 +57,22 @@ def start_simulator(
         full_state_json=json.dumps(state),
     )
     session.add(db_state)
+    
+    # Log simulator start activity
+    log = ActivityLog(
+        user_id=current_user.id,
+        activity_type="simulator_started",
+        detail=f"Started the wealth simulator at age {request.starting_age}! 🎮",
+        xp_earned=0
+    )
+    session.add(log)
+    
+    update_streak(current_user, session)
     session.commit()
     session.refresh(db_state)
 
     return SimulatorStateResponse(
-        user_id=request.user_id,
+        user_id=current_user.id,
         current_turn=db_state.current_turn,
         nominal_wealth=db_state.nominal_wealth,
         real_purchasing_power=db_state.real_purchasing_power,
@@ -80,23 +90,22 @@ def start_simulator(
 def play_turn(
     request: SimulatorTurnRequest,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> SimulatorTurnResponse:
     """Process one turn (year) of the simulator."""
     import json
+    request.user_id = current_user.id
 
-    # Load full state from cache
-    state = _state_cache.get(request.user_id)
-    if state is None:
-        # Fallback to database summary state and reconstruct
-        db_state = session.exec(
-            select(SimulatorState).where(SimulatorState.user_id == request.user_id)
-        ).first()
-        if db_state and db_state.full_state_json:
-            try:
-                state = json.loads(db_state.full_state_json)
-                _state_cache[request.user_id] = state
-            except Exception as e:
-                print(f"[simulator] Failed to decode full_state_json: {e}")
+    # Always load full state from DB (multi-worker safe)
+    state = None
+    db_state = session.exec(
+        select(SimulatorState).where(SimulatorState.user_id == current_user.id)
+    ).first()
+    if db_state and db_state.full_state_json:
+        try:
+            state = json.loads(db_state.full_state_json)
+        except Exception as e:
+            print(f"[simulator] Failed to decode full_state_json: {e}")
 
     if state is None:
         raise HTTPException(
@@ -126,11 +135,11 @@ def play_turn(
         decision_saving_method=request.decision_saving_method,
         rebalance=request.rebalance or False,
     )
-    _state_cache[request.user_id] = new_state
+    # No in-memory cache update — always persist to DB
 
     # Persist summary & full state to DB
     db_state = session.exec(
-        select(SimulatorState).where(SimulatorState.user_id == request.user_id)
+        select(SimulatorState).where(SimulatorState.user_id == current_user.id)
     ).first()
     if db_state:
         db_state.current_turn = new_state["current_turn"]
@@ -141,11 +150,19 @@ def play_turn(
         session.add(db_state)
         
         # Award XP for playing simulator turn
-        user = session.get(User, request.user_id)
-        if user:
-            user.current_xp += 30
-            session.add(user)
+        current_user.current_xp += 30
+        session.add(current_user)
+        
+        # Log simulator turn activity
+        log = ActivityLog(
+            user_id=current_user.id,
+            activity_type="simulator_turn",
+            detail=f"Advanced simulator to Year {new_state['current_turn']} (Wealth: PKR {new_state['nominal_wealth']:,.0f}) 📈",
+            xp_earned=30
+        )
+        session.add(log)
             
+        update_streak(current_user, session)
         session.commit()
 
     return SimulatorTurnResponse(
@@ -170,8 +187,11 @@ def play_turn(
 def get_state(
     user_id: int,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> SimulatorStateResponse:
     """Return the current simulator state for a user."""
+    if user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this state")
     db_state = session.exec(
         select(SimulatorState).where(SimulatorState.user_id == user_id)
     ).first()

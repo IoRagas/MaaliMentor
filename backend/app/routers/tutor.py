@@ -21,7 +21,9 @@ from fastapi import (
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models import ChatMessage
+from app.models import ChatMessage, User
+from app.auth_utils import get_current_user
+from jose import jwt
 from app.schemas import (
     DictionaryResponse,
     TutorTextRequest,
@@ -116,8 +118,10 @@ async def voice_tutor(
     user_id: int = Form(...),
     audio: UploadFile = File(...),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> TutorVoiceResponse:
     """Voice-based tutoring endpoint using Whisper (local) and memory logging."""
+    user_id = current_user.id
     MAX_AUDIO_SIZE = 10 * 1024 * 1024
     audio_bytes = await audio.read()
     if len(audio_bytes) > MAX_AUDIO_SIZE:
@@ -177,8 +181,10 @@ async def voice_tutor(
 async def text_chat(
     request: TutorTextRequest,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> TutorTextResponse:
     """Text-based chat endpoint with memory logs and base64 audio response."""
+    request.user_id = current_user.id
     with ConsoleProfiler("REST /chat request handler pipeline", "tutor_api"):
         # 1 — Log user request
         with ConsoleProfiler("DB User message log", "tutor_api"):
@@ -347,6 +353,7 @@ async def process_ws_audio(audio_bytes: bytes, user_id: int, websocket: WebSocke
 async def tutor_websocket(
     websocket: WebSocket,
     user_id: int,
+    token: Optional[str] = None,
     session: Session = Depends(get_session)
 ):
     """
@@ -354,7 +361,30 @@ async def tutor_websocket(
     
     Connection parameters:
         user_id: ID of the active user session.
+        token: JWT token for authentication.
     """
+    # Verify JWT token
+    from app.auth_utils import _JWT_SECRET, _JWT_ALGORITHM
+    if not token:
+        await websocket.accept()
+        await websocket.send_json({"type": "error", "message": "Authentication token missing."})
+        await websocket.close(code=4001)
+        return
+        
+    try:
+        payload = jwt.decode(token, _JWT_SECRET, algorithms=[_JWT_ALGORITHM])
+        token_sub = payload.get("sub")
+        if token_sub is None or int(token_sub) != user_id:
+            await websocket.accept()
+            await websocket.send_json({"type": "error", "message": "Invalid authentication token."})
+            await websocket.close(code=4001)
+            return
+    except Exception as e:
+        await websocket.accept()
+        await websocket.send_json({"type": "error", "message": "Authentication failed."})
+        await websocket.close(code=4001)
+        return
+
     await websocket.accept()
     audio_buffer = bytearray()
     

@@ -27,6 +27,11 @@ class User(SQLModel, table=True):
     current_level: int = Field(default=1, ge=1, le=10)
     onboarding_completed: bool = Field(default=False)
 
+    # ── Streak tracking ─────────────────────────────────────────
+    last_active_date: Optional[str] = Field(default=None)  # ISO date "YYYY-MM-DD"
+    current_streak: int = Field(default=0)
+    longest_streak: int = Field(default=0)
+
 
 class ConceptMastery(SQLModel, table=True):
     """Tracks how well a user understands a specific financial concept (0-100)."""
@@ -97,3 +102,17 @@ class ChatMessage(SQLModel, table=True):
     urdu_script: Optional[str] = Field(default=None)
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
+
+class ActivityLog(SQLModel, table=True):
+    """Real-time activity feed entries for the dashboard."""
+
+    __tablename__ = "activity_logs"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
+    # Type: "quiz_passed", "quiz_attempted", "level_up", "study_complete",
+    #       "goal_created", "deposit", "onboarded", "simulator_turn"
+    activity_type: str = Field(index=True)
+    detail: str  # Human-readable description
+    xp_earned: int = Field(default=0)
+    created_at: datetime = Field(default_factory=datetime.utcnow)

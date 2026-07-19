@@ -15,6 +15,7 @@ import {
 import Sidebar from "@/components/Sidebar";
 import GlassCard from "@/components/GlassCard";
 import { ToastContainer } from "@/components/Toast";
+import { apiUrl } from "@/lib/api";
 
 interface SimState {
   age: number;
@@ -601,7 +602,7 @@ export default function SimulatorPage() {
     setLoading(true);
     setRebalanceEnabled(false);
     try {
-      const res = await fetch("http://localhost:8000/api/simulator/start", {
+      const res = await fetchWithAuth("/api/simulator/start", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -686,7 +687,7 @@ export default function SimulatorPage() {
     const lifestyleFraction = state.spending / state.monthlyIncome;
 
     try {
-      const res = await fetch("http://localhost:8000/api/simulator/turn", {
+      const res = await fetchWithAuth("/api/simulator/turn", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

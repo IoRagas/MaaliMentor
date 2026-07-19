@@ -13,6 +13,7 @@ import {
   Sparkles,
   Award,
   LogOut,
+  User,
 } from "lucide-react";
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/quiz", label: "Quiz Graph", urdu: "کوئز گراف", icon: Award },
   { href: "/simulator", label: "Simulator", urdu: "سمیولیٹر", icon: Gamepad2 },
   { href: "/goals", label: "Goals", urdu: "مقاصد", icon: Target },
+  { href: "/profile", label: "Profile", urdu: "پروفائل", icon: User },
 ];
 
 interface SidebarProps {

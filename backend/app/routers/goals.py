@@ -8,8 +8,9 @@ and save/retrieve their goals.
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
+from app.auth_utils import get_current_user
 from app.database import get_session
-from app.models import Goal, User
+from app.models import Goal, User, ActivityLog
 from app.schemas import (
     GoalCalculateRequest,
     GoalCalculateResponse,
@@ -20,6 +21,7 @@ from app.schemas import (
     GoalDepositResponse,
 )
 from app.services.planner_math import calculate_goal_savings, suggest_products
+from app.services.streak import update_streak
 
 router = APIRouter(prefix="/api/goals", tags=["Goals"])
 
@@ -52,15 +54,11 @@ def calculate_goal(request: GoalCalculateRequest) -> GoalCalculateResponse:
 def save_goal(
     request: GoalSaveRequest,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> GoalResponse:
     """Persist a financial goal for a user."""
-    # Verify user exists
-    user = session.get(User, request.user_id)
-    if not user:
-        user = session.get(User, 1) or session.exec(select(User)).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        request.user_id = user.id
+    # Force use of authenticated user ID for safety
+    request.user_id = current_user.id
 
     goal = Goal(
         user_id=request.user_id,
@@ -72,10 +70,19 @@ def save_goal(
     session.add(goal)
     
     # Award +40 XP for setting a goal
-    if user:
-        user.current_xp += 40
-        session.add(user)
+    current_user.current_xp += 40
+    session.add(current_user)
         
+    # Log goal creation activity
+    log = ActivityLog(
+        user_id=current_user.id,
+        activity_type="goal_created",
+        detail=f"Created saving goal for: {request.goal_type.replace('_', ' ').title()} 🎯",
+        xp_earned=40
+    )
+    session.add(log)
+    
+    update_streak(current_user, session)
     session.commit()
     session.refresh(goal)
 
@@ -94,14 +101,11 @@ def save_goal(
 def get_user_goals(
     user_id: int,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> list[GoalResponse]:
     """Return all saved goals for a user."""
-    user = session.get(User, user_id)
-    if not user:
-        user = session.get(User, 1) or session.exec(select(User)).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_id = user.id
+    if user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access these goals")
 
     goals = session.exec(select(Goal).where(Goal.user_id == user_id)).all()
 
@@ -123,19 +127,14 @@ def get_user_goals(
 def deposit_to_goal(
     request: GoalDepositRequest,
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
 ) -> GoalDepositResponse:
     """Add virtual savings to a goal and award XP."""
-    # Verify user exists
-    user = session.get(User, request.user_id)
-    if not user:
-        user = session.get(User, 1) or session.exec(select(User)).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        request.user_id = user.id
+    request.user_id = current_user.id
 
     # Verify goal exists
     goal = session.get(Goal, request.goal_id)
-    if not goal or goal.user_id != request.user_id:
+    if not goal or goal.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Goal not found")
 
     # Update goal savings
@@ -143,13 +142,22 @@ def deposit_to_goal(
     session.add(goal)
 
     # Award XP for saving towards a goal (e.g. +20 XP)
-    if user:
-        user.current_xp += 20
-        session.add(user)
+    current_user.current_xp += 20
+    session.add(current_user)
 
+    # Log deposit activity
+    log = ActivityLog(
+        user_id=current_user.id,
+        activity_type="deposit",
+        detail=f"Saved PKR {request.amount:,.0f} towards goal: {goal.goal_type.replace('_', ' ').title()} 💰",
+        xp_earned=20
+    )
+    session.add(log)
+
+    update_streak(current_user, session)
     session.commit()
     session.refresh(goal)
-    session.refresh(user)
+    session.refresh(current_user)
 
     remaining = max(goal.target_amount - goal.current_savings, 0.0)
 
@@ -161,3 +169,19 @@ def deposit_to_goal(
         remaining_amount=remaining,
         current_xp=user.current_xp
     )
+
+
+@router.delete("/{goal_id}", status_code=204)
+def delete_goal(
+    goal_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    """Delete a goal by ID. Requires the owning user_id for authorization."""
+    goal = session.get(Goal, goal_id)
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    if goal.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this goal")
+    session.delete(goal)
+    session.commit()

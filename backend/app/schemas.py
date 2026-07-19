@@ -51,6 +51,8 @@ class OnboardingResponse(BaseModel):
     assigned_level: str
     recommended_topics: list[str]
     current_level: int
+    access_token: str = ""
+    token_type: str = "bearer"
 
 
 class LoginRequest(BaseModel):
@@ -65,6 +67,8 @@ class LoginResponse(BaseModel):
     username: str
     user_level: str
     current_level: int
+    access_token: str = ""
+    token_type: str = "bearer"
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -263,6 +267,14 @@ class ConceptMasteryItem(BaseModel):
     study_completed: bool = False
 
 
+class ActivityLogItem(BaseModel):
+    """Activity feed entry schema."""
+    activity_type: str
+    detail: str
+    xp_earned: int
+    created_at: datetime
+
+
 class DashboardResponse(BaseModel):
     """Aggregated dashboard data for a user."""
     user_id: int
@@ -273,6 +285,11 @@ class DashboardResponse(BaseModel):
     onboarding_completed: bool
     concept_mastery: list[ConceptMasteryItem] = []
     goals: list[GoalResponse] = []
+    # New activity/streak fields:
+    activities: list[ActivityLogItem] = []
+    streak_current: int = 0
+    streak_longest: int = 0
+
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -315,6 +332,9 @@ class QuizSubmitResponse(BaseModel):
     current_level: int
     current_xp: int
     details: list[QuestionExplanation]
+    # XP reward breakdown (new)
+    xp_awarded: int = 0
+    xp_breakdown: dict = {}  # e.g. {"attempt": 20, "first_pass": 100, "level_up": 200}
 
 
 # STUDY / LESSON COMPLETION
@@ -333,5 +353,12 @@ class StudyCompleteResponse(BaseModel):
     mastery_score: int
     xp_awarded: int
     current_xp: int
+
+
+class ChangePasswordRequest(BaseModel):
+    """Payload to change user password."""
+    old_password: str = Field(..., min_length=4, max_length=30)
+    new_password: str = Field(..., min_length=4, max_length=30)
+
 
 

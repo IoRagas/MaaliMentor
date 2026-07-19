@@ -8,8 +8,9 @@ a dashboard endpoint that aggregates user data.
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
+from app.auth_utils import create_access_token, hash_password, verify_password
 from app.database import get_session
-from app.models import ConceptMastery, Goal, User
+from app.models import ConceptMastery, Goal, User, ActivityLog
 from app.schemas import (
     ConceptMasteryItem,
     DashboardResponse,
@@ -18,8 +19,10 @@ from app.schemas import (
     OnboardingResponse,
     LoginRequest,
     LoginResponse,
+    ActivityLogItem,
 )
 from app.services.graph_rag import ALL_CONCEPTS, get_next_recommended
+from app.services.streak import update_streak
 
 router = APIRouter(prefix="/api/auth", tags=["Auth & Onboarding"])
 
@@ -118,11 +121,11 @@ def onboard_user(
             start_level = 3
             break
 
-    # Create user with starting XP matching their level (200 XP per cleared level)
+    # Create user — hash the password before storing
     start_xp = (start_level - 1) * 200
     user = User(
         username=request.username,
-        password=request.password,
+        password=hash_password(request.password),
         email=request.email,
         user_level=level,
         current_level=start_level,
@@ -161,13 +164,24 @@ def onboard_user(
             study_completed=study_completed,
         )
         session.add(mastery)
+    
+    # Log onboarding completed activity
+    log = ActivityLog(
+        user_id=user.id,
+        activity_type="onboarded",
+        detail="Completed onboarding assessment & set initial roadmap! 🚀",
+        xp_earned=start_xp
+    )
+    session.add(log)
     session.commit()
 
+    token = create_access_token(user.id, user.username)  # type: ignore[arg-type]
     return OnboardingResponse(
         user_id=user.id,  # type: ignore[arg-type]
         assigned_level=level,
         recommended_topics=recommended,
         current_level=start_level,
+        access_token=token,
     )
 
 
@@ -184,16 +198,31 @@ def login_user(
     ).first()
     
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-        
-    if user.password != request.password:
-        raise HTTPException(status_code=401, detail="Invalid password")
-        
+        # Generic error — don't reveal whether the username exists
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    # Support legacy plain-text passwords (first login after migration)
+    # Once verified, re-hash and save
+    if user.password.startswith("$2b$") or user.password.startswith("$2a$"):
+        # Already hashed — use bcrypt verify
+        if not verify_password(request.password, user.password):
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+    else:
+        # Legacy plain-text — compare directly then upgrade
+        if user.password != request.password:
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+        # Upgrade to bcrypt hash
+        user.password = hash_password(request.password)
+        session.add(user)
+        session.commit()
+
+    token = create_access_token(user.id, user.username)  # type: ignore[arg-type]
     return LoginResponse(
         user_id=user.id,  # type: ignore[arg-type]
         username=user.username,
         user_level=user.user_level,
         current_level=user.current_level,
+        access_token=token,
     )
 
 
@@ -205,10 +234,7 @@ def get_dashboard(
     """Return aggregated dashboard data for a user."""
     user = session.get(User, user_id)
     if not user:
-        user = session.get(User, 1) or session.exec(select(User)).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_id = user.id
+        raise HTTPException(status_code=404, detail="User not found")
 
     # Concept mastery
     mastery_stmt = select(ConceptMastery).where(ConceptMastery.user_id == user_id)
@@ -254,6 +280,22 @@ def get_dashboard(
         for g in goals
     ]
 
+    # Update daily streak
+    update_streak(user, session)
+
+    # Fetch last 5 activities
+    activities_stmt = select(ActivityLog).where(ActivityLog.user_id == user_id).order_by(ActivityLog.created_at.desc()).limit(5)
+    activities_records = session.exec(activities_stmt).all()
+    activity_items = [
+        ActivityLogItem(
+            activity_type=a.activity_type,
+            detail=a.detail,
+            xp_earned=a.xp_earned,
+            created_at=a.created_at
+        )
+        for a in activities_records
+    ]
+
     return DashboardResponse(
         user_id=user.id,  # type: ignore[arg-type]
         username=user.username,
@@ -263,6 +305,9 @@ def get_dashboard(
         onboarding_completed=user.onboarding_completed,
         concept_mastery=mastery_items,
         goals=goal_items,
+        activities=activity_items,
+        streak_current=user.current_streak,
+        streak_longest=user.longest_streak,
     )
 
 
@@ -270,3 +315,29 @@ def get_dashboard(
 def get_assessment_questions():
     """Return the onboarding assessment questions (for the frontend)."""
     return {"questions": ASSESSMENT_QUESTIONS}
+
+
+from app.schemas import ChangePasswordRequest
+
+@router.patch("/change-password")
+def change_password(
+    request: ChangePasswordRequest,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """Change current user's password securely."""
+    # Check old password
+    if current_user.password.startswith("$2b$") or current_user.password.startswith("$2a$"):
+        if not verify_password(request.old_password, current_user.password):
+            raise HTTPException(status_code=400, detail="Purana password ghalat hai")
+    else:
+        if current_user.password != request.old_password:
+            raise HTTPException(status_code=400, detail="Purana password ghalat hai")
+
+    # Hash and save new password
+    current_user.password = hash_password(request.new_password)
+    session.add(current_user)
+    session.commit()
+
+    return {"success": True, "message": "Password kamyabi se tabdeel ho gaya hai!"}
+

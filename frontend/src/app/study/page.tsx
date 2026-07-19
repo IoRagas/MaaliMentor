@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import GlassCard from "@/components/GlassCard";
-import { BookOpen, Mic, Award, ArrowLeft, Loader2 } from "lucide-react";
+import { BookOpen, Mic, Award, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
+import { apiUrl, fetchWithAuth } from "@/lib/api";
 
 interface StudyGuide {
   title: string;
@@ -212,28 +213,50 @@ export default function StudyPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setIsUrdu(localStorage.getItem("global_lang") === "ur");
+      
       const handleLangChange = () => {
         setIsUrdu(localStorage.getItem("global_lang") === "ur");
       };
       window.addEventListener("languageChange", handleLangChange);
-      return () => window.removeEventListener("languageChange", handleLangChange);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
+      
+      // Read URL query parameters
       const params = new URLSearchParams(window.location.search);
+      const lvlStr = params.get("level");
       const conceptParam = params.get("concept");
-      const levelParam = params.get("level");
-
-      if (conceptParam && conceptToLevel[conceptParam]) {
+      
+      if (conceptParam) {
         setConcept(conceptParam);
-        setLevel(conceptToLevel[conceptParam]);
-      } else if (levelParam) {
-        const lvl = parseInt(levelParam);
+        const lvl = conceptToLevel[conceptParam];
+        if (lvl !== undefined) {
+          setLevel(lvl);
+        }
+        // Check if already completed from dashboard cache
+        const cache = localStorage.getItem("dashboard_data");
+        if (cache) {
+          try {
+            const parsed = JSON.parse(cache);
+            const item = parsed.concept_mastery?.find((m: any) => m.concept_name === conceptParam);
+            if (item && item.study_completed) {
+              setIsCompleted(true);
+            }
+          } catch(e){}
+        }
+      } else if (lvlStr) {
+        const lvl = parseInt(lvlStr);
         if (levelToConcept[lvl] !== undefined) {
           setLevel(lvl);
-          setConcept(levelToConcept[lvl]);
+          const cName = levelToConcept[lvl];
+          setConcept(cName);
+          const cache = localStorage.getItem("dashboard_data");
+          if (cache) {
+            try {
+              const parsed = JSON.parse(cache);
+              const item = parsed.concept_mastery?.find((m: any) => m.concept_name === cName);
+              if (item && item.study_completed) {
+                setIsCompleted(true);
+              }
+            } catch(e){}
+          }
         }
       }
       setLoading(false);
@@ -245,7 +268,7 @@ export default function StudyPage() {
       if (!concept) return;
       const userId = localStorage.getItem("user_id") || "1";
       try {
-        const res = await fetch("http://localhost:8000/api/quiz/study/complete", {
+        const res = await fetchWithAuth("/api/quiz/study/complete", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -259,6 +282,9 @@ export default function StudyPage() {
           const result = await res.json();
           if (result.current_xp !== undefined) {
             localStorage.setItem("current_xp", result.current_xp.toString());
+          }
+          if (result.xp_awarded > 0) {
+            setIsCompleted(true);
           }
           // Update the cached dashboard data
           const cachedDashboardStr = localStorage.getItem("dashboard_data");
@@ -277,6 +303,7 @@ export default function StudyPage() {
             }
           }
           console.log("Lesson marked as studied, updated score:", result.mastery_score);
+          setIsCompleted(true);
           return;
         }
       } catch (err) {
@@ -297,6 +324,7 @@ export default function StudyPage() {
             cached.current_xp = currentXp;
             localStorage.setItem("dashboard_data", JSON.stringify(cached));
           }
+          setIsCompleted(true);
         } catch (e) {
           console.error("Error performing local offline study update:", e);
         }
@@ -354,6 +382,15 @@ export default function StudyPage() {
           {guide ? (
             <>
               {/* Study Material Main Panel */}
+              {isCompleted && (
+                <div className="flex items-center gap-2 p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-sm font-semibold animate-fade-in shadow-md shadow-emerald-500/5">
+                  <CheckCircle2 size={16} />
+                  <span>
+                    {isUrdu ? "سبق مکمل کر لیا گیا ہے! +50 XP حاصل ہوئے" : "Lesson complete! +50 XP rewarded"}
+                  </span>
+                </div>
+              )}
+
               <GlassCard className="p-8 border border-emerald-500/20 bg-emerald-500/5 relative overflow-hidden" hover={false}>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
                 

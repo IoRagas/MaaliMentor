@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models import QuizAttempt, User, ConceptMastery
+from app.models import QuizAttempt, User, ConceptMastery, ActivityLog
 from app.schemas import (
     QuestionExplanation,
     QuizQuestionResponse,
@@ -13,6 +13,7 @@ from app.schemas import (
     StudyCompleteResponse,
 )
 from app.services.quiz_data import QUIZ_QUESTIONS
+from app.services.streak import update_streak
 
 LEVEL_TO_CONCEPT = {
     1: "budgeting",
@@ -156,29 +157,35 @@ def submit_quiz(
             mastery.updated_at = datetime.utcnow()
             session.add(mastery)
 
-    # Award XP systematically:
+    # Award XP systematically and track breakdown:
+    xp_breakdown: dict = {}
+    xp_total = 0
+
     # 1. Effort XP for attempting the quiz
     user.current_xp += 20
+    xp_breakdown["attempt"] = 20
+    xp_total += 20
 
     # 2. Achievement XP for passing the concept for the first time
     if is_first_pass:
         user.current_xp += 100
+        xp_breakdown["first_pass"] = 100
+        xp_total += 100
 
-    # 6. Increment user level if they passed the quiz for their CURRENT level
+    # 3. Level-up XP for passing the current-level quiz
     is_current_level_match = (
         user.current_level == level or
         (user.current_level == 7 and level in (71, 72)) or
         (user.current_level == 8 and level in (81, 82))
     )
+    level_did_up = False
     if passed and is_current_level_match:
         if user.current_level < 10:
             user.current_level += 1
-            # Award XP bonus on levelling up
             user.current_xp += 200
-
-    session.add(user)
-    session.commit()
-    session.refresh(user)
+            xp_breakdown["level_up"] = 200
+            xp_total += 200
+            level_did_up = True
 
     # Update user level dynamically based on mastery count
     mastery_records = session.exec(select(ConceptMastery).where(ConceptMastery.user_id == user.id)).all()
@@ -193,8 +200,39 @@ def submit_quiz(
     if user.user_level != new_user_level:
         user.user_level = new_user_level
         session.add(user)
-        session.commit()
-        session.refresh(user)
+
+    # Create activity logs
+    if passed:
+        log_detail = f"Passed Level {level} Quiz ({concept_name}) with score {score}/20! 🎓"
+        log = ActivityLog(
+            user_id=user.id,
+            activity_type="quiz_passed",
+            detail=log_detail,
+            xp_earned=xp_total
+        )
+        session.add(log)
+    else:
+        log_detail = f"Attempted Level {level} Quiz ({concept_name}) with score {score}/20."
+        log = ActivityLog(
+            user_id=user.id,
+            activity_type="quiz_attempted",
+            detail=log_detail,
+            xp_earned=20
+        )
+        session.add(log)
+
+    if level_did_up:
+        lvl_log = ActivityLog(
+            user_id=user.id,
+            activity_type="level_up",
+            detail=f"Ascended to Level {user.current_level}: {new_user_level}! 🌟",
+            xp_earned=0
+        )
+        session.add(lvl_log)
+
+    update_streak(user, session)
+    session.commit()
+    session.refresh(user)
 
     return QuizSubmitResponse(
         score=score,
@@ -202,6 +240,8 @@ def submit_quiz(
         current_level=user.current_level,
         current_xp=user.current_xp,
         details=details,
+        xp_awarded=xp_total,
+        xp_breakdown=xp_breakdown,
     )
 
 
@@ -213,10 +253,7 @@ def complete_study(
     """Mark a concept study lesson as completed, update mastery score and award XP."""
     user = session.get(User, request.user_id)
     if not user:
-        user = session.get(User, 1) or session.exec(select(User)).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        request.user_id = user.id
+        raise HTTPException(status_code=404, detail="User not found")
 
     # Check if concept_name is valid
     if request.concept_name not in LEVEL_TO_CONCEPT.values():
@@ -262,6 +299,17 @@ def complete_study(
         mastery.updated_at = datetime.utcnow()
     
     session.add(mastery)
+    
+    # Log study completion activity
+    log = ActivityLog(
+        user_id=request.user_id,
+        activity_type="study_complete",
+        detail=f"Finished studying the lesson guide for: {request.concept_name.replace('_', ' ').title()} 📖",
+        xp_earned=xp_awarded
+    )
+    session.add(log)
+
+    update_streak(user, session)
     session.commit()
     session.refresh(user)
     session.refresh(mastery)

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowLeft, CheckCircle, Sparkles, User, Lock } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
+import { apiUrl } from "@/lib/api";
 
 interface StepData {
   id: number;
@@ -12,6 +13,7 @@ interface StepData {
   options?: { label: string; labelUrdu: string; value: string }[];
   isInput?: boolean;
   isPassword?: boolean;
+  isEmail?: boolean;
 }
 
 const steps: StepData[] = [
@@ -27,6 +29,13 @@ const steps: StepData[] = [
     questionUrdu: "اپنا پاس ورڈ سیٹ کریں",
     isInput: true,
     isPassword: true,
+  },
+  {
+    id: 2,
+    question: "Aap ka email address kya hai? (Optional)",
+    questionUrdu: "آپ کا ای میل ایڈریس کیا ہے؟ (اختیاری)",
+    isInput: true,
+    isEmail: true,
   },
   {
     id: 2,
@@ -79,6 +88,7 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
 
@@ -94,6 +104,8 @@ export default function OnboardingPage() {
     if (step.isInput) {
       if (step.isPassword) {
         if (password.trim().length < 4) return;
+      } else if (step.isEmail) {
+        // Optional - no strict requirement, but if entered, should be valid or empty
       } else {
         if (!username.trim()) return;
       }
@@ -107,16 +119,16 @@ export default function OnboardingPage() {
         const payload = {
           username: username.trim(),
           password: password.trim(),
-          email: `${username.trim().toLowerCase().replace(/\s+/g, "")}@example.com`,
+          email: email.trim() || `${username.trim().toLowerCase().replace(/\s+/g, "")}@example.com`,
           answers: [
-            { question_id: 1, selected_option: answers[2] },
-            { question_id: 2, selected_option: answers[3] },
-            { question_id: 3, selected_option: answers[4] },
-            { question_id: 4, selected_option: answers[5] },
+            { question_id: 1, selected_option: answers[3] },
+            { question_id: 2, selected_option: answers[4] },
+            { question_id: 3, selected_option: answers[5] },
+            { question_id: 4, selected_option: answers[6] },
           ],
         };
 
-        const res = await fetch("http://localhost:8000/api/auth/onboard", {
+        const res = await fetch(apiUrl("/api/auth/onboard"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -130,11 +142,14 @@ export default function OnboardingPage() {
           localStorage.setItem("username", username.trim());
           localStorage.setItem("user_level", data.assigned_level);
           localStorage.setItem("current_level", data.current_level.toString());
+          if (data.access_token) {
+            localStorage.setItem("access_token", data.access_token);
+          }
           router.push("/dashboard");
         } else {
           console.error("Onboarding failed");
           // Fallback redirect
-          const hasHardCorrect = answers[5] === "c";
+          const hasHardCorrect = answers[6] === "c";
           localStorage.setItem("user_id", "1");
           localStorage.setItem("username", username.trim() || "Sarmayakar");
           localStorage.setItem("user_level", hasHardCorrect ? "Intermediate" : "Beginner");
@@ -167,7 +182,9 @@ export default function OnboardingPage() {
   const isNextDisabled = step.isInput
     ? step.isPassword
       ? password.trim().length < 4
-      : !username.trim()
+      : step.isEmail
+        ? false // Optional, can click next even if empty
+        : !username.trim()
     : !answers[currentStep];
 
   return (
@@ -229,15 +246,17 @@ export default function OnboardingPage() {
           {step.isInput ? (
             <div className="relative mb-8">
               <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400">
-                {step.isPassword ? <Lock size={22} /> : <User size={22} />}
+                {step.isPassword ? <Lock size={22} /> : step.isEmail ? <span className="text-xl">✉️</span> : <User size={22} />}
               </div>
               <input
                 type={step.isPassword ? "password" : "text"}
-                value={step.isPassword ? password : username}
-                maxLength={20}
+                value={step.isPassword ? password : step.isEmail ? email : username}
+                maxLength={step.isEmail ? 50 : 20}
                 onChange={(e) => {
                   if (step.isPassword) {
                     setPassword(e.target.value);
+                  } else if (step.isEmail) {
+                    setEmail(e.target.value);
                   } else {
                     setUsername(e.target.value.replace(/[^a-zA-Z0-9_\s\-]/g, ""));
                   }
@@ -246,12 +265,20 @@ export default function OnboardingPage() {
                   if (e.key === "Enter") {
                     if (step.isPassword) {
                       if (password.trim().length >= 4) next();
+                    } else if (step.isEmail) {
+                      next();
                     } else {
                       if (username.trim()) next();
                     }
                   }
                 }}
-                placeholder={step.isPassword ? "Kam az kam 4 characters ka password" : "Apna naam likhein (e.g. Ahmed)"}
+                placeholder={
+                  step.isPassword 
+                    ? "Kam az kam 4 characters ka password" 
+                    : step.isEmail 
+                      ? "Apna email likhein (e.g. sarmayakar@mail.com)" 
+                      : "Apna naam likhein (e.g. Ahmed)"
+                }
                 className="w-full pl-14 pr-6 py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg md:text-xl focus:outline-none focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/5 transition-all duration-250"
                 autoFocus
               />

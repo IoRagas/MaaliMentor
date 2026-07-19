@@ -37,8 +37,13 @@ class Settings(BaseSettings):
     ELEVENLABS_VOICE_ID: str = "21m00Tcm4TlvDq8ikWAM"
 
     # ── Mock flags (for hackathon / offline dev) ─────────────
-    USE_MOCK_SPEECH: bool = True
-    USE_MOCK_LLM: bool = True
+    USE_MOCK_SPEECH: bool = False
+    USE_MOCK_LLM: bool = False
+
+    # ── CORS ─────────────────────────────────────────────────
+    # Comma-separated list of allowed frontend origins.
+    # Example: "https://maali-mentor.vercel.app,http://localhost:3000"
+    ALLOWED_ORIGINS: str = "http://localhost:3000"
 
 
 # Singleton — import this everywhere

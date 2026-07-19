@@ -16,6 +16,7 @@ import Sidebar from "@/components/Sidebar";
 import GlassCard from "@/components/GlassCard";
 import ProgressRing from "@/components/ProgressRing";
 import ConceptBadge from "@/components/ConceptBadge";
+import { apiUrl, fetchWithAuth } from "@/lib/api";
 
 interface DashboardData {
   user_id: number;
@@ -25,6 +26,9 @@ interface DashboardData {
   current_xp: number;
   concept_mastery: { concept_name: string; mastery_score: number; study_completed: boolean }[];
   goals: any[];
+  activities?: { activity_type: string; detail: string; xp_earned: number; created_at: string }[];
+  streak_current?: number;
+  streak_longest?: number;
 }
 
 const conceptMetadata: Record<string, { urdu: string; icon: string }> = {
@@ -95,7 +99,7 @@ export default function DashboardPage() {
     const fetchDashboard = async () => {
       const userId = localStorage.getItem("user_id") || "1";
       try {
-        const res = await fetch(`http://localhost:8000/api/auth/dashboard/${userId}`);
+        const res = await fetchWithAuth(`/api/auth/dashboard/${userId}`);
         if (res.ok) {
           const result = await res.json();
           setData(result);
@@ -175,7 +179,7 @@ export default function DashboardPage() {
     setDepositLoading(true);
     setDepositMessage(null);
     try {
-      const res = await fetch("http://localhost:8000/api/goals/deposit", {
+      const res = await fetchWithAuth("/api/goals/deposit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -403,7 +407,14 @@ export default function DashboardPage() {
     );
   };
 
-  const activities = isUrdu ? recentActivityUr : recentActivityEn;
+  const rawActivities = data?.activities || [];
+  const activities = rawActivities.length > 0 
+    ? rawActivities.map((act) => ({
+        text: act.detail,
+        time: new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        icon: BookOpen
+      }))
+    : (isUrdu ? recentActivityUr : recentActivityEn);
 
   const goalTypesUrdu: Record<string, string> = {
     education: "تعلیم",
@@ -504,6 +515,11 @@ export default function DashboardPage() {
                 <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-xs border border-emerald-500/20">
                   ✅ {isUrdu ? "فعال کوچ" : "Active Coach"}
                 </span>
+                {data.streak_current !== undefined && data.streak_current > 0 && (
+                  <span className="px-2 py-1 rounded-md bg-orange-500/10 text-orange-400 text-xs border border-orange-500/20 animate-pulse-glow">
+                    🔥 {data.streak_current} {isUrdu ? "دن کا سٹریک" : "Day Streak"}
+                  </span>
+                )}
               </div>
             </GlassCard>
 

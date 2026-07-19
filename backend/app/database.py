@@ -23,7 +23,7 @@ from sqlalchemy import text
 def create_db_and_tables() -> None:
     """Create all SQLModel tables if they don't already exist."""
     # Import all models to register them on SQLModel.metadata before create_all
-    from app.models import User, ConceptMastery, Goal, SimulatorState, QuizAttempt
+    from app.models import User, ConceptMastery, Goal, SimulatorState, QuizAttempt, ActivityLog
     SQLModel.metadata.create_all(engine)
     
     # Auto-migration: check if users table is missing columns
@@ -38,6 +38,15 @@ def create_db_and_tables() -> None:
             if "password" not in columns:
                 connection.execute(text("ALTER TABLE users ADD COLUMN password VARCHAR DEFAULT ''"))
                 print("[database] Migrated users table: added password column.")
+            if "last_active_date" not in columns:
+                connection.execute(text("ALTER TABLE users ADD COLUMN last_active_date VARCHAR DEFAULT NULL"))
+                print("[database] Migrated users table: added last_active_date column.")
+            if "current_streak" not in columns:
+                connection.execute(text("ALTER TABLE users ADD COLUMN current_streak INTEGER DEFAULT 0"))
+                print("[database] Migrated users table: added current_streak column.")
+            if "longest_streak" not in columns:
+                connection.execute(text("ALTER TABLE users ADD COLUMN longest_streak INTEGER DEFAULT 0"))
+                print("[database] Migrated users table: added longest_streak column.")
             
             # Check concept_mastery table info
             result_cm = connection.execute(text("PRAGMA table_info(concept_mastery)")).fetchall()

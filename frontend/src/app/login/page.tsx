@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Lock, User, Sparkles, CheckCircle, AlertCircle } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import Link from "next/link";
+import { apiUrl } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const res = await fetch("http://localhost:8000/api/auth/login", {
+      const res = await fetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,6 +42,9 @@ export default function LoginPage() {
         localStorage.setItem("username", data.username);
         localStorage.setItem("user_level", data.user_level);
         localStorage.setItem("current_level", data.current_level.toString());
+        if (data.access_token) {
+          localStorage.setItem("access_token", data.access_token);
+        }
         router.push("/dashboard");
       } else {
         const errData = await res.json();
