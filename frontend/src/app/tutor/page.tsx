@@ -17,7 +17,7 @@ import Sidebar from "@/components/Sidebar";
 import GlassCard from "@/components/GlassCard";
 import VoiceButton from "@/components/VoiceButton";
 import ConceptBadge from "@/components/ConceptBadge";
-import { apiUrl, wsUrl } from "@/lib/api";
+import { apiUrl, wsUrl, fetchWithAuth, getAuthToken } from "@/lib/api";
 
 interface Message {
   id: string;

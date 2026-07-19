@@ -208,6 +208,7 @@ export default function StudyPage() {
   const [concept, setConcept] = useState<string>("budgeting");
   const [loading, setLoading] = useState(true);
   const [isUrdu, setIsUrdu] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Global Language Synchronization
   useEffect(() => {
@@ -264,6 +265,7 @@ export default function StudyPage() {
   }, []);
 
   useEffect(() => {
+    setIsCompleted(false);
     const markLessonStudied = async () => {
       if (!concept) return;
       const userId = localStorage.getItem("user_id") || "1";

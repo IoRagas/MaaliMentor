@@ -14,6 +14,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        router.push("/dashboard");
+      }
+    }
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {

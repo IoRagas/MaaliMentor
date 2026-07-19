@@ -51,6 +51,12 @@ interface QuizResult {
   passed: boolean;
   current_level: number;
   details: DetailResult[];
+  xp_awarded?: number;
+  xp_breakdown?: {
+    attempt: number;
+    first_pass?: number;
+    level_up?: number;
+  };
 }
 
 const levelTitles: Record<number, string> = {

@@ -15,7 +15,7 @@ import {
 import Sidebar from "@/components/Sidebar";
 import GlassCard from "@/components/GlassCard";
 import { ToastContainer } from "@/components/Toast";
-import { apiUrl } from "@/lib/api";
+import { apiUrl, fetchWithAuth } from "@/lib/api";
 
 interface SimState {
   age: number;

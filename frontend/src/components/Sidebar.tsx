@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   MessageCircle,
@@ -33,6 +33,16 @@ export default function Sidebar({ className = "" }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isUrdu, setIsUrdu] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        router.push("/login");
+      }
+    }
+  }, [router]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {

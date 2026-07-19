@@ -92,6 +92,15 @@ export default function OnboardingPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        router.push("/dashboard");
+      }
+    }
+  }, [router]);
+
   const step = steps[currentStep];
   const isLast = currentStep === steps.length - 1;
   const progress = ((currentStep + 1) / steps.length) * 100;
