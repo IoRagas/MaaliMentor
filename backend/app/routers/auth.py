@@ -8,7 +8,7 @@ a dashboard endpoint that aggregates user data.
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
-from app.auth_utils import create_access_token, hash_password, verify_password
+from app.auth_utils import create_access_token, hash_password, verify_password, get_current_user
 from app.database import get_session
 from app.models import ConceptMastery, Goal, User, ActivityLog
 from app.schemas import (
